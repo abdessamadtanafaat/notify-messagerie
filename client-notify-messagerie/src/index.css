@@ -1,0 +1,16 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@font-face {
+  font-family: "ArticulatBold";
+  src: url("./assets/fonts/Fontspring-DEMO-articulatcf-extrabold-BF64a38d8b06d4e.otf");
+}
+@font-face {
+  font-family: "ArticulatThin";
+  src: url("./assets/fonts/Fontspring-DEMO-articulatcf-normal-BF64a38d8b0cbaf.otf");
+}
+@font-face {
+  font-family: "ArticulatMeduim";
+  src: url("./assets/fonts/ArticualtMeduim.otf");
+}
