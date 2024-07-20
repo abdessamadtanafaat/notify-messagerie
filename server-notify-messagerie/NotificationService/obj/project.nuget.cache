@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "dgSpecHash": "h4rQGQstnKbiq+mx1CRH5VsAIvwoSCMULbxz5djVXf/LlcTwEVwBcmdKNyB54hsdOS0RjZqeX0G6RcU1U/gK0g==",
+  "dgSpecHash": "FN/C09uT94smwbro+7H2wrvDDb00ouDAZnBQWSRHnDTPqc8AS01JmWQaor2a9pFnmEiFsH3H6wzSgMtygNN00g==",
   "success": true,
-  "projectFilePath": "H:\\Notification_Service\\NotificationService\\NotificationService\\NotificationService.csproj",
+  "projectFilePath": "H:\\notify-messagerie\\server-notify-messagerie\\NotificationService\\NotificationService.csproj",
   "expectedPackageFiles": [
     "C:\\Users\\sdf\\.nuget\\packages\\automapper\\13.0.1\\automapper.13.0.1.nupkg.sha512",
     "C:\\Users\\sdf\\.nuget\\packages\\awssdk.core\\3.7.100.14\\awssdk.core.3.7.100.14.nupkg.sha512",

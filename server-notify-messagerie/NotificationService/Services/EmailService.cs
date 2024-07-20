@@ -41,11 +41,11 @@ public class EmailService : IEmailService
             .Select(s=> s[random.Next(s.Length)]).ToArray()); 
     }
 
-    public string ResetPasswordByEmail(string userUsername, string tokenEmail)
+    public string ResetPasswordByEmail(string firstName, string lastName, string tokenEmail)
     {
         // Assuming you have a placeholder for your application logo image
         string logoUrl = "https://i.ibb.co/8P73jGr/pngegg.png"; 
-        string resetLink = $"https://localhost:3000/reset-password/{tokenEmail}";
+        string resetLink = $"http://localhost:5173/reset-password/{tokenEmail}";
         
         // Generate the expiry date for the verification link (5 days from now)
         DateTime expiryDate = DateTime.Now.AddDays(5); 
@@ -99,7 +99,7 @@ public class EmailService : IEmailService
                     <h1>Password Reset Request</h1>
                 </div>
                 <div class='content'>
-                    <p>Hi {userUsername},</p>
+                    <p>Hi {firstName} {lastName},</p>
                     <p>You recently requested to reset your password. Please click the button below to reset it.</p>
                 </div>
                 <div class='button-container'>
@@ -113,11 +113,11 @@ public class EmailService : IEmailService
         </body>
         </html>";    }
 
-    public string GenerateEmailMessage(string username, string tokenEmail)
+    public string GenerateEmailMessage(string firstName, string lastName, string tokenEmail)
 {
     // Assuming you have a placeholder for your application logo image
-    string logoUrl = "https://i.ibb.co/8P73jGr/pngegg.png"; 
-    string verifyEmailUrl = $"https://localhost:3000/verify-email/{tokenEmail}";
+    string logoUrl = "https://i.ibb.co/KbV8BpD/ChatApp.png"; 
+    string verifyEmailUrl = $"http://localhost:5173/verify-identity/{tokenEmail}";
 
     // Generate the expiry date for the verification link (5 days from now)
     DateTime expiryDate = DateTime.Now.AddDays(5);
@@ -179,7 +179,7 @@ public class EmailService : IEmailService
                     <h1>Verify Your Email Address</h1>
                 </div>
                 <div class='content'>
-                    <p><strong>Hello {username}</strong></p>
+                    <p><strong>Hello {firstName} {lastName}</strong></p>
                     <p>To continue setting up your NotifyAsService account, please verify that this is your email address.</p>
                     <p>Click the button below to verify:</p>
                     <a href='{verifyEmailUrl}' class='verify-button'>Verify Email Address</a>

@@ -37,10 +37,10 @@ public class AuthService : IAuthService
             throw new ValidationException("Invalid Email or phone number."); 
         }
 
-        if (!user.IsEmailVerified)
-        {
-            throw new NotFoundException("Invalid Email Or phone number.");
-        }
+        // if (!user.IsEmailVerified)
+        // {
+        //     throw new NotFoundException("Invalid Email Or phone number.");
+        // }
 
         if (!VerifyPassword(authRequest.Password, user.Password))
         {
@@ -63,7 +63,8 @@ public class AuthService : IAuthService
         {
             Token = token,
             RefreshToken = refreshToken,
-            Username = user.Username
+            Username = user.Username,
+            IsFirstTimeLogin = user.IsFirstTimeLogin 
         }; 
     }
     
@@ -78,24 +79,36 @@ public class AuthService : IAuthService
         {
             throw new ValidationException("Email already exist."); 
         }
-        var existingUserUsername = await _userRepository.GetUserByUsernameAsync(user.Username);
-        if (existingUserUsername != null)
-        {
-            throw new ValidationException("Username already exist."); 
-        }
+        // var existingUserUsername = await _userRepository.GetUserByUsernameAsync(user.Username);
+        // if (existingUserUsername != null)
+        // {
+        //     throw new ValidationException("Username already exist."); 
+        // }
         user.Password = HashPassword(user.Password);
         user.CreatedAt = DateTime.Now;
         
         var tokenEmail = _emailService.GenerateTokenEmail();
-        var message = _emailService.GenerateEmailMessage(user.Username, tokenEmail);
+        var message = _emailService.GenerateEmailMessage(user.FirstName, user.LastName, tokenEmail);
 
         user.TokenEmail = tokenEmail;
         user.CreatedAt = DateTime.UtcNow;
+        user.Username = CreateRandomUsername(user.FirstName);
+        user.IsFirstTimeLogin = true;
         
         await _emailService.SendEmailAsync(user.Email, "Account Verification", message); 
         await _userRepository.CreateUserAsync(user);
         Console.WriteLine($"{user.TokenEmail}");
         
+    }
+
+    private string CreateRandomUsername(string firstName)
+    {
+        Random random = new Random();
+        int randomNumber = random.Next(1000, 10000);
+
+        string username = $"{firstName}{randomNumber}";
+        
+        return username; 
     }
 
     public async Task VerifyEmail(string tokenEmail)
@@ -109,14 +122,7 @@ public class AuthService : IAuthService
         {
             throw new ValidationException("Token has already been used.");
         }
-            
-        TimeSpan tokenExpiryWindow = TimeSpan.FromDays(5);
-
-        if (DateTime.UtcNow > user.CreatedAt + tokenExpiryWindow)
-        {
-            throw new ValidationException("token has expired.");
-        }
-
+        
         user.IsEmailVerified = true;
         user.IsEmailTokenUsed = true; 
         await _userRepository.UpdateUserAsync(user.Id, user);
@@ -130,15 +136,17 @@ public class AuthService : IAuthService
             throw new NotFoundException("Email Not exist.");
         }
         var tokenEmail = _emailService.GenerateTokenEmail();
-        var message = _emailService.ResetPasswordByEmail(user.Username, tokenEmail);
+        var message = _emailService.ResetPasswordByEmail(user.FirstName, user.LastName, tokenEmail);
 
         user.TokenEmail = tokenEmail;
+        user.IsEmailTokenUsed = false;
+        user.IsEmailVerified = false;
         
         await _emailService.SendEmailAsync(user.Email, "Password Reset", message); 
-        await _userRepository.CreateUserAsync(user);
+        await _userRepository.UpdateUserAsync(user.Id, user);
     }
 
-    public async Task ForgetPasswordByPhone(string phoneNumber)
+    public async Task SendSms(string phoneNumber)
     {
         var user = await _userRepository.GetUserByPhoneAsync(phoneNumber);
         if (user == null)
@@ -152,8 +160,15 @@ public class AuthService : IAuthService
 
         // Construct SMS message
         var smsMessage = $"Hi {user.Username}, your Notify As Service App verification code: {token}";
-        
+
+        TimeSpan tokenExpiryWindow = TimeSpan.FromDays(1);
+        user.TokenPhone = token;
+        user.IsTokenPhoneNumberUsed = false;
+        user.PhoneNumberExpiredAt = DateTime.UtcNow + tokenExpiryWindow;
+            
         await _smsService.sendSmsAsync(phoneNumber,smsMessage );
+        await _userRepository.UpdateUserAsync(user.Id, user);
+        
     }
 
     public async Task ChangePassword(string  userId , string oldPassword,  string newPassword)
@@ -178,9 +193,9 @@ public class AuthService : IAuthService
             
         await _userRepository.UpdateUserAsync(user.Id, user);
     }
-    public async Task<bool> LogOut(string? userEmail)
+    public async Task<bool> LogOut(string? username)
     {
-        var user = await _userRepository.GetUserByEmailAsync(userEmail);
+        var user = await _userRepository.GetUserByUsernameAsync(username);
         if (user == null)
         {
             throw new NotFoundException("User Not found");
@@ -195,7 +210,65 @@ public class AuthService : IAuthService
             
         return true;
     }
-    
+
+    public async Task VerifyPhoneNumber(int  tokenPhoneNumber)
+    {
+        var user = await _userRepository.GetuserByTokenPhoneNumber(tokenPhoneNumber);
+        if (user == null)
+        {
+            throw new NotFoundException("Invalid token."); 
+        }
+        if (user.IsTokenPhoneNumberUsed)
+        {
+            throw new ValidationException("Token has already been used.");
+        }
+            
+        TimeSpan tokenExpiryWindow = TimeSpan.FromDays(1);
+
+        if (DateTime.UtcNow > user.PhoneNumberExpiredAt)
+        {
+            throw new ValidationException("token has expired.");
+        }
+
+        user.PhoneNumberExpiredAt = DateTime.UtcNow + tokenExpiryWindow;
+        user.IsPhoneNumberVerified = true;
+        user.IsTokenPhoneNumberUsed = true;
+        user.IsFirstTimeLogin = false;
+        await _userRepository.UpdateUserAsync(user.Id, user);
+    }
+
+    public async Task ResetPassword(int tokenPhoneNumber, string password)
+    {
+        var user = await _userRepository.GetuserByTokenPhoneNumber(tokenPhoneNumber);
+        if (user == null)
+        {
+            throw new NotFoundException("Invalid Token.");
+        }
+        
+        _userValidators.IsValidPassword(password);
+            
+        user.Password = HashPassword(password);
+            
+        await _userRepository.UpdateUserAsync(user.Id, user);
+        
+    }
+
+    public async Task ResetPasswordByEmail(string tokenEmail, string password)
+    {
+        var user = await _userRepository.GetuserByTokenEmail(tokenEmail);
+        if (user == null)
+        {
+            throw new NotFoundException("Invalid Token.");
+        }
+        
+        _userValidators.IsValidPassword(password);
+            
+        user.Password = HashPassword(password);
+        user.IsEmailTokenUsed = true;
+            
+        await _userRepository.UpdateUserAsync(user.Id, user);
+    }
+
     public string HashPassword(String password)
     {
         using var sha256 = SHA256.Create();

@@ -89,6 +89,11 @@ namespace NotificationService.Repositories
 
         }
 
+        public async Task<User> GetuserByTokenPhoneNumber(int tokenPhone)
+        {
+            return await _users.Find(u => u.TokenPhone == tokenPhone).FirstOrDefaultAsync(); 
+        }
+
         private bool IsEmail(string authRequestEmailOrPhoneNumber)
         {
             try

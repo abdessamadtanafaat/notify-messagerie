@@ -4,7 +4,7 @@ interface ButtonProps {
   text: React.ReactNode;
   onClick: () => void;
   className?: string;
-  loading?: boolean; // Optional loading state prop
+  loading?: boolean;
 }
 
 const Button: React.FC<ButtonProps> = ({ text, onClick, className = '', loading = false }) => {

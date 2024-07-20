@@ -1,5 +1,7 @@
 import React, { useState } from 'react'
-import { Eye, EyeOff, TriangleAlert } from 'lucide-react' // Import eye icons from lucide-react
+import { Eye, EyeOff } from 'lucide-react'
+// import { TriangleAlert } from 'lucide-react'
+
 
 interface InputProps {
   type: 'text' | 'password';
@@ -8,14 +10,22 @@ interface InputProps {
   onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
   onEnterPress?: () => void; 
   error?: boolean;
-  errorText?: string; // New prop for error text
-
+  errorText?: string; 
+  name?: string; 
 }
 
-const Input: React.FC<InputProps> = ({ type, placeholder, value, onChange, onEnterPress, error = false ,  errorText = '', // Default errorText to empty string
+const Input: React.FC<InputProps> = ({
+   type,
+   placeholder,
+   value,
+   onChange,
+   onEnterPress,
+   error = false ,
+   errorText = '',
+   name
 }) => {
   const [showPassword, setShowPassword] = useState(false)
-  const [isFocused, setIsFocused] = useState(false) // State to track focus
+  const [isFocused, setIsFocused] = useState(false) 
 
   const togglePasswordVisibility = () => {
     setShowPassword(!showPassword)
@@ -49,10 +59,11 @@ const Input: React.FC<InputProps> = ({ type, placeholder, value, onChange, onEnt
         onFocus={handleFocus}
         onBlur={handleBlur} 
         onKeyDown={handleKeyDown}
+        name={name}
       />
-            {error && (
+            {error && !isFocused &&(
         <div className="absolute top-1/2 -translate-y-1/2 right-3" style={{ transform: 'translateY(-50%)' }}>
-          <TriangleAlert color="#DC2626" size={20} />
+          {/* <TriangleAlert color="#DC2626" size={20} /> */}
         </div>
       )}
 
@@ -67,7 +78,7 @@ const Input: React.FC<InputProps> = ({ type, placeholder, value, onChange, onEnt
         </button>
       )}
 
-      {error && (
+      {error && !isFocused && (
         <div className="absolute left-0 mt-1 text-red-500 text-sm">
           {errorText}
         </div>

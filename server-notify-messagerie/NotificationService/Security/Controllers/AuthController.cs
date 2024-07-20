@@ -54,25 +54,46 @@ public class AuthController : ControllerBase
         return Ok("Verification successful. You can now log in to your account."); 
     }
     
+    [HttpPost("verify-phone")]
+    public async Task<IActionResult> verifyPhoneNumber([FromQuery]int tokenPhoneNumber)
+    {
+        await _authService.VerifyPhoneNumber(tokenPhoneNumber);
+        return Ok("Verification successful. You can now continue using your account."); 
+    }    
+    
     [HttpPost("reset-password-by-email")]
-    public async Task<IActionResult> ResetPasswordByEmailorgetPassword([FromQuery]string email)
+    public async Task<IActionResult> ResetPasswordByEmail([FromBody] ResetPasswordRequestEmailDto ResetPasswordrequest)
+    {
+        await _authService.ResetPasswordByEmail(ResetPasswordrequest.TokenEmail,ResetPasswordrequest.Password);
+        return Ok("You now log In to your account."); 
+    }
+    
+    [HttpPost("reset-password-by-phone")]
+    public async Task<IActionResult> ResetPasswordByPhone([FromBody] ResetPasswordRequestPhoneDto ResetPasswordrequest)
+    {
+        await _authService.ResetPassword(ResetPasswordrequest.TokenPhoneNumber,ResetPasswordrequest.Password);
+        return Ok("You now log In to your account."); 
+    }
+    
+    [HttpPost("reset-password-by-email-request")]
+    public async Task<IActionResult> ResetPasswordByEmail([FromQuery]string email)
     {
         await _authService.ForgetPasswordByEmail(email);
         return Ok("Check Your email to get the new password."); 
     }
     
-    [HttpPost("reset-password-by-sms")]
-    public async Task<IActionResult> ResetPasswordBySms([FromQuery]string phoneNumber)
+    [HttpPost("send-sms")]
+    public async Task<IActionResult> SendSms([FromQuery]string phoneNumber)
     {
-        await _authService.ForgetPasswordByPhone(phoneNumber);
-        return Ok("Check Your phone Number to get the new password."); 
+        await _authService.SendSms(phoneNumber);
+        return Ok("Check Your phone Number to get the code verification."); 
     }
     
     [HttpPost("logout")]
-    public async Task<IActionResult> Logout()
+    public async Task<IActionResult> Logout([FromBody] string username)
     {
-        var userEmail = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-        await _authService.LogOut(userEmail);
+        //var username = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+        await _authService.LogOut(username);
         return Ok("Logout Successfully."); 
     }
     

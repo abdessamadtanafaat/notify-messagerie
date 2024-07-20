@@ -1,124 +1,160 @@
-import React, { useState } from 'react'
-import { useNavigate } from 'react-router-dom'
-import authService from '../services/authService'
+import React, { useState, useEffect } from 'react'
+import { useAppDispatch, useAppSelector } from '../hooks/reduxHooks'
+import { login } from '../store/authSlice'
 import Input from '../components/common/Input'
 import Button from '../components/common/Button'
 import image from '../assets/image.jpg'
-import googleIcon from '../assets/google.svg'
 import { toast } from 'react-toastify'
-import '../index.css' 
-//import { typography } from './styles/typography' // Import your typography object
+import { Link, useNavigate } from 'react-router-dom'
+import '../index.css'
+import LoadingSpinner from '../components/common/LoadingPage'
 
-
+/**
+ * LoginPage component handles user login functionality.
+ * Displays a login form, validates user input, and manages authentication state.
+ */
 const LoginPage: React.FC = () => {
-  const [emailOrPhoneNumber, setEmailOrPhoneNumber] = useState('')
-  const [password, setPassword] = useState('')
-  const [isLoading, setIsLoading] = useState(false)
-  const [error, setError] = useState(false)
-
+  // Component state
+  const [formData, setFormData] = useState({
+    emailOrPhoneNumber: '',
+    password: '',
+  })
+  const [errors, setErrors] = useState({
+    email: false,
+    password: false
+  })
   const navigate = useNavigate()
+  const dispatch = useAppDispatch()
 
-  const handleLogin = async () => {    
+  // Redux state
+  const { isLoading: isAuthLoading } = useAppSelector((state) => state.auth)
 
-    setIsLoading(true)
-    try{
-      const authResponse = await authService.login({emailOrPhoneNumber, password}) 
-      localStorage.setItem('token', authResponse.token)
-      toast.success('Welcome')
-      navigate ('/messages')
-  
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    }catch(err: any){
-      const error = err.response.data.error
-      console.log(error)
-      toast.error('Wrong credentials')
-      setPassword('')
-      setError(true)
-    }finally{
-      setIsLoading(false)
+  // Component local state
+  const [isLoadingPage, setIsLoadingPage] = useState<boolean>(true)
+
+
+  // Effects
+  useEffect(() => {
+    const timeout = setTimeout(() => {
+      setIsLoadingPage(false)
+    }, 150)
+    return () => clearTimeout(timeout) // Cleanup on unmount
+  },)
+
+
+  // Event handlers
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target
+    setFormData({
+      ...formData,
+      [name]: value,
+    })
+  }
+
+  const handleLogin = async () => {
+    const { emailOrPhoneNumber, password } = formData
+
+    try {
+      const resultAction = await dispatch(login({ emailOrPhoneNumber, password }))
+
+      if (login.fulfilled.match(resultAction)) {
+        localStorage.setItem('token', resultAction.payload.token)
+        if (resultAction.payload.isFirstTimeLogin) {
+          navigate('/complete-profile')
+        } else {
+          navigate('/messages')
+        }
+      } else {
+        if (resultAction.payload) {
+          const { error } = resultAction.payload
+
+          toast.error(error)
+
+          if (error.includes('Invalid Password')) {
+            setErrors((prevErrors) => ({ ...prevErrors, password: true }))
+          }
+
+          if (error.includes('Invalid Email') || error.includes('Invalid phone number')) {
+            setErrors((prevErrors) => ({ ...prevErrors, email: true }))
+          }
+        } else {
+          console.error('Login failed:', resultAction.error.message)
+          toast.error('Wrong credentials')
+        }
+      }
+    } catch (error) {
+      console.error('Login error:', error)
+      toast.error('An unexpected error occurred during login.')
     }
   }
 
-  // const handleGoogleSignIn = async () => {
-  //   setLoading(true); // Set loading state to true
-  //   try {
-  //     // Handle Google sign in logic here
-  //   } catch (err) {
-  //     console.error('Failed to sign in with Google:', err);
-  //   } finally {
-  //     setLoading(false); // Reset loading state
-  //   }
-  // };
+  // Render loading spinner until page is loaded
+  if (isLoadingPage) {
+    return (
+      <> <LoadingSpinner /> </>
+    )
+  }
 
+  // Destructure form data and errors for easier usage
+  const { emailOrPhoneNumber, password } = formData
+  const { email: errorEmail, password: errorPassword } = errors
+
+  // Render login form
   return (
-    
-    <div className='flex items-center justify-center min-h-screen bg-gray-100'>
-          <div className="font-mono text-base text-gray-800">
-    </div>
-      <div className="relative flex flex-col m-6 space-y-8 bg-white shadow-2xl rounded-2xl md:flex-row md:space-y-0">
-        {/* Left Side */}
-        <div className="flex flex-col justify-center p-8 md:p-14">
-          <span className='mb-3 text-title font-articulatBold'>Sign in</span>
+    <div className='flex items-center justify-center min-h-screen bg-gray-100 dark:bg-gray-800' >
+      <div className='relative flex flex-col m-6 space-y-8 bg-white  dark:bg-gray-900 shadow-2xl rounded-2xl md:flex-row md:space-y-0'>
+        <div className='flex flex-col justify-center p-8 md:p-14'>
+          <span className='mb-3 text-title font-articulatBold dark:text-white'>Sign in</span>
           <div className='text-center text-gray-400'>
             Don't have an account ?{' '}
-            <a href="/register" className="text-primary hover:text-blue-600">
-            Sign up
-            </a>
+            <Link
+             to='/register'
+             className='text-primary  hover:text-blue-600'>
+              Sign up
+            </Link>
           </div>
           <div className='py-4'>
             <Input
               type='text'
+              name='emailOrPhoneNumber'
               value={emailOrPhoneNumber}
-              onChange={(e) => setEmailOrPhoneNumber(e.target.value)}
+              onChange={handleInputChange}
               placeholder='Email or phone number'
-              error = {error}
+              error={errorEmail}
             />
           </div>
-          <div className="py-4">
+          <div className='py-4'>
             <Input
               type='password'
+              name='password'
               value={password}
-              onChange={(e) => setPassword(e.target.value)}
+              onChange={handleInputChange}
               placeholder='Password'
               onEnterPress={handleLogin}
-              />
+              error={errorPassword}
+            />
           </div>
           <div className='flex justify-between w-full py-4'>
-            <a href= '/reset-password' className='text-primary hover:text-blue-600'>Forgotten password?</a>
+            <Link
+            to='/reset-password-byPhoneNumber'
+            className='text-primary hover:text-blue-600'
+            >
+            Forgotten password ?
+            </Link>
           </div>
           <Button
             text='Sign in'
             onClick={handleLogin}
-            className='bg-blue-400 font-articulatThin text-white  p-2 rounded-lg border hover:bg-blue-600 hover:text-black hover:border hover:border-gray-300'
-            loading={isLoading}          
-          />
-
-            <Button
-            className='border border-gray-300 text-md hover:bg-black hover:text-white'
-            onClick={() => {
-              // handle Login Google ici .
-            }}
-            text={
-              <>
-                <img src={googleIcon} alt='Google icon' className='w-6 h-6 inline mr-2' />
-                Sign in with Google
-              </>
-            }
+            className='bg-blue-400 font-articulatThin text-white hover:bg-blue-600 hover:text-black'
+            loading={isAuthLoading}
           />
         </div>
-        {/* Right Side */}
         <div className='relative'>
-          <img
-            src={image}
-            alt='image'
-            className='w-[400px] h-full hidden rounded-r-2xl md:block object-cover'
-          />
+          <img src={image} alt='image' className='w-[400px] h-full hidden rounded-r-2xl md:block object-cover' />
         </div>
       </div>
     </div>
-  
-)
-
+  )
 }
 
 export default LoginPage
