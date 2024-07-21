@@ -6,6 +6,7 @@ import { ErrorResponse } from '../interfaces/ErrorResponse'
 
 export interface AuthState {
   token: string | null
+  id: string | null
   username: string | null
   isFirstTimeLogin: string | null
   isLoading: boolean
@@ -15,6 +16,7 @@ export interface AuthState {
 
 const initialState: AuthState = {
   token: localStorage.getItem('token') || null,
+  id: localStorage.getItem('id'),
   username: localStorage.getItem('username') || null, 
   isFirstTimeLogin: null,
   isLoading: false,
@@ -30,7 +32,7 @@ export const login = createAsyncThunk<
   try {
     const response = await authService.login(authRequest)
     localStorage.setItem('token', response.token)
-    localStorage.setItem('username', response.username)
+    localStorage.setItem('id', response.id)
 
     return response
   } catch (error) {
@@ -69,15 +71,7 @@ export const logout = createAsyncThunk<
 const authSlice = createSlice({
   name: 'auth',
   initialState,
-  reducers: {
-    // logout: (state) => {
-
-    //   localStorage.removeItem('token')
-    //   state.token = null
-    //   state.username = null
-    //   state.isAuthenticated = false
-    // },
-  },
+  reducers: {},
   extraReducers: (builder) => {
     builder
       .addCase(login.pending, (state) => {
@@ -87,6 +81,7 @@ const authSlice = createSlice({
       })
       .addCase(login.fulfilled, (state, action) => {
         state.token = action.payload.token
+        state.id = action.payload.id
         state.username = action.payload.username
         state.isFirstTimeLogin = action.payload.isFirstTimeLogin
         state.isAuthenticated = true  
@@ -102,10 +97,11 @@ const authSlice = createSlice({
       .addCase(logout.fulfilled ,(state)=>{
         state.token = null
         state.username = null
+        state.id = null
         state.isLoading = false
         state.isAuthenticated = false
         localStorage.removeItem('token')
-        localStorage.removeItem('username')
+        localStorage.removeItem('id')
 
       })
       .addCase(logout.rejected, (state, action: PayloadAction<ErrorResponse  | undefined> ) => {
@@ -115,5 +111,4 @@ const authSlice = createSlice({
   },
 })
 
-// export const { logout } = authSlice.actions
 export default authSlice.reducer

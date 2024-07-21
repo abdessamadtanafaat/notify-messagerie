@@ -5,6 +5,7 @@ import verifyEmailReducer from './verifyEmailSlice'
 import sendSmsReducer from './sendSmsSlice'
 import sendVerificationEmailSlice from './sendVerificationEmailSlice'
 import resetPasswordByEmailSlice from './resetPasswordByEmailSlice'
+import userSlice from './userSlice'
 
 
 
@@ -16,7 +17,8 @@ const store = configureStore({
         verifyEmail: verifyEmailReducer,
         sendSms: sendSmsReducer,
         sendTokenEmail: sendVerificationEmailSlice,
-        resetPasswordByEmail: resetPasswordByEmailSlice
+        resetPasswordByEmail: resetPasswordByEmailSlice,
+        user: userSlice
     },
 
 })

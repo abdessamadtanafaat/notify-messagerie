@@ -59,6 +59,7 @@ const LoginPage: React.FC = () => {
 
       if (login.fulfilled.match(resultAction)) {
         localStorage.setItem('token', resultAction.payload.token)
+        console.log(resultAction.payload)
         if (resultAction.payload.isFirstTimeLogin) {
           navigate('/complete-profile')
         } else {

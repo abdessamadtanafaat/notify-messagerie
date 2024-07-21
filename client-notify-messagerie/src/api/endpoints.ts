@@ -7,7 +7,10 @@
     VERIFY_PHONE: '/Auth/verify-phone',
     RESET_PASSWORD_BY_PHONE: '/Auth/reset-password-by-phone',
     RESET_PASSWORD_BY_EMAIL: '/Auth/reset-password-by-email',
-    RESET_PASSWORD_BY_EMAIL_REQUEST:'/Auth/reset-password-by-email-request'
+    RESET_PASSWORD_BY_EMAIL_REQUEST:'/Auth/reset-password-by-email-request',
+      // ------------------------------------------------------------------ // 
+
+    GET_USER_INFO: '/User',
  }
 
  export default API_ENDPOINTS

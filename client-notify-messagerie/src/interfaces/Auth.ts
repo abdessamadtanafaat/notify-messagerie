@@ -5,6 +5,7 @@ export interface AuthRequestDto {
   
   export interface AuthResponseDto {
     token: string;
+    id: string;
     refreshToken: string;
     username: string;
     isFirstTimeLogin: string;

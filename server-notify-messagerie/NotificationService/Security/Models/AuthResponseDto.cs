@@ -3,6 +3,7 @@
 public class AuthResponseDto
 {
     public string Token { get; set; }
+    public string Id { get; set; }
     public string RefreshToken { get; set; }
     public string Username { get; set; }
     public bool IsFirstTimeLogin { get; set; }
