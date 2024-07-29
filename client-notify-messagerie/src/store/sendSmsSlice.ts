@@ -16,17 +16,32 @@ const initialState: SendSmsState = {
 
 export const sendSms = createAsyncThunk<
   string,
-  string,
+  { phoneNumber: string; email: string }, 
   { rejectValue: ErrorResponse }
->('auth/send-sms', async (phoneNumber, { rejectWithValue }) => {
+>('auth/send-sms', async ({ phoneNumber, email }, { rejectWithValue }) => {
   try {
-    await smsService.sendSMS(phoneNumber)
+    await smsService.sendSMS(phoneNumber,email)
     return 'Sent it successful. Please check your phone for login token.'
   } catch (error) {
     const err = error as ErrorResponse
     return rejectWithValue(err)
   }
 })
+
+export const resetPasswordBySms = createAsyncThunk<
+  string,
+  string , 
+  { rejectValue: ErrorResponse }
+>('auth/send-sms-from-reset-password', async ( phoneNumber , { rejectWithValue }) => {
+  try {
+    await smsService.resetPasswordBySms(phoneNumber)
+    return 'Sent it successful. Please check your phone for login token.'
+  } catch (error) {
+    const err = error as ErrorResponse
+    return rejectWithValue(err)
+  }
+})
+
 
 export const verifyPhone = createAsyncThunk<
   string,
@@ -57,7 +72,6 @@ const sendSmsSlice = createSlice({
         .addCase(sendSms.fulfilled, (state) => {
             state.isLoading = false
         })
-        
         .addCase(sendSms.rejected, (state, action) => {
             state.isLoading = false
             state.error = action.payload?.error ??'Sending failed'
@@ -73,6 +87,19 @@ const sendSmsSlice = createSlice({
           state.isLoading = false
           state.error = action.payload?.error ??'Verifing failed'
         })
+        .addCase(resetPasswordBySms.pending, (state)=>{
+          state.isLoading = true
+          state.error= null
+
+      })
+      .addCase(resetPasswordBySms.fulfilled, (state) => {
+          state.isLoading = false
+      })
+      .addCase(resetPasswordBySms.rejected, (state, action) => {
+          state.isLoading = false
+          state.error = action.payload?.error ??'Sending failed'
+       })
+
     }
   })
 

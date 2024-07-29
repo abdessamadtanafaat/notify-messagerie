@@ -8,6 +8,7 @@ export interface AuthRequestDto {
     id: string;
     refreshToken: string;
     username: string;
+    email: string;
     isFirstTimeLogin: string;
   }
   

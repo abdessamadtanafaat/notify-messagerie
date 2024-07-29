@@ -6,6 +6,8 @@ import { Provider } from 'react-redux'
 import { createRoot } from 'react-dom/client'
 import { GoogleOAuthProvider } from '@react-oauth/google'
 import App from './App'
+import { AuthProvider } from './contexte/AuthContext'
+import { ThemeProvider } from './contexte/ThemeContext'
 
 
 const rootElement = document.getElementById('root')
@@ -16,8 +18,12 @@ root.render(
     <GoogleOAuthProvider clientId={import.meta.env.VITE_GOOGLE_CLIENT_ID}>
       <React.StrictMode>
         <ToastContainer position="top-center" />
-          <App/>
-        </React.StrictMode>
+        <ThemeProvider>
+        <AuthProvider>
+        <App />
+      </AuthProvider>
+      </ThemeProvider>
+    </React.StrictMode>
     </GoogleOAuthProvider>
 
   </Provider>

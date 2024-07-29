@@ -6,11 +6,13 @@ import userService from '../services/userService'
 
 export interface UserState {
     user: User | null 
+    avatarUrl: string | null,
     error: { error: string; statusCode: number } | null
 }
 
 const initialState: UserState = {
     user: null,
+    avatarUrl: null,
     error: null,
 }
 
@@ -20,7 +22,7 @@ export const getUserInfo = createAsyncThunk<
   { rejectValue: ErrorResponse }
 >('user/getUserInfo', async (id, { rejectWithValue }) => {
   try {
-    const response = await userService.getUserInfo(id)
+    const response = await userService(id)
     console.log(response)
 
     return response
@@ -29,6 +31,13 @@ export const getUserInfo = createAsyncThunk<
   }
 })
 
+export const fetchImage = createAsyncThunk(
+  'image/fetchImage',
+   async(publicId: string) => {
+    const response = await userService(publicId)
+    return response.data.secure_url
+   }
+)
 
 const userSlice = createSlice({
   name: 'user',
@@ -45,6 +54,13 @@ const userSlice = createSlice({
       .addCase(getUserInfo.rejected, (state, action: PayloadAction<ErrorResponse | undefined>) => {
         state.error = action.payload ?? { error: 'Failed to display user', statusCode: 0 }
       })
+      .addCase(fetchImage.pending, (state) => {
+        state.error = null
+      })
+      .addCase(fetchImage.fulfilled, (state, action) => {
+        state.avatarUrl = action.payload
+      })
+
   },
 })
 

@@ -7,7 +7,6 @@ import { ErrorResponse } from '../interfaces/ErrorResponse'
 const resetPasswordByPhone = async(tokenPhoneNumber: string, password: string): Promise<void> =>{
   try {
     await axiosInstance.post(API_ENDPOINTS.RESET_PASSWORD_BY_PHONE, { tokenPhoneNumber, password })
-    //return ' successful.'
   } catch (error) {
     const typedError = error as { response: { data: ErrorResponse } }
     if (typedError.response && typedError.response.data) {
@@ -25,7 +24,6 @@ const resetPasswordByPhone = async(tokenPhoneNumber: string, password: string): 
 const resetPasswordByEmail = async(tokenEmail: string, password: string): Promise<void> =>{
     try {
       await axiosInstance.post(API_ENDPOINTS.RESET_PASSWORD_BY_EMAIL,{ tokenEmail, password })
-      //return ' successful.'
     } catch (error) {
       const typedError = error as { response: { data: ErrorResponse } }
       if (typedError.response && typedError.response.data) {

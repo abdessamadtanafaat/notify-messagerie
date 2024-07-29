@@ -9,7 +9,6 @@ const register = async(registerRequest: RegisterRequestDto): Promise<void> =>{
 
   try {
     await axiosInstance.post(API_ENDPOINTS.REGISTER, registerRequest)
-    //return 'Registration successful. Please check your email for login token.'
   } catch (error) {
     const typedError = error as { response: { data: ErrorResponse } }
     if (typedError.response && typedError.response.data) {

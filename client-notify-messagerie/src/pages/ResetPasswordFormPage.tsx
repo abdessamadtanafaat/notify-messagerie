@@ -104,6 +104,7 @@ const ResetPasswordByPhoneNumberPage: React.FC = () => {
               onChange={handleInputChange}
               placeholder='Password'
               error={errorPassword}
+              autoFocus={true}
             />
           </div>
           <div className="mb-6">

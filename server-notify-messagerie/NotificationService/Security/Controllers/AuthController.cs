@@ -1,6 +1,7 @@
 ﻿using System.Security.Claims;
 using AutoMapper;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using NotificationService.Models;
 using NotificationService.Security.Models;
@@ -34,6 +35,21 @@ public class AuthController : ControllerBase
     public async Task<IActionResult> Login([FromBody] AuthRequestDto authRequest)
     {
         var authResponse = await _authService.Login(authRequest);
+
+            Response.Cookies.Append("token", authResponse.Token, new CookieOptions
+    {
+        HttpOnly = false, //si true the front end cannot be accessid via javascript !! 
+        Secure = false, // Set to true if using HTTPS
+        SameSite = SameSiteMode.Strict
+    });
+
+    Response.Cookies.Append("refreshToken", authResponse.RefreshToken, new CookieOptions
+    {
+        HttpOnly = false,
+        Secure = false, // Set to true if using HTTPS
+        SameSite = SameSiteMode.Strict
+    });
+    
         return Ok(authResponse); 
     }
 
@@ -83,17 +99,24 @@ public class AuthController : ControllerBase
     }
     
     [HttpPost("send-sms")]
-    public async Task<IActionResult> SendSms([FromQuery]string phoneNumber)
+    public async Task<IActionResult> SendSms([FromQuery]string phoneNumber, string email)
     {
-        await _authService.SendSms(phoneNumber);
+        await _authService.SendSms(phoneNumber, email);
         return Ok("Check Your phone Number to get the code verification."); 
     }
-    
+
+    [HttpPost("send-sms-from-reset-password")]
+    public async Task<IActionResult> resetPasswordBySms([FromQuery]string phoneNumber)
+    {
+        await _authService.resetPasswordBySms(phoneNumber);
+        return Ok("Check Your phone Number to get the code verification."); 
+    }
+
     [HttpPost("logout")]
-    public async Task<IActionResult> Logout([FromBody] string username)
+    public async Task<IActionResult> Logout([FromBody] string userId)
     {
         //var username = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-        await _authService.LogOut(username);
+        await _authService.LogOut(userId);
         return Ok("Logout Successfully."); 
     }
     

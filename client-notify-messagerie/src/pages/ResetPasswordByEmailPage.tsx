@@ -88,6 +88,7 @@ const ResetPasswordByEmailPage: React.FC = () => {
                 onChange={handleInputChange}
                 error={errorEmail}
                 onEnterPress={handleSendTokenEmail}
+                autoFocus={true}
               />
             </div>
             <div className="flex justify-between gap-4">

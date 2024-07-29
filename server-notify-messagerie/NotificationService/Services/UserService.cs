@@ -44,6 +44,25 @@ namespace NotificationService.Services
             return _userRepository.CreateUserAsync(user);
         }
 
+        public async Task UpdateAvatarUserAsync(string id, string avatarUrl)
+        {
+            // Check if id is a valid ObjectId
+            if (!ObjectId.TryParse(id, out _))
+            {
+                throw new NotFoundException($"User with ID '{id}' not found.");
+            }
+            
+            var existingUser = await _userRepository.GetUserByIdAsync(id);
+            if (existingUser == null)
+            {
+                throw new NotFoundException($"User with ID '{id}' not found."); 
+            }
+            //_userValidators.Validate(user);
+            existingUser.AvatarUrl = avatarUrl;
+            await _userRepository.UpdateUserAsync(id, existingUser);
+            
+        }
+
         public async Task UpdateUserAsync(string id, User user)
         {
             // Check if id is a valid ObjectId

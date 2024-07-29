@@ -6,7 +6,7 @@ import { toast } from 'react-toastify'
 import { Link, useNavigate } from 'react-router-dom'
 import '../index.css'
 import LoadingSpinner from '../components/common/LoadingPage'
-import { sendSms, verifyPhone } from '../store/sendSmsSlice'
+import { resetPasswordBySms, verifyPhone } from '../store/sendSmsSlice'
 import validatorsService from '../services/validatorsService'
 import { resetPassword } from '../store/resetPasswordByPhoneSlice'
 
@@ -67,9 +67,9 @@ const ResetPasswordByPhoneNumberPage: React.FC = () => {
       ...formData, phoneNumber: phoneNumber
     })
 
-    const resultAction = await dispatch(sendSms(phoneNumber))
+    const resultAction = await dispatch(resetPasswordBySms(phoneNumber))
 
-    if (sendSms.fulfilled.match(resultAction)) {
+    if (resetPasswordBySms.fulfilled.match(resultAction)) {
       toast.success('SMS sent successfully')
       setFormData({
         ...formData, step: 2
@@ -166,6 +166,7 @@ const ResetPasswordByPhoneNumberPage: React.FC = () => {
                 onChange={handleInputChange}
                 error={errorPhoneNumber}
                 onEnterPress={handleSendSMSToken}
+                autoFocus={true}
               />
             </div>
             <Button
@@ -195,6 +196,7 @@ const ResetPasswordByPhoneNumberPage: React.FC = () => {
                 onChange={handleInputChange}
                 error={errorToken}
                 onEnterPress={handleVerifyPhone}
+                autoFocus={true}
               />
             </div>
             <div className="flex justify-between">
@@ -225,6 +227,7 @@ const ResetPasswordByPhoneNumberPage: React.FC = () => {
                   onChange={handleInputChange}
                   placeholder='Password'
                   error={errorPassword}
+                  autoFocus={true}
                 />
               </div>
               <div className="mb-6">

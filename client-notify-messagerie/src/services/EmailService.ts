@@ -35,6 +35,7 @@ try {
   })
   console.log(response.data)
   return response.data
+
 } catch (error) {
   if (axios.isAxiosError(error) && error.response) {
     const typedError = error.response.data as ErrorResponse

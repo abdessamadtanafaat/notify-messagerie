@@ -18,7 +18,7 @@ namespace NotificationService.Controllers
         }
 
         [HttpGet]
-        //[Authorize]
+        [Authorize]
         public async Task<ActionResult<IEnumerable<User>>> GetUsers()
         {
                 var users = await _userService.GetAllUsersAsync();
@@ -48,6 +48,15 @@ namespace NotificationService.Controllers
             await _userService.UpdateUserAsync(id, user);
             return NoContent();
         }
+
+        [HttpPut("/update-avatar/{id}")]
+        //[Authorize]
+        public async Task<IActionResult> UpdateAvatar(string id, [FromBody]string avatarUrl)
+        {
+            await _userService.UpdateAvatarUserAsync(id, avatarUrl);
+            return NoContent();
+        }
+
 
         [HttpDelete("{id}")]
         //[Authorize]

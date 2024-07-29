@@ -23,7 +23,7 @@ const VerifyEmailPage: React.FC = () => {
     } else {
       toast.error('Invalid token.')
     }
-  }, [tokenEmail, dispatch])
+  }, [dispatch,tokenEmail])
 
   const handleBackToLogin = () => {
     navigate('/login')
