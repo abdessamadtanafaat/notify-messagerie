@@ -31,7 +31,7 @@ public class AuthService : IAuthService
     public async Task<AuthResponseDto> Login(AuthRequestDto authRequest)
     {
         var user = await _userRepository.GetUserByEmailOrPhoneAsync(authRequest.EmailOrPhoneNumber);
-        
+
         if (user == null)
         {
             throw new ValidationException("Invalid Email or phone number."); 
@@ -59,13 +59,11 @@ public class AuthService : IAuthService
         
         await _userRepository.UpdateUserAsync(user.Id, user);
         
-        return new AuthResponseDto
-        {
-            Token = token,
-            RefreshToken = refreshToken,
-            Username = user.Username,
-            IsFirstTimeLogin = user.IsFirstTimeLogin 
-        }; 
+        var authResponse = _mapper.Map<AuthResponseDto>(user);
+        authResponse.Token = token;
+        authResponse.RefreshToken = refreshToken;
+
+        return authResponse;
     }
     
     public async Task Register(RegisterRequestDto registerDto)
@@ -79,11 +77,11 @@ public class AuthService : IAuthService
         {
             throw new ValidationException("Email already exist."); 
         }
-        // var existingUserUsername = await _userRepository.GetUserByUsernameAsync(user.Username);
-        // if (existingUserUsername != null)
-        // {
-        //     throw new ValidationException("Username already exist."); 
-        // }
+        var existingUserPhoneNumber = await _userRepository.GetUserByPhoneNumberVerifiedAsync(user.PhoneNumber);
+        if (existingUserPhoneNumber != null)
+        {
+            throw new ValidationException("phone number already exist."); 
+        }
         user.Password = HashPassword(user.Password);
         user.CreatedAt = DateTime.Now;
         
@@ -91,6 +89,7 @@ public class AuthService : IAuthService
         var message = _emailService.GenerateEmailMessage(user.FirstName, user.LastName, tokenEmail);
 
         user.TokenEmail = tokenEmail;
+        user.TokenCreatedAt = DateTime.UtcNow;
         user.CreatedAt = DateTime.UtcNow;
         user.Username = CreateRandomUsername(user.FirstName);
         user.IsFirstTimeLogin = true;
@@ -139,19 +138,19 @@ public class AuthService : IAuthService
         var message = _emailService.ResetPasswordByEmail(user.FirstName, user.LastName, tokenEmail);
 
         user.TokenEmail = tokenEmail;
-        user.IsEmailTokenUsed = false;
-        user.IsEmailVerified = false;
+        user.IsEmailTokenUsed = true;
+        user.IsEmailVerified = true;
         
         await _emailService.SendEmailAsync(user.Email, "Password Reset", message); 
         await _userRepository.UpdateUserAsync(user.Id, user);
     }
 
-    public async Task SendSms(string phoneNumber)
+    public async Task SendSms(string phoneNumber, string email)
     {
-        var user = await _userRepository.GetUserByPhoneAsync(phoneNumber);
+        var user = await _userRepository.GetUserByEmailAsync(email);
         if (user == null)
         {
-            throw new NotFoundException("Phone Number Not exist.");
+            throw new NotFoundException("Email Not exist.");
         }
 
         // Generate random 4-digit token
@@ -159,9 +158,10 @@ public class AuthService : IAuthService
         int token = random.Next(1000, 10000);
 
         // Construct SMS message
-        var smsMessage = $"Hi {user.Username}, your Notify As Service App verification code: {token}";
+        var smsMessage = $"Hi {user.FirstName} {user.LastName}, your Notify As Service App verification code: {token}";
 
         TimeSpan tokenExpiryWindow = TimeSpan.FromDays(1);
+        user.PhoneNumber = phoneNumber;
         user.TokenPhone = token;
         user.IsTokenPhoneNumberUsed = false;
         user.PhoneNumberExpiredAt = DateTime.UtcNow + tokenExpiryWindow;
@@ -170,6 +170,33 @@ public class AuthService : IAuthService
         await _userRepository.UpdateUserAsync(user.Id, user);
         
     }
+
+    public async Task resetPasswordBySms(string phoneNumber)
+    {
+        var user = await _userRepository.GetUserByPhoneNumberVerifiedAsync(phoneNumber);
+        if (user == null)
+        {
+            throw new NotFoundException("Phone number Not exist or not verified.");
+        }
+
+        // Generate random 4-digit token
+        Random random = new Random();
+        int token = random.Next(1000, 10000);
+
+        // Construct SMS message
+        var smsMessage = $"Hi {user.FirstName} {user.LastName}, your Notify As Service App verification code: {token}";
+
+        TimeSpan tokenExpiryWindow = TimeSpan.FromDays(1);
+        user.PhoneNumber = phoneNumber;
+        user.TokenPhone = token;
+        user.IsTokenPhoneNumberUsed = false;
+        user.PhoneNumberExpiredAt = DateTime.UtcNow + tokenExpiryWindow;
+            
+        await _smsService.sendSmsAsync(phoneNumber,smsMessage );
+        await _userRepository.UpdateUserAsync(user.Id, user);
+        
+    }
+
 
     public async Task ChangePassword(string  userId , string oldPassword,  string newPassword)
     {
@@ -193,9 +220,9 @@ public class AuthService : IAuthService
             
         await _userRepository.UpdateUserAsync(user.Id, user);
     }
-    public async Task<bool> LogOut(string? username)
+    public async Task<bool> LogOut(string? userId)
     {
-        var user = await _userRepository.GetUserByUsernameAsync(username);
+        var user = await _userRepository.GetUserByIdAsync(userId);
         if (user == null)
         {
             throw new NotFoundException("User Not found");

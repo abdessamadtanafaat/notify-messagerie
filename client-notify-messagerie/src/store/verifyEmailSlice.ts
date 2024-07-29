@@ -21,7 +21,7 @@ export const verifyEmail = createAsyncThunk<
   { rejectValue: ErrorResponse }
 >('auth/verifyEmail', async (tokenEmail, { rejectWithValue }) => {
   try {
-    await verifyEmailService.verifyEmail(tokenEmail)
+    await verifyEmailService.verifyEmail(tokenEmail)        
     } catch (error) {
     const err = error as ErrorResponse
     return rejectWithValue(err)

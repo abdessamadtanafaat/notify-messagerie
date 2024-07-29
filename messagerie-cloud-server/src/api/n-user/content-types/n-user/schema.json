@@ -1,0 +1,96 @@
+{
+  "kind": "collectionType",
+  "collectionName": "n_users",
+  "info": {
+    "singularName": "n-user",
+    "pluralName": "n-users",
+    "displayName": "Users",
+    "description": ""
+  },
+  "options": {
+    "draftAndPublish": true
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "firstName": {
+      "type": "string"
+    },
+    "lastName": {
+      "type": "string"
+    },
+    "email": {
+      "type": "string"
+    },
+    "phoneNumber": {
+      "type": "string"
+    },
+    "avatar": {
+      "type": "media",
+      "multiple": false,
+      "required": false,
+      "allowedTypes": [
+        "images",
+        "files",
+        "videos",
+        "audios"
+      ]
+    },
+    "Status": {
+      "type": "string"
+    },
+    "password": {
+      "type": "text"
+    },
+    "tokenEmail": {
+      "type": "text"
+    },
+    "isEmailVerified": {
+      "type": "boolean"
+    },
+    "isEmailTokenUsed": {
+      "type": "boolean"
+    },
+    "lastLogin": {
+      "type": "datetime"
+    },
+    "lastLogout": {
+      "type": "datetime"
+    },
+    "createdAtTime": {
+      "type": "datetime"
+    },
+    "active": {
+      "type": "boolean"
+    },
+    "refreshToken": {
+      "type": "text"
+    },
+    "refreshTokenExpiryTime": {
+      "type": "datetime"
+    },
+    "isFirstTimeLogin": {
+      "type": "boolean"
+    },
+    "isPhoneNumberVerified": {
+      "type": "boolean"
+    },
+    "isTokenPhoneNumberUsed": {
+      "type": "boolean"
+    },
+    "tokenPhone": {
+      "type": "biginteger"
+    },
+    "phoneNumberExpiredAt": {
+      "type": "datetime"
+    },
+    "username": {
+      "type": "string"
+    },
+    "avatarUrl": {
+      "type": "string"
+    },
+    "idUser": {
+      "type": "string"
+    }
+  }
+}

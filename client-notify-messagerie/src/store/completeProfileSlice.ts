@@ -1,52 +1,52 @@
-import { createAsyncThunk, createSlice } from '@reduxjs/toolkit'
-import { ErrorResponse } from '../interfaces/ErrorResponse'
-import SmsService from '../services/smsService'
+// import { createAsyncThunk, createSlice } from '@reduxjs/toolkit'
+// import { ErrorResponse } from '../interfaces/ErrorResponse'
+// import SmsService from '../services/smsService'
 
 
 
-interface RegisterState{
-    isLoading: boolean; 
-    error: string | null; 
-}
+// interface RegisterState{
+//     isLoading: boolean; 
+//     error: string | null; 
+// }
 
-const initialState: RegisterState = {
-    isLoading: false,
-    error: null,
-}
+// const initialState: RegisterState = {
+//     isLoading: false,
+//     error: null,
+// }
 
-export const register = createAsyncThunk<
-  string,
-  string,
-  { rejectValue: ErrorResponse }
->('auth/send-sms', async (phoneNumber, { rejectWithValue }) => {
-  try {
-    await SmsService.sendSMS(phoneNumber)
-    return 'Please check your phone for login.'
-  } catch (error) {
-    const err = error as ErrorResponse
-    return rejectWithValue(err)
-  }
-})
+// export const register = createAsyncThunk<
+//   string,
+//   { phoneNumber: string; email: string }, // Type of the parameter
+//   { rejectValue: ErrorResponse }
+// >('auth/send-sms', async ({ phoneNumber, email }, { rejectWithValue }) => {
+//   try {
+//     await SmsService.sendSMS(phoneNumber, email )
+//     return 'Please check your phone for login.'
+//   } catch (error) {
+//     const err = error as ErrorResponse
+//     return rejectWithValue(err)
+//   }
+// })
 
-const registerSlice = createSlice({
-    name: 'register',
-    initialState,
-    reducers:{},
-    extraReducers: (builder) => {
-        builder
-        .addCase(register.pending, (state)=>{
-            state.isLoading = true
-            state.error= null
-        })
-        .addCase(register.fulfilled, (state) => {
-            state.isLoading = false
-        })
+// const registerSlice = createSlice({
+//     name: 'register',
+//     initialState,
+//     reducers:{},
+//     extraReducers: (builder) => {
+//         builder
+//         .addCase(register.pending, (state)=>{
+//             state.isLoading = true
+//             state.error= null
+//         })
+//         .addCase(register.fulfilled, (state) => {
+//             state.isLoading = false
+//         })
         
-        .addCase(register.rejected, (state, action) => {
-            state.isLoading = false
-            state.error = action.payload?.error ??'Complete Profile failed'
-         })
-    }
-})
+//         .addCase(register.rejected, (state, action) => {
+//             state.isLoading = false
+//             state.error = action.payload?.error ??'Complete Profile failed'
+//          })
+//     }
+// })
 
-export default registerSlice.reducer
+// export default registerSlice.reducer

@@ -39,6 +39,7 @@ namespace NotificationService.Repositories
             await _users.ReplaceOneAsync(u => u.Id == id, user);
         }
 
+
         public async Task DeleteUserAsync(string id)
         {
             await _users.DeleteOneAsync(u => u.Id == id);
@@ -54,6 +55,10 @@ namespace NotificationService.Repositories
             return await _users.Find(u => u.TokenEmail == tokenEmail).FirstOrDefaultAsync(); 
         }
 
+        public async Task <User> GetUserByPhoneAndEmailAsync(string phoneNumber , string email)
+        {
+            return await _users.Find(u => u.PhoneNumber == phoneNumber && u.Email == email).FirstOrDefaultAsync(); 
+        }
         public async Task <User> GetUserByPhoneAsync(string phoneNumber)
         {
             return await _users.Find(u => u.PhoneNumber == phoneNumber).FirstOrDefaultAsync(); 
@@ -105,6 +110,10 @@ namespace NotificationService.Repositories
             {
                 return false;
             }
+        }
+        public async Task<User> GetUserByPhoneNumberVerifiedAsync (string phoneNumber){
+                return await _users.Find(u => u.PhoneNumber == phoneNumber && u.IsPhoneNumberVerified == true ).FirstOrDefaultAsync(); 
+
         }
     }
 }

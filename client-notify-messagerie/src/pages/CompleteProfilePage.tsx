@@ -3,12 +3,12 @@ import { useAppDispatch, useAppSelector } from '../hooks/reduxHooks'
 import Input from '../components/common/Input'
 import Button from '../components/common/Button'
 import { toast } from 'react-toastify'
-import { useNavigate } from 'react-router-dom'
 import '../index.css'
 import check from '../assets/check.png'
 import LoadingSpinner from '../components/common/LoadingPage'
 import { sendSms, verifyPhone } from '../store/sendSmsSlice'
 import validatorsService from '../services/validatorsService'
+import { User } from '../interfaces'
 
   const CompleteProfilePage: React.FC = () => {
     
@@ -28,17 +28,18 @@ import validatorsService from '../services/validatorsService'
       repeatedPassword: false,
     })
     
-    const navigate = useNavigate()
     const dispatch = useAppDispatch()
-    const {isLoading: isLoading } = useAppSelector((state) => state.sendSms)
-
+    const { isLoading: isSmsLoading } = useAppSelector((state) => state.sendSms)
+    const { isLoading: isLogoutLoading } = useAppSelector((state) => state.auth)
 
     const [isLoadingPage, setIsLoadingPage] = useState<boolean>(true)
+
     useEffect(() => {
       console.log('CompleteProfilePage component mounted')
       const timeout = setTimeout(() => {
         setIsLoadingPage(false)
       }, 150)
+
       return () => clearTimeout(timeout)
     }, [])
 
@@ -63,7 +64,12 @@ import validatorsService from '../services/validatorsService'
     const phoneNumber = validatePhoneNumber(enteredPhoneNumber)
     if (!phoneNumber) return
 
-      const resultAction = await dispatch(sendSms(phoneNumber))
+    const cachedUser = localStorage.getItem('user')
+
+      const user: User = JSON.parse(cachedUser)
+      const email = user.email
+
+      const resultAction = await dispatch(sendSms({phoneNumber, email}))
         
       if (sendSms.fulfilled.match(resultAction)) {
           toast.success('SMS sent successfully')
@@ -103,6 +109,11 @@ import validatorsService from '../services/validatorsService'
       setErrors((prevErrors) => ({ ...prevErrors, token: true }))
     }
 
+    const handleLogout = async () => {
+      localStorage.clear()
+      window.location.reload()
+    }
+    
     if (isLoadingPage) {
       return (
         <> <LoadingSpinner /> </>
@@ -119,7 +130,7 @@ import validatorsService from '../services/validatorsService'
           <h2 className="text-2xl font-bold mb-4">Complete Your Profile</h2>
           {step === 1 && (
             <>
-              <p className="mb-6">It's your first time logging in. Please complete your profile by providing your phone number.</p>
+              <p className="mb-6">It's your first time logging in. Please complete your profile by confirm your phone number.</p>
               <div className='py-4'>
                 <Input
                   type="text"
@@ -129,14 +140,25 @@ import validatorsService from '../services/validatorsService'
                   onChange={handleInputChange}
                   error={errorEnteredPhoneNumber}
                   onEnterPress={handleCompleteProfile}
+                  autoFocus={true}
                 />
               </div>
+              <div className="flex justify-between">
               <Button
                 text="Next"
                 onClick={handleCompleteProfile}
                 className='bg-blue-400 font-articulatThin text-white p-2 rounded-lg border hover:bg-blue-600 hover:text-black hover:border hover:border-gray-300'
-                loading={isLoading}
+                loading={isSmsLoading}
+
+              />              
+              <Button
+                text="Logout"
+                onClick={handleLogout}
+                className='bg-gray-400 font-articulatThin text-white p-2 rounded-lg border hover:bg-gray-600 hover:text-black hover:border hover:border-gray-300'
+                loading={isLogoutLoading}
               />
+              </div>   
+
             </>
           )}
           {step === 2 && (
@@ -151,20 +173,22 @@ import validatorsService from '../services/validatorsService'
                   onChange={handleInputChange}
                   error={errorPhoneNumberToken}
                   onEnterPress={handleVerifyPhone}
+                  autoFocus={true}
                 />
               </div>
               <div className="flex justify-between">
+                <Button
+                  text="Verify"
+                  onClick={handleVerifyPhone}
+                  className='bg-blue-400 font-articulatThin text-white p-2 rounded-lg border hover:bg-blue-600 hover:text-black hover:border hover:border-gray-300'
+                  loading={isSmsLoading}
+                />
               <Button
                 text="Back"
                 onClick={handleBack}
                 className='bg-gray-400 font-articulatThin text-white p-2 rounded-lg border hover:bg-gray-600 hover:text-black hover:border hover:border-gray-300'
+                loading={isLogoutLoading}
               />              
-              <Button
-                text="Verify"
-                onClick={handleVerifyPhone}
-                className='bg-blue-400 font-articulatThin text-white p-2 rounded-lg border hover:bg-blue-600 hover:text-black hover:border hover:border-gray-300'
-                loading={isLoading}
-              />
               </div>
   
             </>
@@ -181,7 +205,7 @@ import validatorsService from '../services/validatorsService'
             <div className="flex justify-center mt-4">
               <Button
                 text="Back to login"
-                onClick={() => navigate('/login')}
+                onClick={handleLogout}
                 className="bg-gray-400 font-articulatThin text-white p-2 rounded-lg border hover:bg-gray-600 hover:text-black hover:border hover:border-gray-300"
               />
           </div>
