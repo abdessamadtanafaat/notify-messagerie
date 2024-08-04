@@ -18,6 +18,7 @@ const login = async (authRequest: AuthRequestDto): Promise<User> => {
     const refreshToken: string = response.data.refreshToken ?? '' 
     setCookie('token', token, 15)
     setCookie('refreshToken', refreshToken, 7) 
+    console.log(response)
     localStorage.setItem('user', JSON.stringify(response.data))
 
     await synchronizeWithStrapi(existingUser)

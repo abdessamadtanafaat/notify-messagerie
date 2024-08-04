@@ -14,7 +14,6 @@ type RenderProps = {
         errors: FormErrors,
         handleChange: (e: React.ChangeEvent<HTMLInputElement>) => void,
         handleLogin: (e: React.FormEvent<HTMLFormElement>) => void,
-
         isLoadingButton: boolean,
     ) => React.ReactNode;
 };
