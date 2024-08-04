@@ -1,9 +1,9 @@
 import React from 'react'
-import { BrowserRouter as Router, Route, Routes } from 'react-router-dom'
+import { BrowserRouter as Router, Route, Routes, Navigate } from 'react-router-dom'
 import LoginPage from './pages/Loginpage'
 import RegisterPage from './pages/RegisterPage'
 import 'react-toastify/dist/ReactToastify.css'
-import './index.css' // Your global styles
+import './index.css'
 import VerifyEmailPage from './pages/VerifyEmailPage'
 import CompleteProfilePage from './pages/CompleteProfilePage'
 import ResetPasswordByEmail from './pages/ResetPasswordByEmailPage'
@@ -20,11 +20,11 @@ import NotFoundPage from './pages/NotFoundPage'
 const App: React.FC = () => {
 
   return (
-
+    <div className="outline-none overflow-auto h-screen scrollbar-thin scrollbar-webkit">
     <Router>
      <Layout>
       <Routes>
-      <Route path="/" element={<ProtectedRoute element={<Messages />} redirectPath="/login" />} />
+      <Route path="/" element={<Navigate to="login"/>} />
           <Route path="/login" element={<LoginPage />} />
           <Route path="/reset-password-byPhoneNumber" element={<ResetPasswordByPhoneNumberPage />} />
           <Route path="/register" element={<RegisterPage />} />
@@ -38,6 +38,8 @@ const App: React.FC = () => {
       </Routes>
      </Layout> 
     </Router>
+    </div>
+
 )
 }
 

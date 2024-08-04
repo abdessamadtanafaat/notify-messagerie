@@ -29,5 +29,6 @@ public class AuthResponseDto
     public int TokenPhone { get; set; }
     public DateTime? PhoneNumberExpiredAt { get; set; }
     public String? AvatarUrl { get; set; }
+    public String? about {get; set;}
 
 }

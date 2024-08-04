@@ -5,13 +5,14 @@ import { useAppDispatch } from '../../hooks/reduxHooks'
 import SwitcherTheme from './SwitcherTheme'
 import { useState } from 'react'
 import 'react-loading-skeleton/dist/skeleton.css'
-import { Archive, MessagesSquareIcon, Users } from 'lucide-react'
+import { Archive, MessagesSquareIcon, Settings, Users } from 'lucide-react'
 import SkeletonSidebar from './SkeletonSidebar'
 import { useAuth } from '../../contexte/AuthContext'
 import { Link } from 'react-router-dom'
 import defaultAvatar from '../../assets/default-avatar.png' // Adjust the path as necessary
 import defaultAvatarNight from '../../assets/default-avatar-night.png' // Dark theme
 import { useThemeContext } from '../../contexte/ThemeContext'
+import UpdateProfile from '../UpdateProfile'
 
 
 const Sidebar: React.FC = () => {
@@ -19,7 +20,11 @@ const Sidebar: React.FC = () => {
   const dispatch = useAppDispatch()
   const { user, isAuthenticated, loading } = useAuth()
   const [activeItem, setActiveItem] = useState<string>('')
+  const [showProfileComponent, setShowProfileComponent] = useState<boolean>(false)
 
+  const handleImageClick = () => {
+    setShowProfileComponent(!showProfileComponent)
+  }
 
     const {theme} = useThemeContext()
 
@@ -31,7 +36,7 @@ const Sidebar: React.FC = () => {
     }
     
     // Determine which avatar image to use based on the theme
-    const avatarUrl = getAvatarUrl(theme,user)
+    const avatarUrl = getAvatarUrl(theme,user ?? {})
     
   const handleLogout = async () => {
     try {
@@ -61,18 +66,17 @@ const Sidebar: React.FC = () => {
             <div>
               <div className="inline-flex size-20 items-center justify-center">
                 <div className="flex items-center justify-center">
-
                   <img
                     src={avatarUrl}
                     alt="Avatar user"
-                    className="w-10 h-10 md:w-10 md:h-10 rounded-full object-cover"
+                    className="w-10 h-10 md:w-10 md:h-10 rounded-full object-cover cursor-pointer"
+                    onClick={handleImageClick}
                   />
                 </div>
               </div>
               <span className='flex items-center justify-center'>
-                {/* {user?.email} */}
               </span>
-              <div className="border-t border-gray-100 dark:border-gray-700">
+              <div className="border-t border-gray-300 dark:border-gray-700">
                 <div className="px-2">
                   <ul className="space-y-6 border-gray-100 pt-2 dark:border-gray-700">
                     <li>
@@ -123,6 +127,22 @@ const Sidebar: React.FC = () => {
                       </Link>
                     </li>
                     <li>
+                      <Link
+                        to="settings"
+                        className={`group relative flex justify-center rounded px-2 py-1.5 text-gray-700 hover:bg-primary hover:text-white dark:text-white dark:hover:bg-gray-600 ${activeItem === 'archive' ? 'bg-primary text-white' : ''}`}
+                        onClick={() => handleClick('settings')}
+                      >
+                        <Settings />
+                        <span
+                          className="invisible absolute z-20 start-full top-1/2 ms-4 -translate-y-1/2 rounded bg-gray-600 px-2 py-1.5 text-xs font-medium text-white group-hover:visible"
+
+                        >
+                          Settings
+                        </span>
+                      </Link>
+                    </li>
+                    
+                    <li>
                       <div
                         className="group relative flex justify-center rounded px-2 py-1.5 text-gray-700 hover:bg-primary hover:text-white dark:text-white dark:hover:bg-gray-600"
                       >
@@ -134,8 +154,7 @@ const Sidebar: React.FC = () => {
                 </div>
               </div>
             </div>
-
-            <div className="sticky inset-x-0 bottom-0 border-t border-gray-100 dark:border-gray-700 bg-white p-2 dark:bg-gray-800 ">
+            <div className="sticky inset-x-0 bottom-0 border-t border-gray-300 dark:border-gray-700 bg-white p-2 dark:bg-gray-800 ">
               <button
                 type="submit"
                 className="group relative flex w-full justify-center rounded-lg px-2 py-1.5 text-sm hover:bg-primary hover:text-white dark:text-white text-gray-700  dark:hover:bg-gray-600"
@@ -164,56 +183,7 @@ const Sidebar: React.FC = () => {
               </button>
             </div>
           </div>
-
-          <div
-            id="view"
-            className="h-full w-screen flex flex-row dark:bg-gray-700"
-            x-data="{ sidenav: true }"
-          >
-            {/* <button
-            //  @click="sidenav = true"
-            className="p-2 border-2 bg-white rounded-md border-gray-200 shadow-lg text-gray-500 focus:bg-teal-500 focus:outline-none focus:text-white absolute top-0 left-0 sm:hidden"
-          >
-            <svg
-              className="w-5 h-5 fill-current"
-              fill="currentColor"
-              viewBox="0 0 20 20"
-              xmlns="http:www.w3.org/2000/svg"
-            >
-              <path
-                fill-rule="evenodd"
-                d="M3 5a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zM3 10a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zM3 15a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1z"
-                clip-rule="evenodd"
-              ></path>
-            </svg>
-          </button> */}
-            <div
-              id="sidebar"
-              className="bg-white dark:bg-gray-800 h-screen md:block shadow-xl px-3 w-30 md:w-60 lg:w-60 overflow-x-hidden transition-transform duration-300 ease-in-out"
-              x-show="sidenav"
-            // @click.away="sidenav = false"
-            >
-              <div className="space-y-6 md:space-y-10 mt-10">
-                <h1 className="hidden md:block font-bold text-sm md:text-xl text-center dark:text-white">
-                  Discussions
-                </h1>
-                <div className="relative flex">
-                  <input
-                    type="search"
-                    className="relative m-0 block flex-auto rounded border border-solid border-neutral-200 bg-transparent bg-clip-padding px-2 py-[0.25rem] text-base font-normal leading-[1.6] text-surface outline-none transition duration-200 ease-in-out placeholder:text-neutral-500 focus:z-[3] focus:border-primary focus:shadow-inset focus:outline-none motion-reduce:transition-none dark:border-white/10 dark:text-white dark:placeholder:text-neutral-200 dark:autofill:shadow-autofill dark:focus:border-primary"
-                    placeholder="Search"
-                    aria-label="Search"
-                    id="exampleFormControlInput2"
-                    aria-describedby="button-addon2"
-                  />
-                  {/* <span
-                    className="flex items-center whitespace-nowrap px- py-[0.25rem] text-surface dark:border-neutral-400 dark:text-white [&>svg]:h-5 [&>svg]:w-5"
-                    id="button-addon2">
-                  </span> */}
-                </div>
-              </div>
-            </div>
-          </div>
+          {showProfileComponent && <UpdateProfile/>}
         </>
       )}
     </div>

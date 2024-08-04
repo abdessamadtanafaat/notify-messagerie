@@ -33,7 +33,7 @@ public class User
         public int TokenPhone { get; set; }
         public DateTime? PhoneNumberExpiredAt { get; set; }
         public String? AvatarUrl { get; set;}
-
+        public String? About {get; set;}
 
 
 }

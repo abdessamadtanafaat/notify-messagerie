@@ -48,7 +48,7 @@ const Input: React.FC<InputProps> = ({
     <div className="relative">
       <input
         type={isPasswordVisible ? 'text' : type}
-        className={`w-full p-2 border rounded-md placeholder:font-light placeholder-text-gray-500
+        className={`w-full p-2 border rounded-md placeholder:font-light placeholder-text-gray-500 dark:bg-gray-700
           ${error ? 'border-red-500' : 'border-gray-300'}
           hover:border-blue-400 focus:border-blue-400 focus:outline-none`}
         placeholder={placeholder}

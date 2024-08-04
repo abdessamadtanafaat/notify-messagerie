@@ -20,6 +20,7 @@ export interface CommonUserData {
     refreshTokenExpiryTime: Date;
     phoneNumberExpiredAt: Date;
     avatarUrl: string;
+    about: string; 
   }
   
   // User interface (local database)
@@ -67,4 +68,10 @@ export interface FormErrors {
     EnteredphoneNumber?: boolean;
     firstName?: boolean;
     lastName?: boolean;
+}
+
+export interface UpdateProfileReq {
+  avatarUrl: string;
+  username: string;
+  about: string;
 }

@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Threading.Tasks;
 using NotificationService.Models;
+using NotificationService.Security.Models;
 
 namespace NotificationService.Services
 {
@@ -11,8 +12,6 @@ namespace NotificationService.Services
         Task<User> CreateUserAsync(User user);
         Task UpdateUserAsync(string id, User user);
         Task DeleteUserAsync(string id);
-        Task UpdateAvatarUserAsync(string id, string avatarUrl);
-
-
+        Task UpdateProfileAsync(string id, UpdateProfileReq updateProfileReq);
     }
 }
