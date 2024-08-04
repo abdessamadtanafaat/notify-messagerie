@@ -75,11 +75,14 @@ namespace NotificationService
                 var context = serviceProvider.GetRequiredService<MongoDbContext>();
                 return context.Users;
             });
+            services.AddHostedService<TokenCleanupService>(); 
             
+
+
             //Register EmailService 
             services.Configure<EmailSettings>(Configuration.GetSection("EmailSettings"));
             services.AddTransient<IEmailService, EmailService>();
-            
+        
             //Register SmsAuthService 
             services.Configure<SmsSettings>(Configuration.GetSection("SMSSettings"));
             services.AddTransient<ISmsService, SmsService>(); 

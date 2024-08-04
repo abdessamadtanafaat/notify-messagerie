@@ -13,8 +13,13 @@ namespace NotificationService.Repositories
         Task DeleteUserAsync(string id);
         Task<User> GetUserByEmailAsync(string email);
         Task<User> GetuserByTokenEmail(string tokenEmail);
-        Task <User> GetUserByPhoneAsync(string phoneNumber);
+        public Task <User> GetUserByPhoneAsync(string phoneNumber);
+        Task <User> GetUserByPhoneAndEmailAsync(string phoneNumber, string email);
         Task <User>GetUserByUsernameAsync(string userUsername);
         Task<User> GetUserByEmailOrPhoneAsync(string authRequestEmailOrPhoneNumber);
+        Task<User> GetuserByTokenPhoneNumber(int tokenPhoneNumber);
+        Task<User> GetUserByPhoneNumberVerifiedAsync (string phoneNumber); 
+
+
     }
 }

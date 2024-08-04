@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using NotificationService.Models;
+using NotificationService.Security.Models;
 using NotificationService.Services;
 
 namespace NotificationService.Controllers
@@ -18,7 +19,7 @@ namespace NotificationService.Controllers
         }
 
         [HttpGet]
-        //[Authorize]
+        [Authorize]
         public async Task<ActionResult<IEnumerable<User>>> GetUsers()
         {
                 var users = await _userService.GetAllUsersAsync();
@@ -26,7 +27,7 @@ namespace NotificationService.Controllers
         }
 
         [HttpGet("{id}")]
-        //[Authorize]
+        [Authorize]
         public async Task<ActionResult<User>> GetUser(string id)
         {
             var user = await _userService.GetUserByIdAsync(id);
@@ -49,6 +50,14 @@ namespace NotificationService.Controllers
             return NoContent();
         }
 
+        [HttpPut("/update-profile/{id}")]
+        //[Authorize]
+        public async Task<IActionResult> UpdateProfile(string id, [FromBody] UpdateProfileReq profileUpdateReq)
+        {
+            await _userService.UpdateProfileAsync(id, profileUpdateReq);
+            return NoContent();
+        }
+
         [HttpDelete("{id}")]
         //[Authorize]
         public async Task<IActionResult> DeleteUser(string id)
@@ -56,8 +65,6 @@ namespace NotificationService.Controllers
             await _userService.DeleteUserAsync(id);
             return NoContent();
         }
-        
-
         
     }
 }

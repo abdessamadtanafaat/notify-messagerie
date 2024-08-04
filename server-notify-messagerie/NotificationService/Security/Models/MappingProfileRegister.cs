@@ -15,4 +15,6 @@ public class MappingProfile : Profile
             .ForMember(dest => dest.CreatedAt, opt => opt.MapFrom(src => DateTime.Now)) // Example mapping
             .ForMember(dest => dest.Id, opt => opt.Ignore()); // Ignore Id mapping
     }
+
+    
 }

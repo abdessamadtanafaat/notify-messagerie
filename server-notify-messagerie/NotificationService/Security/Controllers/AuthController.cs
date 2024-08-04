@@ -1,6 +1,7 @@
 ﻿using System.Security.Claims;
 using AutoMapper;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using NotificationService.Models;
 using NotificationService.Security.Models;
@@ -34,6 +35,21 @@ public class AuthController : ControllerBase
     public async Task<IActionResult> Login([FromBody] AuthRequestDto authRequest)
     {
         var authResponse = await _authService.Login(authRequest);
+
+            Response.Cookies.Append("token", authResponse.Token, new CookieOptions
+    {
+        HttpOnly = false, //si true the front end cannot be accessid via javascript !! 
+        Secure = false, // Set to true if using HTTPS
+        SameSite = SameSiteMode.Strict
+    });
+
+    Response.Cookies.Append("refreshToken", authResponse.RefreshToken, new CookieOptions
+    {
+        HttpOnly = false,
+        Secure = false, // Set to true if using HTTPS
+        SameSite = SameSiteMode.Strict
+    });
+    
         return Ok(authResponse); 
     }
 
@@ -54,25 +70,53 @@ public class AuthController : ControllerBase
         return Ok("Verification successful. You can now log in to your account."); 
     }
     
+    [HttpPost("verify-phone")]
+    public async Task<IActionResult> verifyPhoneNumber([FromQuery]int tokenPhoneNumber)
+    {
+        await _authService.VerifyPhoneNumber(tokenPhoneNumber);
+        return Ok("Verification successful. You can now continue using your account."); 
+    }    
+    
     [HttpPost("reset-password-by-email")]
-    public async Task<IActionResult> ResetPasswordByEmailorgetPassword([FromQuery]string email)
+    public async Task<IActionResult> ResetPasswordByEmail([FromBody] ResetPasswordRequestEmailDto ResetPasswordrequest)
+    {
+        await _authService.ResetPasswordByEmail(ResetPasswordrequest.TokenEmail,ResetPasswordrequest.Password);
+        return Ok("You now log In to your account."); 
+    }
+    
+    [HttpPost("reset-password-by-phone")]
+    public async Task<IActionResult> ResetPasswordByPhone([FromBody] ResetPasswordRequestPhoneDto ResetPasswordrequest)
+    {
+        await _authService.ResetPassword(ResetPasswordrequest.TokenPhoneNumber,ResetPasswordrequest.Password);
+        return Ok("You now log In to your account."); 
+    }
+    
+    [HttpPost("reset-password-by-email-request")]
+    public async Task<IActionResult> ResetPasswordByEmail([FromQuery]string email)
     {
         await _authService.ForgetPasswordByEmail(email);
         return Ok("Check Your email to get the new password."); 
     }
     
-    [HttpPost("reset-password-by-sms")]
-    public async Task<IActionResult> ResetPasswordBySms([FromQuery]string phoneNumber)
+    [HttpPost("send-sms")]
+    public async Task<IActionResult> SendSms([FromQuery]string phoneNumber, string email)
     {
-        await _authService.ForgetPasswordByPhone(phoneNumber);
-        return Ok("Check Your phone Number to get the new password."); 
+        await _authService.SendSms(phoneNumber, email);
+        return Ok("Check Your phone Number to get the code verification."); 
     }
-    
-    [HttpPost("logout")]
-    public async Task<IActionResult> Logout()
+
+    [HttpPost("send-sms-from-reset-password")]
+    public async Task<IActionResult> resetPasswordBySms([FromQuery]string phoneNumber)
     {
-        var userEmail = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-        await _authService.LogOut(userEmail);
+        await _authService.resetPasswordBySms(phoneNumber);
+        return Ok("Check Your phone Number to get the code verification."); 
+    }
+
+    [HttpPost("logout")]
+    public async Task<IActionResult> Logout([FromBody] string userId)
+    {
+        //var username = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+        await _authService.LogOut(userId);
         return Ok("Logout Successfully."); 
     }
     

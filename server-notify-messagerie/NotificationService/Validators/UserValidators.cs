@@ -9,10 +9,10 @@ public class UserValidators : IUserValidators
 {
     public void Validate(User user)
     {
-        if (string.IsNullOrEmpty(user.Username))
-        {
-            throw new ValidationException("Username cannot be empty");
-        }
+        // if (string.IsNullOrEmpty(user.Username))
+        // {
+        //     throw new ValidationException("Username cannot be empty");
+        // }
 
         if (string.IsNullOrEmpty(user.Email))
         {

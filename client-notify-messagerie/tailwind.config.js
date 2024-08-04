@@ -6,13 +6,13 @@ export default withMT({
   content: [
     './index.html',
     './src/**/*.{js,ts,jsx,tsx}',
-    'path-to-your-node_modules/@material-tailwind/react/components/**/*.{js,ts,jsx,tsx}',
-    'path-to-your-node_modules/@material-tailwind/react/theme/components/**/*.{js,ts,jsx,tsx}',
   ],
+  darkMode: 'class',
     theme: {
       extend: {
         colors: {
           'primary': '#00A5FA',
+          'secondary' : '#',
         },
         fontFamily: {
           articulatBold : ['ArticulatBold', 'sans-serif'],
@@ -20,7 +20,7 @@ export default withMT({
           articulatMeduim:['ArticulatMeduim', 'sans-serif']        
         },
         fontSize:{
-          'xs': '0.75rem',     // Example for a custom font size
+          'xs': '0.75rem',
           'sm': '0.875rem',
           'base': '1rem',
           'lg': '1.125rem',
@@ -38,6 +38,7 @@ export default withMT({
                 },
       },
     },
-  plugins: [],
+    plugins: [
+    ],
 })
 

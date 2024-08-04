@@ -2,6 +2,7 @@
 using NotificationService.Exceptions;
 using NotificationService.Models;
 using NotificationService.Repositories;
+using NotificationService.Security.Models;
 using NotificationService.Validators;
 
 
@@ -44,6 +45,39 @@ namespace NotificationService.Services
             return _userRepository.CreateUserAsync(user);
         }
 
+        public async Task UpdateProfileAsync(string id, UpdateProfileReq updateProfileReq)
+        {
+            // Check if id is a valid ObjectId
+            if (!ObjectId.TryParse(id, out _))
+            {
+                throw new NotFoundException($"User with ID '{id}' not found.");
+            }
+            
+            var existingUser = await _userRepository.GetUserByIdAsync(id);
+            if (existingUser == null)
+            {
+                throw new NotFoundException($"User with ID '{id}' not found."); 
+            }
+            //_userValidators.Validate(user);
+
+            if (!string.IsNullOrEmpty(updateProfileReq.avatarUrl))
+             {
+             existingUser.AvatarUrl = updateProfileReq.avatarUrl;
+             }
+
+            if (!string.IsNullOrEmpty(updateProfileReq.username))
+             {
+             existingUser.Username = updateProfileReq.username;
+             }
+             if (!string.IsNullOrEmpty(updateProfileReq.about))
+                {
+                existingUser.About = updateProfileReq.about;
+                }
+
+            await _userRepository.UpdateUserAsync(id, existingUser);
+            
+        }
+        
         public async Task UpdateUserAsync(string id, User user)
         {
             // Check if id is a valid ObjectId
