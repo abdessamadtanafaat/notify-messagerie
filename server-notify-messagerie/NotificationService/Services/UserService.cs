@@ -39,6 +39,33 @@ namespace NotificationService.Services
                 return user;
         }
         
+        public async Task<List<User>> GetUsersByIdsAsync(List<string> ids)
+        {
+            // Validate and convert string IDs to ObjectId
+            var objectIds = ids
+                .Where(id => ObjectId.TryParse(id, out _))
+                .Select(id => new ObjectId(id))
+                .ToList();
+
+            if (objectIds.Count == 0)
+            {
+                throw new ArgumentException("No valid IDs provided.");
+            }
+
+            // Fetch users by IDs
+            var users = await _userRepository.GetUsersByIdsAsync(ids);
+
+            // Handle case where some users might not be found
+            var missingIds = ids.Except(users.Select(user => user.Id)).ToList();
+            if (missingIds.Any())
+            {
+                throw new NotFoundException($"Users with IDs '{string.Join(", ", missingIds)}' not found.");
+            }
+
+            return users;
+        }
+    
+
         public Task<User> CreateUserAsync(User user)
         {
             _userValidators.Validate(user); 
@@ -112,6 +139,15 @@ namespace NotificationService.Services
             
             await _userRepository.DeleteUserAsync(id);
         }
+
+        public async Task UnfriendAsync(string userId, string friendId){
+            var user = await _userRepository.GetUserByIdAsync(userId); 
+            if (user == null) {
+                throw new NotFoundException($"User with ID '{userId}' not found."); 
+            }
+            user.Friends = user.Friends.Where(f=>f != friendId).ToArray();
+            await _userRepository.UpdateUserAsync(userId, user); 
         
+            }
     }
 }

@@ -13,9 +13,11 @@
 
     // -------------------------------USER ENDPOINTS : ----------------------------------- // 
     GET_USER_INFO: '/User',
+    GET_USER_BY_IDS: '/User/byIds',
     GET_USER_AVATAR: 'https://res.cloudinary.com/dhlhmvoez/image/upload/v1680123456/large_WEEEE_Whats_App_Image_2024_06_04_at_20_32_34_1_removebg_1_2fbb0e227b',
     //PUT_AVATAR_URL: '/update-avatar',
     PUT_PROFILE_URL: '/update-profile',
+    UNFRIEND: 'User/unfriend',
     // ====================================== STRAPI ====================================== // 
     
     USERS: 'n-users'

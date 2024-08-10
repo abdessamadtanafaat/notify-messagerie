@@ -13,5 +13,10 @@ namespace NotificationService.Services
         Task UpdateUserAsync(string id, User user);
         Task DeleteUserAsync(string id);
         Task UpdateProfileAsync(string id, UpdateProfileReq updateProfileReq);
+        Task<List<User>> GetUsersByIdsAsync(List<string> ids);
+        Task UnfriendAsync(string userId, string friendId); 
+
+
+
     }
 }

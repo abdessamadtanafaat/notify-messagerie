@@ -34,6 +34,9 @@ public class User
         public DateTime? PhoneNumberExpiredAt { get; set; }
         public String? AvatarUrl { get; set;}
         public String? About {get; set;}
+        public  String[]? Friends {get; set;}
+        public  String[]? FriendRequestsReceived {get; set;}
+        public  String[]? FriendRequestsSent {get; set;}
 
 
 }

@@ -48,7 +48,7 @@ const LoginPage: React.FC<RenderProps> = ({ render }) => {
 
     useEffect(() => {
         if (isAuthenticated) {
-            navigate('/messages')
+            navigate('/home')
         }
     }, [isAuthenticated, navigate])
 

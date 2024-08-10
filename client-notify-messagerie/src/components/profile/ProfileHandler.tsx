@@ -1,18 +1,19 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import React, { useEffect, useRef, useState } from 'react'
-import { useAuth } from '../contexte/AuthContext'
-import { useThemeContext } from '../contexte/ThemeContext'
-import defaultAvatar from '../assets/default-avatar.png' // Adjust the path as necessary
-import defaultAvatarNight from '../assets/default-avatar-night.png' // Dark theme
-import { uploadFile } from '../services/userService'
-import { updateProfile } from '../store/userSlice'
+import { useAuth } from '../../contexte/AuthContext'
+import { useThemeContext } from '../../contexte/ThemeContext'
+import defaultAvatar from '../../assets/default-avatar.png' // Adjust the path as necessary
+import defaultAvatarNight from '../../assets/default-avatar-night.png' // Dark theme
+import { uploadFile } from '../../services/userService'
+import { updateProfile } from '../../store/userSlice'
 import { toast } from 'react-toastify'
-import { useAppDispatch } from '../hooks/reduxHooks'
-import { logout } from '../store/authSlice'
+import { useAppDispatch } from '../../hooks/reduxHooks'
+import { logout } from '../../store/authSlice'
 import { Emoji } from '@emoji-mart/data'
+import { formatPhoneNumber } from '../../utils/userUtils'
 
 
-interface UpdateProfileHandlerProps {
+interface ProfileHandlerProps {
     render: (props: {
         avatarUrl: string;
         handleChangeAvatar: (event: React.ChangeEvent<HTMLInputElement>) => void;
@@ -41,7 +42,7 @@ interface UpdateProfileHandlerProps {
 }
 
 
-export const UpdateProfileHandler: React.FC<UpdateProfileHandlerProps> = ({ render }) => {
+export const ProfileHandler: React.FC<ProfileHandlerProps> = ({ render }) => {
 
     const { theme } = useThemeContext()
 
@@ -249,17 +250,15 @@ export const UpdateProfileHandler: React.FC<UpdateProfileHandlerProps> = ({ rend
         }
     }
 
-    function formatPhoneNumber(phoneNumber: string) {
-        const cleaned = ('' + phoneNumber).replace(/\D/g, '')
-        const match = cleaned.match(/^(\d{3})(\d{3})(\d{6})$/)
+    // function formatPhoneNumber(phoneNumber: string) {
+    //     const cleaned = ('' + phoneNumber).replace(/\D/g, '')
+    //     const match = cleaned.match(/^(\d{3})(\d{3})(\d{6})$/)
 
-        if (match) {
-            return `+${match[1]} ${match[2]}-${match[3]}`
-        }
-        return phoneNumber
-    }
-
-
+    //     if (match) {
+    //         return `+${match[1]} ${match[2]}-${match[3]}`
+    //     }
+    //     return phoneNumber
+    // }
     return render({
         avatarUrl,
         handleChangeAvatar,

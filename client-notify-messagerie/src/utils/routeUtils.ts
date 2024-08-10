@@ -5,7 +5,14 @@ export const shouldShowSidebar = (pathname: string): boolean => {
 
     const showSidebarRoutes = [
         '/test',            
-        '/messages',
+        '/home',
+        '/discussions',
+        '/personnes',
+        '/archive',
+        '/settings',
+        '/demandes',
+        '/friends',
+        '/profile',
     ]
     if (showSidebarRoutes.some(route => pathname === route)) {
         return true

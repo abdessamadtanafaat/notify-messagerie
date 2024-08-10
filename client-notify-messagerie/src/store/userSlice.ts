@@ -6,6 +6,7 @@ import userService from '../services/userService'
 
 export interface UserState {
     user: User | null 
+    users: User[];
     avatarUrl: string | null,
     status: string | null,
     error: { error: string; statusCode: number } | null
@@ -13,6 +14,7 @@ export interface UserState {
 
 const initialState: UserState = {
     user: null,
+    users: [],
     avatarUrl: null,
     status: null,
     error: null,
@@ -25,8 +27,36 @@ export const getUserInfo = createAsyncThunk<
 >('user/getUserInfo', async (id, { rejectWithValue }) => {
   try {
     const response = await userService.getUserInfo(id)
-    console.log(response)
 
+    return response
+  } catch (error) {
+    return rejectWithValue(error as ErrorResponse)
+  }
+})
+
+
+export const fetchUsersByIds = createAsyncThunk<
+User[],
+string[],
+{ rejectValue: ErrorResponse }
+
+>('user/fetchUsersByIds', async (ids: string[],{ rejectWithValue }) => {
+
+  try {
+  const response = await userService.fetchUsersByIds(ids)
+  return response
+} catch (error) {
+  return rejectWithValue(error as ErrorResponse)
+}
+})
+
+export const fetchUsers = createAsyncThunk<
+  User[],
+  undefined,
+  { rejectValue: ErrorResponse }
+>('/User', async (_, {rejectWithValue} ) => {
+  try {
+    const response = await userService.fetchUsers()
     return response
   } catch (error) {
     return rejectWithValue(error as ErrorResponse)
@@ -72,6 +102,18 @@ const userSlice = createSlice({
       })
       .addCase(getUserInfo.rejected, (state, action: PayloadAction<ErrorResponse | undefined>) => {
         state.error = action.payload ?? { error: 'Failed to display user', statusCode: 0 }
+      })
+      .addCase(fetchUsers.pending, (state) => {
+        state.error = null
+      })
+      .addCase(fetchUsers.fulfilled, (state, action) => {
+        state.users = action.payload 
+      })
+      .addCase(fetchUsers.rejected, (state, action: PayloadAction<ErrorResponse | undefined>) => {
+        state.error = action.payload ?? { error: 'Failed to display user', statusCode: 0 }
+      })
+      .addCase(fetchUsersByIds.fulfilled, (state, action: PayloadAction<User[]>) => {
+        state.users = action.payload 
       })
       .addCase(fetchImage.pending, (state) => {
         state.error = null

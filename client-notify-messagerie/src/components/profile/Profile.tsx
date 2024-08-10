@@ -1,26 +1,16 @@
 import React from 'react'
 import { PenIcon, Smile } from 'lucide-react'
-import { UpdateProfileHandler } from './UpdateProfileHandler'
-import Button from './common/Button'
+import { ProfileHandler } from './ProfileHandler'
+import Button from '../common/Button'
 import data, { Emoji } from '@emoji-mart/data'
 import Picker from '@emoji-mart/react'
+import { formateDate } from '../../utils/userUtils'
 
-const UpdateProfile: React.FC = () => {
+const Profile: React.FC = () => {
 
     return (
-        <UpdateProfileHandler
+        <ProfileHandler
             render={({ avatarUrl, handleChangeAvatar, user, handleUpdate, editing, handleEditToggle, username, about, handleUpdateProfile, charsRemaining, isHovered, handleMouseEnter, handleMouseLeave, showEmojiPicker, togglePicker, handleLogout, isLoadingButton, addEmoji, setPickerRef, isUpLoading,formattedPhoneNumber }) => (
-                <div
-                    id="view"
-                    className="h-full w-screen flex flex-row dark:bg-gray-700"
-                    x-data="{ sidenav: true }"
-                >
-                    <div
-                        id="sidebar"
-                        className="bg-white dark:bg-gray-800 h-screen md:block shadow-xl px-3 w-30 md:w-80 lg:w-80 overflow-x-hidden transition-transform duration-300 ease-in-out"
-                        x-show="sidenav"
-                    // @click.away="sidenav = false"
-                    >
                         <div className="space-y-4 md:space-y-5 mt-5">
                             <h1 className="hidden md:block font-bold text-sm md:text-xl text-center dark:text-white">
                                 Profile
@@ -67,7 +57,6 @@ const UpdateProfile: React.FC = () => {
                                                     className='h-8 px-2 text-sm md:text-base border-b-2 border-gray-300 rounded-md placeholder:font-light placeholder:text-gray-500 dark:bg-gray-700
                                                                 focus:border-blue-400 focus:outline-none'
                                                 />
-
                                                 <div className='flex justify-end space-x-4 relative'>
                                                     <Smile className='w-5 h-6 text-gray-600  cursor-pointer dark:text-gray-400 dark:hover:text-white'
                                                         onClick={() => togglePicker('username')} />
@@ -86,7 +75,7 @@ const UpdateProfile: React.FC = () => {
                                                         </div>}
                                                     <Button
                                                         text={`${isHovered.username ? 'Done' : `${charsRemaining.username} / 25`}`}
-                                                        onClick={() => { /* your handler */ }}
+                                                        onClick={() => { }}
                                                         className='w-4/12 h-6 text-xs md:text-sm bg-blue-400 text-white hover:bg-blue-600 hover:text-white'
                                                         onMouseEnter={() => handleMouseEnter('username')}
                                                         onMouseLeave={() => handleMouseLeave('username')}
@@ -173,7 +162,7 @@ const UpdateProfile: React.FC = () => {
                                 <div className='flex flex-col justify-start bg-white dark:bg-gray-800 dark:text-white p-4 mb-1'>
                                     <div className="dark:border-gray-300 border-t border-gray-700 my-4"></div>
                                     <p className='mb-1 text-sm md:text-base text-gray-600 dark:text-white'>
-                                        Joined {user?.createdAt ? new Date(user.createdAt).toLocaleDateString() : 'N/A'}
+                                        Joined {formateDate(user.createdAt)}
                                     </p>
                                     <Button
                                         text='Log out'
@@ -184,8 +173,6 @@ const UpdateProfile: React.FC = () => {
                                 </div>
                             </form>
                         </div>
-                    </div>
-                </div>
 )}
         />
     )
@@ -193,4 +180,4 @@ const UpdateProfile: React.FC = () => {
 
 
 
-export default UpdateProfile
+export default Profile

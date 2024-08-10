@@ -18,7 +18,8 @@ const store = configureStore({
         sendSms: sendSmsReducer,
         sendTokenEmail: sendVerificationEmailSlice,
         resetPasswordByEmail: resetPasswordByEmailSlice,
-        user: userSlice
+        user: userSlice,
+        users: userSlice
     },
 
 })

@@ -21,6 +21,7 @@ export interface CommonUserData {
     phoneNumberExpiredAt: Date;
     avatarUrl: string;
     about: string; 
+    friends: [];
   }
   
   // User interface (local database)
@@ -74,4 +75,9 @@ export interface UpdateProfileReq {
   avatarUrl: string;
   username: string;
   about: string;
+}
+
+export interface UnfriendRequest {
+  userId: string; 
+  friendId: string;
 }
