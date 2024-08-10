@@ -34,8 +34,26 @@ namespace NotificationService.Controllers
             return Ok(user);
         }
 
+        [HttpPost("byIds")]
+        public async Task<IActionResult> GetUsersByIds([FromBody] List<string> ids)
+        {
+            if (ids == null || ids.Count == 0)
+            {
+                return BadRequest("No IDs provided.");
+            }
+
+            var users = await _userService.GetUsersByIdsAsync(ids);
+            
+            if (users == null)
+            {
+                return NotFound("No users found for the provided IDs.");
+            }
+
+            return Ok(users);
+        }
+    
         [HttpPost]
-        //[Authorize]
+        [Authorize]
         public async Task<ActionResult<User>> CreateUser(User user)
         {
             var createdUser = await _userService.CreateUserAsync(user);
@@ -43,7 +61,7 @@ namespace NotificationService.Controllers
         }
 
         [HttpPut("{id}")]
-        //[Authorize]
+        [Authorize]
         public async Task<IActionResult> UpdateUser(string id, User user)
         {
             await _userService.UpdateUserAsync(id, user);
@@ -51,7 +69,7 @@ namespace NotificationService.Controllers
         }
 
         [HttpPut("/update-profile/{id}")]
-        //[Authorize]
+        [Authorize]
         public async Task<IActionResult> UpdateProfile(string id, [FromBody] UpdateProfileReq profileUpdateReq)
         {
             await _userService.UpdateProfileAsync(id, profileUpdateReq);
@@ -59,12 +77,18 @@ namespace NotificationService.Controllers
         }
 
         [HttpDelete("{id}")]
-        //[Authorize]
+        [Authorize]
         public async Task<IActionResult> DeleteUser(string id)
         {
             await _userService.DeleteUserAsync(id);
             return NoContent();
         }
         
+        [HttpPost("unfriend")]
+        //[Authorize]
+        public async Task<IActionResult> Unfriend([FromBody] UnfriendRequest unfriendRequest) {
+            await _userService.UnfriendAsync(unfriendRequest.UserId, unfriendRequest.FriendId);
+            return Ok (new {Message = "Successfully unfrieded"}); 
+        }
     }
 }

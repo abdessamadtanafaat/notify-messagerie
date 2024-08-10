@@ -13,11 +13,10 @@ const login = async (authRequest: AuthRequestDto): Promise<User> => {
   try {
     const response = await axiosInstance.post<User>(API_ENDPOINTS.LOGIN, authRequest,  {withCredentials: true })
     const existingUser = response.data
-    // console.log('Login response:', existingUser)
     const token: string = response.data.token ?? ''
     const refreshToken: string = response.data.refreshToken ?? '' 
     setCookie('token', token, 15)
-    setCookie('refreshToken', refreshToken, 7) 
+    setCookie('refreshToken', refreshToken, 10080) 
     console.log(response)
     localStorage.setItem('user', JSON.stringify(response.data))
 
@@ -99,12 +98,14 @@ const refreshToken = async (refreshToken: string) => {
             createdAtTime: existingUser.createdAt,
             refreshTokenExpiryTime: existingUser.refreshTokenExpiryTime,
             phoneNumberExpiredAt: existingUser.phoneNumberExpiredAt,
-            avatarUrl: existingUser.avatarUrl
+            avatarUrl: existingUser.avatarUrl,
+            about: existingUser.about,
+            friends: existingUser.friends
           }
 
           await strapiService.updateUserData(existingUser.email, userData)
       } catch (error) {
-        console.error('Error fetching data:', error)
+        console.error('Error fetching data Strapi :', error)
       }
     
 

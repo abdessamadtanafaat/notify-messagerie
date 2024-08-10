@@ -19,6 +19,7 @@ namespace NotificationService.Repositories
         Task<User> GetUserByEmailOrPhoneAsync(string authRequestEmailOrPhoneNumber);
         Task<User> GetuserByTokenPhoneNumber(int tokenPhoneNumber);
         Task<User> GetUserByPhoneNumberVerifiedAsync (string phoneNumber); 
+        Task<List<User>> GetUsersByIdsAsync(List<string> ids);
 
 
     }

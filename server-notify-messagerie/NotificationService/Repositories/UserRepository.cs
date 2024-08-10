@@ -115,5 +115,12 @@ namespace NotificationService.Repositories
                 return await _users.Find(u => u.PhoneNumber == phoneNumber && u.IsPhoneNumberVerified == true ).FirstOrDefaultAsync(); 
 
         }
+
+        public async Task<List<User>> GetUsersByIdsAsync(List<string> ids)
+        {
+            var filter = Builders<User>.Filter.In(user => user.Id, ids);
+            return await _users.Find(filter).ToListAsync();
+        }
+
     }
 }

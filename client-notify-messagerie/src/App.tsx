@@ -3,24 +3,30 @@ import { BrowserRouter as Router, Route, Routes, Navigate } from 'react-router-d
 import LoginPage from './pages/Loginpage'
 import RegisterPage from './pages/RegisterPage'
 import 'react-toastify/dist/ReactToastify.css'
-import './index.css'
+import './index.css' // Your global styles
 import VerifyEmailPage from './pages/VerifyEmailPage'
 import CompleteProfilePage from './pages/CompleteProfilePage'
 import ResetPasswordByEmail from './pages/ResetPasswordByEmailPage'
 import ResetPasswordFormPage from './pages/ResetPasswordFormPage'
 import ResetPasswordByPhoneNumberPage from './pages/ResetPasswordByPhoneNumberPage'
-import Layout from './components/layout/layout'
-import Messages from './pages/Messages'
 import TestPage from './pages/TestPage'
 import ProtectedRoute from './components/common/ProtectedRoute'
 import NotFoundPage from './pages/NotFoundPage'
-// import { useAppDispatch } from './hooks/reduxHooks'
-// import { getUserInfo } from './store/userSlice'
+import Personnes from './components/personnes/Personnes'
+import Layout from './components/layout/Layout'
+import Archive from './components/archive/Archive'
+import Discussion from './components/discussion/Discussion'
+import Settings from './components/settings/Settings'
+import Home from './pages/Home'
+import Demandes from './components/demandes/Demandes'
+import Friends from './components/friends/Friends'
+import UpdateProfile from './components/profile/Profile'
+
 
 const App: React.FC = () => {
 
   return (
-    <div className="outline-none overflow-auto h-screen scrollbar-thin scrollbar-webkit">
+  <div className="min-h-screen bg-gray-200 dark:bg-gray-600">
     <Router>
      <Layout>
       <Routes>
@@ -33,13 +39,19 @@ const App: React.FC = () => {
           <Route path="/reset-password/:tokenEmail" element={<ResetPasswordFormPage />} />
           <Route path="/complete-profile" element={<ProtectedRoute element={<CompleteProfilePage />} redirectPath="/login" />} />
           <Route path="/reset-password-by-email" element={<ResetPasswordByEmail />} />
-          <Route path="/messages" element={<ProtectedRoute element={<Messages />} redirectPath="/login" />} />
+          <Route path="/home" element={<ProtectedRoute element={<Home />} redirectPath="/login" />} />
+          <Route path="/personnes" element={<ProtectedRoute element={<Personnes />} redirectPath="/login" />} />
+          <Route path="/discussions" element={<ProtectedRoute element={<Discussion />} redirectPath="/login" />} />
+          <Route path="/archive" element={<ProtectedRoute element={<Archive />} redirectPath="/login" />} />
+          <Route path="/settings" element={<ProtectedRoute element={<Settings />} redirectPath="/login" />} />
+          <Route path="/demandes" element={<ProtectedRoute element={<Demandes />} redirectPath="/login" />} />
+          <Route path="/friends" element={<ProtectedRoute element={<Friends />} redirectPath="/login" />} />
+          <Route path="/profile" element={<ProtectedRoute element={<UpdateProfile />} redirectPath="/login" />} />
           <Route path="*" element={<NotFoundPage />} />
       </Routes>
      </Layout> 
     </Router>
-    </div>
-
+  </div>
 )
 }
 

@@ -22,3 +22,13 @@ export const getCookie = (name: string): string | null => {
     deleteCookie('refreshToken')
     deleteCookie('token')
   }
+
+  export const isTokenValid =():boolean => {
+    const refreshToken = getCookie('refreshToken')
+
+    if (!refreshToken){
+      return false
+    }
+
+    return true
+  }
