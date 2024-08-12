@@ -20,7 +20,13 @@
     UNFRIEND: 'User/unfriend',
     // ====================================== STRAPI ====================================== // 
     
-    USERS: 'n-users'
+    USERS: 'n-users',
+
+//==========================MessagesEndpointes===================================//
+
+      GET_MESSAGES: '/Discussions/messages',
+      SEND_MESSAGE: 'Discussions/send'
+
  }
 
  export default API_ENDPOINTS

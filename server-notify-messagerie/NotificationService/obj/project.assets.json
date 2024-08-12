@@ -84,6 +84,61 @@
           "Microsoft.AspNetCore.App"
         ]
       },
+      "Microsoft.AspNetCore.Http.Abstractions/2.2.0": {
+        "type": "package",
+        "dependencies": {
+          "Microsoft.AspNetCore.Http.Features": "2.2.0",
+          "System.Text.Encodings.Web": "4.5.0"
+        },
+        "compile": {
+          "lib/netstandard2.0/Microsoft.AspNetCore.Http.Abstractions.dll": {}
+        },
+        "runtime": {
+          "lib/netstandard2.0/Microsoft.AspNetCore.Http.Abstractions.dll": {}
+        }
+      },
+      "Microsoft.AspNetCore.Http.Extensions/2.2.0": {
+        "type": "package",
+        "dependencies": {
+          "Microsoft.AspNetCore.Http.Abstractions": "2.2.0",
+          "Microsoft.Extensions.FileProviders.Abstractions": "2.2.0",
+          "Microsoft.Net.Http.Headers": "2.2.0",
+          "System.Buffers": "4.5.0"
+        },
+        "compile": {
+          "lib/netstandard2.0/Microsoft.AspNetCore.Http.Extensions.dll": {}
+        },
+        "runtime": {
+          "lib/netstandard2.0/Microsoft.AspNetCore.Http.Extensions.dll": {}
+        }
+      },
+      "Microsoft.AspNetCore.Http.Features/2.2.0": {
+        "type": "package",
+        "dependencies": {
+          "Microsoft.Extensions.Primitives": "2.2.0"
+        },
+        "compile": {
+          "lib/netstandard2.0/Microsoft.AspNetCore.Http.Features.dll": {}
+        },
+        "runtime": {
+          "lib/netstandard2.0/Microsoft.AspNetCore.Http.Features.dll": {}
+        }
+      },
+      "Microsoft.AspNetCore.WebSockets/2.2.1": {
+        "type": "package",
+        "dependencies": {
+          "Microsoft.AspNetCore.Http.Extensions": "2.2.0",
+          "Microsoft.Extensions.Logging.Abstractions": "2.2.0",
+          "Microsoft.Extensions.Options": "2.2.0",
+          "System.Net.WebSockets.WebSocketProtocol": "4.5.3"
+        },
+        "compile": {
+          "lib/netstandard2.0/Microsoft.AspNetCore.WebSockets.dll": {}
+        },
+        "runtime": {
+          "lib/netstandard2.0/Microsoft.AspNetCore.WebSockets.dll": {}
+        }
+      },
       "Microsoft.Extensions.ApiDescription.Server/6.0.5": {
         "type": "package",
         "build": {
@@ -107,7 +162,19 @@
           "buildTransitive/net6.0/_._": {}
         }
       },
-      "Microsoft.Extensions.Logging.Abstractions/2.0.0": {
+      "Microsoft.Extensions.FileProviders.Abstractions/2.2.0": {
+        "type": "package",
+        "dependencies": {
+          "Microsoft.Extensions.Primitives": "2.2.0"
+        },
+        "compile": {
+          "lib/netstandard2.0/Microsoft.Extensions.FileProviders.Abstractions.dll": {}
+        },
+        "runtime": {
+          "lib/netstandard2.0/Microsoft.Extensions.FileProviders.Abstractions.dll": {}
+        }
+      },
+      "Microsoft.Extensions.Logging.Abstractions/2.2.0": {
         "type": "package",
         "compile": {
           "lib/netstandard2.0/Microsoft.Extensions.Logging.Abstractions.dll": {}
@@ -215,6 +282,19 @@
           "lib/net6.0/Microsoft.IdentityModel.Tokens.dll": {}
         }
       },
+      "Microsoft.Net.Http.Headers/2.2.0": {
+        "type": "package",
+        "dependencies": {
+          "Microsoft.Extensions.Primitives": "2.2.0",
+          "System.Buffers": "4.5.0"
+        },
+        "compile": {
+          "lib/netstandard2.0/Microsoft.Net.Http.Headers.dll": {}
+        },
+        "runtime": {
+          "lib/netstandard2.0/Microsoft.Net.Http.Headers.dll": {}
+        }
+      },
       "Microsoft.NETCore.Platforms/5.0.0": {
         "type": "package",
         "compile": {
@@ -261,7 +341,7 @@
           }
         }
       },
-      "MongoDB.Bson/2.26.0": {
+      "MongoDB.Bson/2.28.0": {
         "type": "package",
         "dependencies": {
           "System.Memory": "4.5.5",
@@ -274,13 +354,13 @@
           "lib/netstandard2.1/MongoDB.Bson.dll": {}
         }
       },
-      "MongoDB.Driver/2.26.0": {
+      "MongoDB.Driver/2.28.0": {
         "type": "package",
         "dependencies": {
           "Microsoft.Extensions.Logging.Abstractions": "2.0.0",
-          "MongoDB.Bson": "2.26.0",
-          "MongoDB.Driver.Core": "2.26.0",
-          "MongoDB.Libmongocrypt": "1.9.0"
+          "MongoDB.Bson": "2.28.0",
+          "MongoDB.Driver.Core": "2.28.0",
+          "MongoDB.Libmongocrypt": "1.11.0"
         },
         "compile": {
           "lib/netstandard2.1/MongoDB.Driver.dll": {}
@@ -289,14 +369,14 @@
           "lib/netstandard2.1/MongoDB.Driver.dll": {}
         }
       },
-      "MongoDB.Driver.Core/2.26.0": {
+      "MongoDB.Driver.Core/2.28.0": {
         "type": "package",
         "dependencies": {
           "AWSSDK.SecurityToken": "3.7.100.14",
           "DnsClient": "1.6.1",
           "Microsoft.Extensions.Logging.Abstractions": "2.0.0",
-          "MongoDB.Bson": "2.26.0",
-          "MongoDB.Libmongocrypt": "1.9.0",
+          "MongoDB.Bson": "2.28.0",
+          "MongoDB.Libmongocrypt": "1.11.0",
           "SharpCompress": "0.30.1",
           "Snappier": "1.0.0",
           "System.Buffers": "4.5.1",
@@ -309,7 +389,7 @@
           "lib/netstandard2.1/MongoDB.Driver.Core.dll": {}
         }
       },
-      "MongoDB.Libmongocrypt/1.9.0": {
+      "MongoDB.Libmongocrypt/1.11.0": {
         "type": "package",
         "compile": {
           "lib/netstandard2.1/MongoDB.Libmongocrypt.dll": {}
@@ -545,6 +625,15 @@
           "lib/netcoreapp2.1/_._": {}
         }
       },
+      "System.Net.WebSockets.WebSocketProtocol/4.5.3": {
+        "type": "package",
+        "compile": {
+          "ref/netstandard2.0/System.Net.WebSockets.WebSocketProtocol.dll": {}
+        },
+        "runtime": {
+          "lib/netcoreapp2.1/System.Net.WebSockets.WebSocketProtocol.dll": {}
+        }
+      },
       "System.Reflection/4.3.0": {
         "type": "package",
         "dependencies": {
@@ -687,6 +776,15 @@
         },
         "compile": {
           "ref/netstandard1.3/_._": {}
+        }
+      },
+      "System.Text.Encodings.Web/4.5.0": {
+        "type": "package",
+        "compile": {
+          "lib/netstandard2.0/System.Text.Encodings.Web.dll": {}
+        },
+        "runtime": {
+          "lib/netstandard2.0/System.Text.Encodings.Web.dll": {}
         }
       },
       "System.Threading/4.3.0": {
@@ -875,6 +973,58 @@
         "lib/net6.0/Microsoft.AspNetCore.Authentication.JwtBearer.xml",
         "microsoft.aspnetcore.authentication.jwtbearer.6.0.0.nupkg.sha512",
         "microsoft.aspnetcore.authentication.jwtbearer.nuspec"
+      ]
+    },
+    "Microsoft.AspNetCore.Http.Abstractions/2.2.0": {
+      "sha512": "Nxs7Z1q3f1STfLYKJSVXCs1iBl+Ya6E8o4Oy1bCxJ/rNI44E/0f6tbsrVqAWfB7jlnJfyaAtIalBVxPKUPQb4Q==",
+      "type": "package",
+      "path": "microsoft.aspnetcore.http.abstractions/2.2.0",
+      "files": [
+        ".nupkg.metadata",
+        ".signature.p7s",
+        "lib/netstandard2.0/Microsoft.AspNetCore.Http.Abstractions.dll",
+        "lib/netstandard2.0/Microsoft.AspNetCore.Http.Abstractions.xml",
+        "microsoft.aspnetcore.http.abstractions.2.2.0.nupkg.sha512",
+        "microsoft.aspnetcore.http.abstractions.nuspec"
+      ]
+    },
+    "Microsoft.AspNetCore.Http.Extensions/2.2.0": {
+      "sha512": "2DgZ9rWrJtuR7RYiew01nGRzuQBDaGHGmK56Rk54vsLLsCdzuFUPqbDTJCS1qJQWTbmbIQ9wGIOjpxA1t0l7/w==",
+      "type": "package",
+      "path": "microsoft.aspnetcore.http.extensions/2.2.0",
+      "files": [
+        ".nupkg.metadata",
+        ".signature.p7s",
+        "lib/netstandard2.0/Microsoft.AspNetCore.Http.Extensions.dll",
+        "lib/netstandard2.0/Microsoft.AspNetCore.Http.Extensions.xml",
+        "microsoft.aspnetcore.http.extensions.2.2.0.nupkg.sha512",
+        "microsoft.aspnetcore.http.extensions.nuspec"
+      ]
+    },
+    "Microsoft.AspNetCore.Http.Features/2.2.0": {
+      "sha512": "ziFz5zH8f33En4dX81LW84I6XrYXKf9jg6aM39cM+LffN9KJahViKZ61dGMSO2gd3e+qe5yBRwsesvyqlZaSMg==",
+      "type": "package",
+      "path": "microsoft.aspnetcore.http.features/2.2.0",
+      "files": [
+        ".nupkg.metadata",
+        ".signature.p7s",
+        "lib/netstandard2.0/Microsoft.AspNetCore.Http.Features.dll",
+        "lib/netstandard2.0/Microsoft.AspNetCore.Http.Features.xml",
+        "microsoft.aspnetcore.http.features.2.2.0.nupkg.sha512",
+        "microsoft.aspnetcore.http.features.nuspec"
+      ]
+    },
+    "Microsoft.AspNetCore.WebSockets/2.2.1": {
+      "sha512": "Ilk4fQ0xdVpJk1a+72thHv2LglUZPWL+vECOG3mw+gOesNx0/p56HNJXZw8k1pj8ff1cVHn8KtfvyRZxdplNQA==",
+      "type": "package",
+      "path": "microsoft.aspnetcore.websockets/2.2.1",
+      "files": [
+        ".nupkg.metadata",
+        ".signature.p7s",
+        "lib/netstandard2.0/Microsoft.AspNetCore.WebSockets.dll",
+        "lib/netstandard2.0/Microsoft.AspNetCore.WebSockets.xml",
+        "microsoft.aspnetcore.websockets.2.2.1.nupkg.sha512",
+        "microsoft.aspnetcore.websockets.nuspec"
       ]
     },
     "Microsoft.Extensions.ApiDescription.Server/6.0.5": {
@@ -1140,16 +1290,29 @@
         "useSharedDesignerContext.txt"
       ]
     },
-    "Microsoft.Extensions.Logging.Abstractions/2.0.0": {
-      "sha512": "6ZCllUYGFukkymSTx3Yr0G/ajRxoNJp7/FqSxSB4fGISST54ifBhgu4Nc0ItGi3i6DqwuNd8SUyObmiC++AO2Q==",
+    "Microsoft.Extensions.FileProviders.Abstractions/2.2.0": {
+      "sha512": "EcnaSsPTqx2MGnHrmWOD0ugbuuqVT8iICqSqPzi45V5/MA1LjUNb0kwgcxBGqizV1R+WeBK7/Gw25Jzkyk9bIw==",
       "type": "package",
-      "path": "microsoft.extensions.logging.abstractions/2.0.0",
+      "path": "microsoft.extensions.fileproviders.abstractions/2.2.0",
+      "files": [
+        ".nupkg.metadata",
+        ".signature.p7s",
+        "lib/netstandard2.0/Microsoft.Extensions.FileProviders.Abstractions.dll",
+        "lib/netstandard2.0/Microsoft.Extensions.FileProviders.Abstractions.xml",
+        "microsoft.extensions.fileproviders.abstractions.2.2.0.nupkg.sha512",
+        "microsoft.extensions.fileproviders.abstractions.nuspec"
+      ]
+    },
+    "Microsoft.Extensions.Logging.Abstractions/2.2.0": {
+      "sha512": "B2WqEox8o+4KUOpL7rZPyh6qYjik8tHi2tN8Z9jZkHzED8ElYgZa/h6K+xliB435SqUcWT290Fr2aa8BtZjn8A==",
+      "type": "package",
+      "path": "microsoft.extensions.logging.abstractions/2.2.0",
       "files": [
         ".nupkg.metadata",
         ".signature.p7s",
         "lib/netstandard2.0/Microsoft.Extensions.Logging.Abstractions.dll",
         "lib/netstandard2.0/Microsoft.Extensions.Logging.Abstractions.xml",
-        "microsoft.extensions.logging.abstractions.2.0.0.nupkg.sha512",
+        "microsoft.extensions.logging.abstractions.2.2.0.nupkg.sha512",
         "microsoft.extensions.logging.abstractions.nuspec"
       ]
     },
@@ -1337,6 +1500,19 @@
         "microsoft.identitymodel.tokens.nuspec"
       ]
     },
+    "Microsoft.Net.Http.Headers/2.2.0": {
+      "sha512": "iZNkjYqlo8sIOI0bQfpsSoMTmB/kyvmV2h225ihyZT33aTp48ZpF6qYnXxzSXmHt8DpBAwBTX+1s1UFLbYfZKg==",
+      "type": "package",
+      "path": "microsoft.net.http.headers/2.2.0",
+      "files": [
+        ".nupkg.metadata",
+        ".signature.p7s",
+        "lib/netstandard2.0/Microsoft.Net.Http.Headers.dll",
+        "lib/netstandard2.0/Microsoft.Net.Http.Headers.xml",
+        "microsoft.net.http.headers.2.2.0.nupkg.sha512",
+        "microsoft.net.http.headers.nuspec"
+      ]
+    },
     "Microsoft.NETCore.Platforms/5.0.0": {
       "sha512": "VyPlqzH2wavqquTcYpkIIAQ6WdenuKoFN0BdYBbCWsclXacSOHNQn66Gt4z5NBqEYW0FAPm5rlvki9ZiCij5xQ==",
       "type": "package",
@@ -1429,52 +1605,52 @@
         "version.txt"
       ]
     },
-    "MongoDB.Bson/2.26.0": {
-      "sha512": "g4YPC3SHHB4oKqkQdRCh03E9Ex7g/WawFhU5ABtsfkYEjCRMZrEA2jH+bGB1DAlDQ+jweXOdh1S2KkVEaZ5lng==",
+    "MongoDB.Bson/2.28.0": {
+      "sha512": "yiWN3scVV0lYpFXn1CL4PB0BK3KrHFC44qw72+/cBIDS9+r9MQYfxFMxM+pAvnSssAZtQ7ZabCu7z3UOXqKy4w==",
       "type": "package",
-      "path": "mongodb.bson/2.26.0",
+      "path": "mongodb.bson/2.28.0",
       "files": [
         ".nupkg.metadata",
         ".signature.p7s",
-        "LICENSE.md",
+        "README.md",
         "lib/net472/MongoDB.Bson.dll",
         "lib/net472/MongoDB.Bson.xml",
         "lib/netstandard2.0/MongoDB.Bson.dll",
         "lib/netstandard2.0/MongoDB.Bson.xml",
         "lib/netstandard2.1/MongoDB.Bson.dll",
         "lib/netstandard2.1/MongoDB.Bson.xml",
-        "mongodb.bson.2.26.0.nupkg.sha512",
+        "mongodb.bson.2.28.0.nupkg.sha512",
         "mongodb.bson.nuspec",
         "packageIcon.png"
       ]
     },
-    "MongoDB.Driver/2.26.0": {
-      "sha512": "PaRNwcnsjh0rXiNqphQZZn0l2Lef/lEvmJSmHQAIX2jcU3XM/WTFezSvaxNNgvGwUS0MunQyPLECBPnZuRaupQ==",
+    "MongoDB.Driver/2.28.0": {
+      "sha512": "/aMeLbiqm8aqopZU7MlnJwQfc94VLoTRIK3xPSWqv6kDS1MV8tf1kcX2X3Ji71n2NspZ1jwHIpZ/AP5sQyBhXw==",
       "type": "package",
-      "path": "mongodb.driver/2.26.0",
+      "path": "mongodb.driver/2.28.0",
       "files": [
         ".nupkg.metadata",
         ".signature.p7s",
-        "LICENSE.md",
+        "README.md",
         "lib/net472/MongoDB.Driver.dll",
         "lib/net472/MongoDB.Driver.xml",
         "lib/netstandard2.0/MongoDB.Driver.dll",
         "lib/netstandard2.0/MongoDB.Driver.xml",
         "lib/netstandard2.1/MongoDB.Driver.dll",
         "lib/netstandard2.1/MongoDB.Driver.xml",
-        "mongodb.driver.2.26.0.nupkg.sha512",
+        "mongodb.driver.2.28.0.nupkg.sha512",
         "mongodb.driver.nuspec",
         "packageIcon.png"
       ]
     },
-    "MongoDB.Driver.Core/2.26.0": {
-      "sha512": "y1Gs8a+ON/NqOd0dWfGfxluqitbD2rAecEvg5wN5GfWQf328TKyWZLUBbFG5H70hWZG/RUryZwNGMnBdPFn7QQ==",
+    "MongoDB.Driver.Core/2.28.0": {
+      "sha512": "Ek5cjiN9FwBsTdJnLouOsKWjplr4D+8fs9urOhzBKZLygOsgIxTDLzpoHC3Mg4bJ1V/Mbz0/xXr0KqUXdmzqEg==",
       "type": "package",
-      "path": "mongodb.driver.core/2.26.0",
+      "path": "mongodb.driver.core/2.28.0",
       "files": [
         ".nupkg.metadata",
         ".signature.p7s",
-        "LICENSE.md",
+        "README.md",
         "THIRD-PARTY-NOTICES",
         "lib/net472/MongoDB.Driver.Core.dll",
         "lib/net472/MongoDB.Driver.Core.xml",
@@ -1482,15 +1658,15 @@
         "lib/netstandard2.0/MongoDB.Driver.Core.xml",
         "lib/netstandard2.1/MongoDB.Driver.Core.dll",
         "lib/netstandard2.1/MongoDB.Driver.Core.xml",
-        "mongodb.driver.core.2.26.0.nupkg.sha512",
+        "mongodb.driver.core.2.28.0.nupkg.sha512",
         "mongodb.driver.core.nuspec",
         "packageIcon.png"
       ]
     },
-    "MongoDB.Libmongocrypt/1.9.0": {
-      "sha512": "5uMtRXwy2NkSRWVQUkkdtq8BsRiHbE6eX8vX52NtMvDC/T4VTtHZLQb8ogW+mw0WSvM1IIUvz3Gl1iMJmT8HKQ==",
+    "MongoDB.Libmongocrypt/1.11.0": {
+      "sha512": "x1Fm9b5/93k1l0FpbUxHrcFIm/6m/qXfmbQddtHILqltx2EVSkIAzzBMiCr4D/3IBXSEWzgXP73xFExIpXQ9lQ==",
       "type": "package",
-      "path": "mongodb.libmongocrypt/1.9.0",
+      "path": "mongodb.libmongocrypt/1.11.0",
       "files": [
         ".nupkg.metadata",
         ".signature.p7s",
@@ -1499,15 +1675,19 @@
         "content/libmongocrypt.dylib",
         "content/libmongocrypt.so",
         "content/mongocrypt.dll",
+        "contentFiles/any/net472/libmongocrypt.dylib",
+        "contentFiles/any/net472/libmongocrypt.so",
+        "contentFiles/any/net472/mongocrypt.dll",
         "contentFiles/any/netstandard2.0/libmongocrypt.dylib",
         "contentFiles/any/netstandard2.0/libmongocrypt.so",
         "contentFiles/any/netstandard2.0/mongocrypt.dll",
         "contentFiles/any/netstandard2.1/libmongocrypt.dylib",
         "contentFiles/any/netstandard2.1/libmongocrypt.so",
         "contentFiles/any/netstandard2.1/mongocrypt.dll",
+        "lib/net472/MongoDB.Libmongocrypt.dll",
         "lib/netstandard2.0/MongoDB.Libmongocrypt.dll",
         "lib/netstandard2.1/MongoDB.Libmongocrypt.dll",
-        "mongodb.libmongocrypt.1.9.0.nupkg.sha512",
+        "mongodb.libmongocrypt.1.11.0.nupkg.sha512",
         "mongodb.libmongocrypt.nuspec",
         "runtimes/linux/native/libmongocrypt.so",
         "runtimes/osx/native/libmongocrypt.dylib",
@@ -2090,6 +2270,24 @@
         "ref/netcoreapp2.1/_._",
         "system.memory.4.5.5.nupkg.sha512",
         "system.memory.nuspec",
+        "useSharedDesignerContext.txt",
+        "version.txt"
+      ]
+    },
+    "System.Net.WebSockets.WebSocketProtocol/4.5.3": {
+      "sha512": "O8RIMEVeOFzT8fscu6MDc4y+0LfnlXdqGovb0rJHBNVKhwn6BsNJmTY1oYUZPPsMfcc5OP20WpX4vj/aK8n98g==",
+      "type": "package",
+      "path": "system.net.websockets.websocketprotocol/4.5.3",
+      "files": [
+        ".nupkg.metadata",
+        ".signature.p7s",
+        "LICENSE.TXT",
+        "THIRD-PARTY-NOTICES.TXT",
+        "lib/netcoreapp2.1/System.Net.WebSockets.WebSocketProtocol.dll",
+        "lib/netstandard2.0/System.Net.WebSockets.WebSocketProtocol.dll",
+        "ref/netstandard2.0/System.Net.WebSockets.WebSocketProtocol.dll",
+        "system.net.websockets.websocketprotocol.4.5.3.nupkg.sha512",
+        "system.net.websockets.websocketprotocol.nuspec",
         "useSharedDesignerContext.txt",
         "version.txt"
       ]
@@ -2788,6 +2986,25 @@
         "system.text.encoding.nuspec"
       ]
     },
+    "System.Text.Encodings.Web/4.5.0": {
+      "sha512": "Xg4G4Indi4dqP1iuAiMSwpiWS54ZghzR644OtsRCm/m/lBMG8dUBhLVN7hLm8NNrNTR+iGbshCPTwrvxZPlm4g==",
+      "type": "package",
+      "path": "system.text.encodings.web/4.5.0",
+      "files": [
+        ".nupkg.metadata",
+        ".signature.p7s",
+        "LICENSE.TXT",
+        "THIRD-PARTY-NOTICES.TXT",
+        "lib/netstandard1.0/System.Text.Encodings.Web.dll",
+        "lib/netstandard1.0/System.Text.Encodings.Web.xml",
+        "lib/netstandard2.0/System.Text.Encodings.Web.dll",
+        "lib/netstandard2.0/System.Text.Encodings.Web.xml",
+        "system.text.encodings.web.4.5.0.nupkg.sha512",
+        "system.text.encodings.web.nuspec",
+        "useSharedDesignerContext.txt",
+        "version.txt"
+      ]
+    },
     "System.Threading/4.3.0": {
       "sha512": "VkUS0kOBcUf3Wwm0TSbrevDDZ6BlM+b/HRiapRFWjM5O0NS0LviG0glKmFK+hhPDd1XFeSdU1GmlLhb2CoVpIw==",
       "type": "package",
@@ -2971,8 +3188,9 @@
       "AutoMapper >= 13.0.1",
       "MediatR >= 12.3.0",
       "Microsoft.AspNetCore.Authentication.JwtBearer >= 6.0.0",
+      "Microsoft.AspNetCore.WebSockets >= 2.2.1",
       "Microsoft.IdentityModel.Tokens >= 7.6.0",
-      "MongoDB.Driver >= 2.26.0",
+      "MongoDB.Driver >= 2.28.0",
       "Swashbuckle.AspNetCore >= 6.6.2",
       "System.IdentityModel.Tokens.Jwt >= 7.6.0",
       "Twilio >= 7.1.1"
@@ -3027,13 +3245,17 @@
             "target": "Package",
             "version": "[6.0.0, )"
           },
+          "Microsoft.AspNetCore.WebSockets": {
+            "target": "Package",
+            "version": "[2.2.1, )"
+          },
           "Microsoft.IdentityModel.Tokens": {
             "target": "Package",
             "version": "[7.6.0, )"
           },
           "MongoDB.Driver": {
             "target": "Package",
-            "version": "[2.26.0, )"
+            "version": "[2.28.0, )"
           },
           "Swashbuckle.AspNetCore": {
             "target": "Package",

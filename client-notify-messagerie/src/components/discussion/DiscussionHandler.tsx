@@ -1,6 +1,10 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import React, { useEffect, useRef, useState } from 'react'
 import { Emoji } from '@emoji-mart/data'
+import { useAuth } from '../../contexte/AuthContext'
+import { User } from '../../interfaces'
+import messageService from '../../services/messageService'
+import { Message } from '../../interfaces/Discussion'
 
 
 interface DiscussionHandlerProps {
@@ -13,20 +17,53 @@ interface DiscussionHandlerProps {
         setPickerRef: (field: 'message') => (el: HTMLDivElement | null) => void;
         SendImage:(event: React.ChangeEvent<HTMLInputElement>) => void,
         SendFile: (event: React.ChangeEvent<HTMLInputElement>) => void,
-        handleSend: ()=> void,
+        handleSend: (receiver: User , IdDiscussion: string)=> void,
     }) => React.ReactNode
 }
 
 export const DiscussionHandler: React.FC<DiscussionHandlerProps> = ({ render }) => {
 
+    const { user, refreshUserData } = useAuth()
+    const [message, setMessage] = useState<string>('')
 
     useEffect(() => {
         document.addEventListener('mousedown', handleClickOutside)
         return () => {
             document.removeEventListener('mousedown', handleClickOutside)
         }
+        
     }, [])
     
+    const handleSend = async (receiver: User, IdDiscussion: string)=> {
+        if (message.trim() && user ) {
+            console.log('Message sent:', message)
+            const messageDTO: Message = {
+                discussionId: IdDiscussion,
+                senderId: user.id,
+                receiverId: receiver.id,
+                content: message,
+                timestamp: new Date(),
+                read: false
+            }
+
+            try {
+                if (messageDTO) {
+                    console.log(messageDTO)
+                    const response = await messageService.sendMessage(messageDTO)
+                    refreshUserData()
+                    console.log(response)
+                    setMessage('')
+
+                }
+            } catch (error) {
+                console.log('Failed to fetch messages')
+            }
+
+        }else {
+            return null
+        }
+    }
+
     const pickerRef = useRef<{ message: HTMLDivElement | null }>({
         message: null,
     })
@@ -35,7 +72,6 @@ export const DiscussionHandler: React.FC<DiscussionHandlerProps> = ({ render }) 
         message: false,
     })
 
-    const [message, setMessage] = useState<string>('')
     const togglePicker = (picker: 'message') => {
         setShowEmojiPicker(prev => ({
             ...prev,
@@ -52,16 +88,6 @@ export const DiscussionHandler: React.FC<DiscussionHandlerProps> = ({ render }) 
         }
     }
 
-    const handleSend = ()=> {
-        if (message.trim()) {
-            // Handle sending the message (e.g., API call, updating state)
-            console.log('Message sent:', message)
-            setMessage('') 
-
-        }else {
-            return null
-        }
-    }
     const addEmoji = (emoji: Emoji) => {
         const emojiStr: string = emoji.native
         setMessage((prev) => prev + emojiStr)
