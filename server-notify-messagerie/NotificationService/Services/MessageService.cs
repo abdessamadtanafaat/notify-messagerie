@@ -15,7 +15,9 @@ public class MessageService : IMessageService {
     public async Task SendMessage(Message message) {
 
         await _messageRepository.SaveMessageAsync(message);
+
     }
+
     public async Task<IEnumerable<Message>> GetMessagesForUser(string userId) {
 
     return await _messageRepository.GetMessagesForUser(userId);

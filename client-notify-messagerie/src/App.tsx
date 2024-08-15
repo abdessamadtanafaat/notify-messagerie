@@ -15,7 +15,7 @@ import NotFoundPage from './pages/NotFoundPage'
 import Personnes from './components/personnes/Personnes'
 import Layout from './components/layout/Layout'
 import Archive from './components/archive/Archive'
-import Settings from './components/Settings'
+import Settings from './components/settings/Settings'
 import Home from './pages/Home'
 import Demandes from './components/demandes/Demandes'
 import Friends from './components/friends/Friends'
@@ -29,7 +29,7 @@ const App: React.FC = () => {
 <Router>
      <Layout>
       <Routes>
-      <Route path="/" element={<Navigate to="login"/>} />
+      <Route path="/" element={<Navigate to="/login"/>} />
           <Route path="/login" element={<LoginPage />} />
           <Route path="/reset-password-byPhoneNumber" element={<ResetPasswordByPhoneNumberPage />} />
           <Route path="/register" element={<RegisterPage />} />

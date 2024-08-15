@@ -15,11 +15,11 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
             {showSidebar && (                    
                     <Sidebar />
             )}
-            {showSidebar && (
+            {
         <main className="flex-grow overflow-x-hidden">
                    {children}
                 </main>
-            )}
+            }
 
         </div>
     )

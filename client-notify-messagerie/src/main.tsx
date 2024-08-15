@@ -16,14 +16,14 @@ const root = createRoot(rootElement!)
 root.render(
   <Provider store={store}>
     <GoogleOAuthProvider clientId={import.meta.env.VITE_GOOGLE_CLIENT_ID}>
-      <React.StrictMode>
+      {/* <React.StrictMode> */}
         <ToastContainer position="top-center" />
         <ThemeProvider>
         <AuthProvider>
         <App />
       </AuthProvider>
       </ThemeProvider>
-    </React.StrictMode>
+    {/* </React.StrictMode> */}
     </GoogleOAuthProvider>
 
   </Provider>

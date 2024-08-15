@@ -2,9 +2,10 @@
 import React, { useEffect, useRef, useState } from 'react'
 import { Emoji } from '@emoji-mart/data'
 import { useAuth } from '../../contexte/AuthContext'
-import { User } from '../../interfaces'
-import messageService from '../../services/messageService'
+import { ErrorResponse, User } from '../../interfaces'
 import { Message } from '../../interfaces/Discussion'
+import { WebSocketService } from '../../services/WebSocketService'
+import API_ENDPOINTS from '../../api/endpoints'
 
 
 interface DiscussionHandlerProps {
@@ -19,12 +20,18 @@ interface DiscussionHandlerProps {
         SendFile: (event: React.ChangeEvent<HTMLInputElement>) => void,
         handleSend: (receiver: User , IdDiscussion: string)=> void,
     }) => React.ReactNode
+    onNewMessage?: (message: Message) => void // New prop for handling new messages
 }
 
-export const DiscussionHandler: React.FC<DiscussionHandlerProps> = ({ render }) => {
+export const DiscussionHandler: React.FC<DiscussionHandlerProps> = ({ render, onNewMessage  }) => {
 
     const { user, refreshUserData } = useAuth()
+
     const [message, setMessage] = useState<string>('')
+    const [messages, setMessages] = useState<Message[]>([])
+    const [webSocketService, setWebSocketService] = useState<WebSocketService | null>(null)
+
+    //const webSocketService = useRef(new WebSocketService(API_ENDPOINTS.WEBSOCKET_URL, user.id)).current
 
     useEffect(() => {
         document.addEventListener('mousedown', handleClickOutside)
@@ -34,8 +41,37 @@ export const DiscussionHandler: React.FC<DiscussionHandlerProps> = ({ render }) 
         
     }, [])
     
+    
+    useEffect(() => {
+
+        if(!user)return
+            const webSocketService = new WebSocketService(API_ENDPOINTS.WEBSOCKET_URL, user.id)
+            setWebSocketService(webSocketService)
+        
+            webSocketService.connect()
+
+            webSocketService.onMessage((message: Message)=> {
+                console.log('Message received: ', message)
+                if (onNewMessage) {
+                    onNewMessage(message)
+                }
+            })
+            webSocketService.onError((error: ErrorResponse)=> {
+                console.log('WebSocket error: ',error.error)
+            })
+
+            webSocketService.onClose(()=> {
+                console.log('WebSocket conenction closed')
+            })
+            
+            return ()=>{
+                webSocketService.disconnect()
+            }
+        
+    }, [user?.id])
+
     const handleSend = async (receiver: User, IdDiscussion: string)=> {
-        if (message.trim() && user ) {
+        if (message.trim() && user && webSocketService) {
             console.log('Message sent:', message)
             const messageDTO: Message = {
                 discussionId: IdDiscussion,
@@ -49,10 +85,12 @@ export const DiscussionHandler: React.FC<DiscussionHandlerProps> = ({ render }) 
             try {
                 if (messageDTO) {
                     console.log(messageDTO)
-                    const response = await messageService.sendMessage(messageDTO)
-                    refreshUserData()
-                    console.log(response)
+                    webSocketService.send(messageDTO)
+                    setMessages((prevMessages) => [...prevMessages, messageDTO])
+                    console.log(messages)
                     setMessage('')
+                    refreshUserData()
+
 
                 }
             } catch (error) {
@@ -138,5 +176,6 @@ export const DiscussionHandler: React.FC<DiscussionHandlerProps> = ({ render }) 
         SendImage,
         SendFile,
         handleSend,
+        //messages,
     })
 }

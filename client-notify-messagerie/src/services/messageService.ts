@@ -24,6 +24,23 @@ import { toast } from 'react-toastify'
     }
   }
 
+  const getDiscussion  = async (userId: string, selectedUserId: string) => {
+    try {
+      const response = await axiosInstance.get(`${API_ENDPOINTS.GET_DISCUSSION}/${userId}/${selectedUserId}`)
+      console.log(response)
+      console.log(response.data)
+      return response.data
+    } catch (error) {
+      if (axios.isAxiosError(error) && error.response) {
+        const typedError = error.response.data as ErrorResponse
+        console.log(typedError)
+        throw typedError
+      } else {
+        throw { error: 'An unknown error occurred', statusCode: 500 }
+      }
+    }
+  }
+
   const sendMessage = async(message: Message): Promise<void> =>{
 
     try {
@@ -42,5 +59,5 @@ import { toast } from 'react-toastify'
     }
   }
 
-  export default {getDiscussions,sendMessage}
+  export default {getDiscussions,sendMessage,getDiscussion}
 

@@ -11,6 +11,8 @@ const Profile: React.FC = () => {
     return (
         <ProfileHandler
             render={({ avatarUrl, handleChangeAvatar, user, handleUpdate, editing, handleEditToggle, username, about, handleUpdateProfile, charsRemaining, isHovered, handleMouseEnter, handleMouseLeave, showEmojiPicker, togglePicker, handleLogout, isLoadingButton, addEmoji, setPickerRef, isUpLoading,formattedPhoneNumber }) => (
+                <div className={'absolute top-4 left-20 md:w-80 lg:w-48 flex-shrink-0 rounded-2xl bg-white dark:bg-gray-800 h-screen shadow-xl px-4 md:px-8 overflow-y-auto'}>
+
                         <div className="space-y-4 md:space-y-5 mt-5">
                             <h1 className="hidden md:block font-bold text-sm md:text-xl text-center dark:text-white">
                                 Profile
@@ -173,6 +175,7 @@ const Profile: React.FC = () => {
                                 </div>
                             </form>
                         </div>
+                    </div>
 )}
         />
     )

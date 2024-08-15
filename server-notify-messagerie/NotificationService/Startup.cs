@@ -19,6 +19,8 @@ using NotificationService.Security.Repositories;
 using NotificationService.Security.Service;
 using NotificationService.Services;
 using NotificationService.Validators;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 
 namespace NotificationService
 {
@@ -131,6 +133,7 @@ namespace NotificationService
             services.AddControllersWithViews(options =>
             {
                 options.Filters.Add(typeof(GlobalExceptionFilter));
+
             });
 
             var jwtSettings = Configuration.GetSection("JwtSettings").Get<JwtSettings>();
@@ -240,9 +243,10 @@ namespace NotificationService
                 {
                     if (context.WebSockets.IsWebSocketRequest)
                     {
+                        var userId = context.Request.Query["userId"].ToString(); 
                         var webSocket = await context.WebSockets.AcceptWebSocketAsync();
                         var webSocketService = context.RequestServices.GetRequiredService<IWebSocketService>();
-                        await webSocketService.HandleWebSocketAsync(webSocket);
+                        await webSocketService.HandleWebSocketAsync(webSocket,userId);
                     }
                     else
                     {

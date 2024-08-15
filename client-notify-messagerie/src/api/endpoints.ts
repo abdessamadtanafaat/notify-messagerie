@@ -24,8 +24,14 @@
 
 //==========================MessagesEndpointes===================================//
 
-      GET_MESSAGES: '/Discussions/messages',
-      SEND_MESSAGE: 'Discussions/send'
+      GET_MESSAGES: '/Discussions/messages',  // ALL THE DISCUSSIONS OF THE USER 
+      SEND_MESSAGE: '/Discussions/send', 
+      GET_DISCUSSION: '/Discussions/Discussion', // GET THE DISCUSSION OF THE USERAUTH AND SELECTED USER IN THE BAR CHAT
+
+      
+      //====================WEB SOCKET  ==================
+
+      WEBSOCKET_URL: 'ws://localhost:5000/ws' 
 
  }
 

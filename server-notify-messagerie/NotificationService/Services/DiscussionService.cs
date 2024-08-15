@@ -1,4 +1,6 @@
 
+using MongoDB.Bson;
+using NotificationService.Exceptions;
 using NotificationService.Models;
 using NotificationService.Repositories;
 
@@ -11,14 +13,63 @@ public class DiscussionService : IDiscussionService{
 
     public DiscussionService(IDiscussionRepository discussionRepository,
                              IMessageRepostory messageRepository,
-                             IUserRepository userRepository)
+                             IUserRepository userRepository
+                            )
     {
         _discussionRepository = discussionRepository;
         _messageRepository = messageRepository;
         _userRepository = userRepository;
     }
 
-public async Task<IEnumerable<DiscussionDto>> GetDiscussionsWithMessages(string userId)
+    public async Task <SingleDiscussion> GetDiscussionForTwoUsers(string userId, string selectedUserId)
+    {
+    if (string.IsNullOrWhiteSpace(userId))
+    {
+        throw new ArgumentException("User ID cannot be null or empty", nameof(userId));
+    }
+
+    if (string.IsNullOrWhiteSpace(selectedUserId))
+    {
+        throw new ArgumentException("User ID cannot be null or empty", nameof(selectedUserId));
+    }
+
+    var discussion = await _discussionRepository.GetDiscussionForTwoUsers(userId, selectedUserId);
+ 
+    var messages = await _messageRepository.GetMessagesForDiscussion(discussion.Id);
+
+    var receiver = await _userRepository.GetUserByIdAsync(selectedUserId);
+
+    var discussionDto = new SingleDiscussion {
+            Id = discussion.Id,
+            Users = new UserDto
+            {
+                Id = receiver.Id,
+                FirstName = receiver.FirstName,
+                LastName = receiver.LastName,
+                AvatarUrl = receiver.AvatarUrl,
+                Active = receiver.Active,
+                LastLogout = receiver.LastLogout,
+            },
+            Messages = messages.Select(m=> new Message{
+             Id = m.Id, 
+            Content = m.Content,
+        Timestamp = m.Timestamp,
+        SenderId = m.SenderId,
+        ReceiverId = m.ReceiverId, 
+        DiscussionId = m.DiscussionId, 
+        Read = m.Read, 
+    }).ToList()
+
+    }; 
+
+    return discussionDto; 
+
+
+
+    }
+    
+
+    public async Task<IEnumerable<DiscussionDto>> GetDiscussionsWithMessages(string userId)
 {
     if (string.IsNullOrWhiteSpace(userId))
     {
@@ -62,4 +113,24 @@ public async Task<IEnumerable<DiscussionDto>> GetDiscussionsWithMessages(string 
     return discussionDtos;
 }
 
+    
+    public async Task UpdateDiscussion(string idDiscussion, Message message) {
+
+
+            // Check if id is a valid ObjectId
+            if (!ObjectId.TryParse(idDiscussion, out _))
+            {
+                throw new NotFoundException($"Discussion with ID '{idDiscussion}' not found.");
+            }
+            
+            var existingDiscussion = await _discussionRepository.GetDiscussionByIdAsync(idDiscussion);
+            if (existingDiscussion == null)
+            {
+                throw new NotFoundException($"Discussion with ID '{idDiscussion}' not found."); 
+            }
+            
+            existingDiscussion.LastMessageContent = message.Content; 
+            existingDiscussion.LastMessageTimestamp = message.Timestamp; 
+        await _discussionRepository.UpdateDiscussionAsync(idDiscussion, existingDiscussion); 
+    }
 }

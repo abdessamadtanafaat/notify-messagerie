@@ -1,9 +1,8 @@
 import React, { useEffect, useState } from 'react'
-//import DiscussionSidebar from '../personnes/DiscussionSidebar'
 import { User } from '../../interfaces'
 import { SearchIcon } from 'lucide-react'
 import { useAuth } from '../../contexte/AuthContext'
-import { Discussion } from '../../interfaces/Discussion'
+import { Discussion, Message } from '../../interfaces/Discussion'
 
 import messageService from '../../services/messageService'
 import DiscussionSidebar from '../personnes/DiscussionSidebar'
@@ -15,30 +14,77 @@ const DiscussionList: React.FC = () => {
     const [selectedUser, setSelectedUser] = useState<User | null>(null)
     const [discussions, setDiscussions] = useState<Discussion[]>([])
     const [idDiscussion, setIdDiscussion] = useState<string>('')
+    const [messages, setMessages] = useState<Message[]>([])
+    //const [refresh, setRefresh] = useState<boolean>(false)
 
+
+    
     const { theme } = useThemeContext()
-    const { user } = useAuth()
-    const handleUserClick = (receiver: User, idDiscussion: string) => {
-        setSelectedUser(receiver)
-        setIdDiscussion(idDiscussion)
-        console.log(receiver)
+    const { user, refreshUserData } = useAuth()
+
+    const fetchDiscussions = async () => {
+        try {
+            if (user) {
+                const discussionsData = await messageService.getDiscussions(user.id)
+                setDiscussions(discussionsData)
+            }
+        } catch (error) {
+            console.log('Failed to fetch discussions')
+        }
     }
 
-    useEffect(() => {
-        const fetchMessages = async () => {
-            try {
-                if (user) {
-                    console.log(user.id)
-                    const discussionsData = await messageService.getDiscussions(user.id)
-                    setDiscussions(discussionsData)
-                    console.log(discussionsData)
+
+    const handleUserClick = async (receiver: User, idDiscussion: string) => {
+        setSelectedUser(receiver)
+        setIdDiscussion(idDiscussion)
+                try {
+                    if (user) {
+                        const discussionData = await messageService.getDiscussion(receiver.id, user.id)
+                        console.log(discussionData.messages)
+                        setMessages(discussionData.messages)
+                        setIdDiscussion(discussionData.id)
+                    }
+                    refreshUserData()
+                } catch (error) {
+                    console.log('Failed to fetch messages')
                 }
-            } catch (error) {
-                console.log('Failed to fetch messages')
+    }
+
+    const handleNewMessage = (newMessage: Message) => {
+        const timestamp = newMessage.timestamp instanceof Date ? newMessage.timestamp : new Date(newMessage.timestamp)
+
+        setDiscussions(prevDiscussions => {
+        // Update the discussions with the new message
+        const updatedDiscussions = prevDiscussions.map(discussion => {
+            if (discussion.id === newMessage.discussionId) {
+                return {
+                    ...discussion,
+                    lastMessage: newMessage,
+                    lastMessageTimestamp: timestamp.toISOString(),
+                    lastMessageContent: newMessage.content
+                }
             }
-        }
-        fetchMessages()
+            return discussion
+        })
+                    // Sort discussions so that the discussion with the new message is at the top
+        return updatedDiscussions.sort((a, b) => {
+            if (a.id === newMessage.discussionId) return -1 // Move the current discussion to the top
+            if (b.id === newMessage.discussionId) return 1
+            // Sort by last message timestamp for other discussions
+            return new Date(b.lastMessageTimestamp).getTime() - new Date(a.lastMessageTimestamp).getTime()
+        })
+
+        })
+    
+        setMessages(prevMessages => [...prevMessages, newMessage])
+    }
+    
+
+    useEffect(() => {
+        fetchDiscussions()
     }, [user])
+
+    
 
     return (
         <div className="flex">
@@ -71,6 +117,9 @@ const DiscussionList: React.FC = () => {
                                 receiver
                             } = discussion
 
+                            const isMyMessage = lastMessage.senderId === user?.id 
+
+
                             return (
                                 <li
                                     key={id}
@@ -95,11 +144,11 @@ const DiscussionList: React.FC = () => {
                                                 {receiver.firstName} {receiver.lastName}
                                             </p>
                                             <div className="flex items-center space-x-2 text-xs text-black dark:text-white">
-                                                <p className={` truncate ${!lastMessage.read ? 'font-bold' : 'font-normal'} `}>{lastMessage.content}</p>
+                                                <p className={` truncate ${!lastMessage.read && !isMyMessage ?  'font-bold' : 'font-normal'} `}>{lastMessage.content}</p>
                                                 <p className='text-[12px]'>
                                                     {new Date(lastMessage.timestamp).toLocaleTimeString()} {/* Format timestamp */}
                                                 </p>
-                                                {!lastMessage.read && (
+                                                {!lastMessage.read && !isMyMessage && (
                                                     <div className="relative">
                                                         <div className="absolute -top-1 -right-2 w-2 h-2 rounded-full bg-blue-500" />
                                                     </div>
@@ -119,7 +168,11 @@ const DiscussionList: React.FC = () => {
                     <DiscussionSidebar 
                         receiver={selectedUser}
                         idDiscussion={idDiscussion}
+                        messages={messages}
+                        onMessageSent={handleNewMessage}
                     />
+
+                    
                 </div>
             )}
         </div>

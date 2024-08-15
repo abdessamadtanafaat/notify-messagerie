@@ -5,7 +5,7 @@ export interface Message {
     senderId: string;
     receiverId: string;
     content: string;
-    timestamp: Date; // Use ISODate string format
+    timestamp: Date; 
     read: boolean;
 }
 
@@ -18,6 +18,3 @@ export interface Discussion {
     receiver: User;
 }
 
-// export interface DiscussionListProps {
-//     discussions: Discussion[];
-// }
