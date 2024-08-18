@@ -7,6 +7,7 @@ export interface Message {
     content: string;
     timestamp: Date; 
     read: boolean;
+    readTime: Date;
 }
 
 export interface Discussion {
@@ -18,3 +19,7 @@ export interface Discussion {
     receiver: User;
 }
 
+export interface TypingNotification {
+    type: 'typing';
+    userId: string;
+}

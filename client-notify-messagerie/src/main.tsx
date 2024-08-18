@@ -14,6 +14,7 @@ const rootElement = document.getElementById('root')
 const root = createRoot(rootElement!)
 
 root.render(
+  
   <Provider store={store}>
     <GoogleOAuthProvider clientId={import.meta.env.VITE_GOOGLE_CLIENT_ID}>
       {/* <React.StrictMode> */}

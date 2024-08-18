@@ -58,7 +58,7 @@ const Sidebar: React.FC = () => {
         <SkeletonSidebar />
       ) : (
         <>
-          <div className="flex absolute h-full flex-col rounded-2xl justify-between border-e dark:border-gray-700 bg-gray-200 dark:bg-gray-700 overflow-y-auto overflow-x-hidden">
+          <div className="flex fixed h-full flex-col rounded-2xl justify-between border-e dark:border-gray-700 bg-gray-200 dark:bg-gray-700 overflow-y-auto overflow-x-hidden">
             <div>
               <div className="inline-flex size-14 items-center justify-center">
               <Link
@@ -88,7 +88,7 @@ const Sidebar: React.FC = () => {
                         <MessagesSquareIcon />
 
                         <span
-                          className="invisible absolute z-20 start-full top-1/2 ms-4 -translate-y-1/2 rounded bg-gray-600 px-2 py-1.5 text-xs font-medium text-white group-hover:visible"
+                          className="invisible absolute z-50 start-full top-1/2 ms-4 -translate-y-1/2 rounded bg-gray-600 px-2 py-1.5 text-xs font-medium text-white group-hover:visible"
                         >
                           Discussions
                         </span>

@@ -12,5 +12,7 @@ public class Message {
     public string Content { get; set; }
     public DateTime Timestamp { get; set; }
     public Boolean Read {get; set;}
+    public DateTime ReadTime { get; set; }
+
 
 }

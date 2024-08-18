@@ -1,3 +1,4 @@
+using MongoDB.Bson;
 using MongoDB.Driver;
 
 namespace NotificationService.Repositories
@@ -51,5 +52,13 @@ public class MessageRepository : IMessageRepostory {
     
 
         }
+        public async Task UpdateMessageAsync(string IdMessage, Message message)
+    {
+            var objectId = new ObjectId(IdMessage); 
+            await _message.ReplaceOneAsync(d => d.Id == IdMessage, message);
     }
+    }
+
+
+
 }

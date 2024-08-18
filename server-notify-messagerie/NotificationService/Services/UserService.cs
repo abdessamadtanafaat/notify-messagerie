@@ -37,8 +37,7 @@ namespace NotificationService.Services
                     throw new NotFoundException($"User with ID '{id}' not found.");
                 }
                 return user;
-        }
-        
+        }  
         public async Task<List<User>> GetUsersByIdsAsync(List<string> ids)
         {
             // Validate and convert string IDs to ObjectId
@@ -64,7 +63,6 @@ namespace NotificationService.Services
 
             return users;
         }
-    
 
         public Task<User> CreateUserAsync(User user)
         {
@@ -122,8 +120,6 @@ namespace NotificationService.Services
             await _userRepository.UpdateUserAsync(id, user);
             
         }
-
-
         public async Task DeleteUserAsync(string id)
         {
             // Check if id is a valid ObjectId
@@ -139,7 +135,6 @@ namespace NotificationService.Services
             
             await _userRepository.DeleteUserAsync(id);
         }
-
         public async Task UnfriendAsync(string userId, string friendId){
             var user = await _userRepository.GetUserByIdAsync(userId); 
             if (user == null) {
@@ -149,5 +144,31 @@ namespace NotificationService.Services
             await _userRepository.UpdateUserAsync(userId, user); 
         
             }
+
+        public async Task<List<User>> SearchUsersByFirstNameOrLastNameAsync(SearchRequest searchRequest)
+        {
+    if (string.IsNullOrWhiteSpace(searchRequest.UserId))
+    {
+        throw new ArgumentException("User ID cannot be empty or whitespace.");
+    }
+
+    var currentUser = await _userRepository.GetUserByIdAsync(searchRequest.UserId);
+
+        if (currentUser == null)
+    {
+        throw new NotFoundException($"User with ID '{searchRequest.UserId}' not found.");
+    }
+
+    // Get the list of friends' IDs .
+
+    var friendIds = currentUser.Friends; 
+
+    if (friendIds == null || !friendIds.Any()) {
+        return new List<User>();
+    }
+
+        var matchingFriends = await _userRepository.GetFriendsBySearchRequestAsync(friendIds, searchRequest.SearchReq); 
+        return matchingFriends;
+        }
     }
 }

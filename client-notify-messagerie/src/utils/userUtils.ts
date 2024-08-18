@@ -53,6 +53,37 @@ export const formatPhoneNumber = (phoneNumber: string)=>{
     return phoneNumber
 }
 
+export const formatDateTime = (dateString: string): string => {
+    // Parse the ISO 8601 date string to a Date object
+    const date = new Date(dateString)
+
+    // Check if the parsed date is valid
+    if (isNaN(date.getTime())) {
+        throw new Error('Invalid Date')
+    }
+
+    // Helper function to pad single digits with leading zeros
+    const padZero = (num: number) => num.toString().padStart(2, '0')
+
+    // Extract date components
+    const year = date.getFullYear()
+    const month = padZero(date.getMonth() + 1) // Months are zero-indexed
+    const day = padZero(date.getDate())
+
+    // Extract time components
+    const hours = padZero(date.getHours())
+    const minutes = padZero(date.getMinutes())
+
+    // Format the date and time as "YYYY-MM-DD HH:mm"
+    const formattedDate = `${year}-${month}-${day}`
+    const formattedTime = `${hours}:${minutes}`
+
+    return `${formattedDate}, ${formattedTime}`
+}
+
+
+
+
 
 // Convert a string from PascalCase (UpperCamelCase) to camelCase (lowerCamelCase)
 // eslint-disable-next-line @typescript-eslint/no-explicit-any

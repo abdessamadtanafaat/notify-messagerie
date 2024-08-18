@@ -41,7 +41,7 @@ const FriendInfoSidebar: React.FC<FriendInfoSidebarProps> = ({ user }) => {
     return (
         <div
         id="sidebar"
-        className="absolute top-4 right-7 rounded-2xl bg-white dark:bg-gray-800 h-screen md:block shadow-xl px-6 py-8 w-30 md:w-80 lg:w-60 overflow-x-hidden transition-transform duration-300 ease-in-out"
+        className="fixed top-4 right-7 rounded-2xl bg-white dark:bg-gray-800 h-screen md:block shadow-xl px-6 py-8 w-30 md:w-80 lg:w-60 overflow-x-hidden transition-transform duration-300 ease-in-out"
     >
                 <div className="flex flex-col items-center space-y-4">
                     <img

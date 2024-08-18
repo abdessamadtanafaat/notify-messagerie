@@ -1,10 +1,11 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { ErrorResponse } from '../interfaces'
-import { Message } from '../interfaces/Discussion'
+import { Message, TypingNotification } from '../interfaces/Discussion'
 
 export class WebSocketService {
     private webSocket: WebSocket | null = null
     private onMessageCallback: (message: Message) => void  =() => {}
+    //private onTypingNotificationCallback: (typingNotification: TypingNotification) => void = () => {}
     private onErrorCallback: (error: ErrorResponse) => void =() => {}
     private onCloseCallback: () => void =() => {}
 
@@ -23,13 +24,23 @@ export class WebSocketService {
         this.webSocket.onmessage = (event) => {
             console.log('Raw message received:', event.data) 
             try {
-                // Attempt to parse as JSON
                 const parsedMessage = JSON.parse(event.data)
-                console.log('Parsed message:', parsedMessage) 
+                console.log('Parsed message:', parsedMessage)
                 this.onMessageCallback(parsedMessage)
+
+                // Check message type
+                // if (parsedMessage.type === 'typing') {
+                //     // Handle typing notification
+                //     if (parsedMessage.userId !== this.userId) {
+                //         console.log('Typing notification received:', parsedMessage)
+                //         // Update UI to show typing indicator
+                //     }
+                // } else {
+                //     // Handle other messages
+                //     this.onMessageCallback(parsedMessage)
+                // }
             } catch (error) {
                 console.log('Failed to parse message:', error)
-
             }
         }
         
@@ -42,10 +53,18 @@ export class WebSocketService {
         }
     }
 
-    send(message: Message): void  {
-        if (this.webSocket && this.webSocket.readyState === WebSocket.OPEN){
+    // send(message: Message | TypingNotification): void {
+    //     if (this.webSocket && this.webSocket.readyState === WebSocket.OPEN) {
+    //         this.webSocket.send(JSON.stringify(message))
+    //     } else {
+    //         console.error('WebSocket is not connected')
+    //     }
+    // }
+
+    send(message: Message): void {
+        if (this.webSocket && this.webSocket.readyState === WebSocket.OPEN) {
             this.webSocket.send(JSON.stringify(message))
-        }else{
+        } else {
             console.error('WebSocket is not connected')
         }
     }
@@ -53,6 +72,10 @@ export class WebSocketService {
     onMessage(callback: (messag: Message)=> void):void{
         this.onMessageCallback = callback
     }
+
+    // onTypingNotification(callback: (typingNotification: TypingNotification) => void): void {
+    //     this.onTypingNotificationCallback = callback
+    // }
 
     onError(callback: (error: ErrorResponse)=> void): void {
         this.onErrorCallback = callback

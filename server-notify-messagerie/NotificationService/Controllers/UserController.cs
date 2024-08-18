@@ -90,5 +90,13 @@ namespace NotificationService.Controllers
             await _userService.UnfriendAsync(unfriendRequest.UserId, unfriendRequest.FriendId);
             return Ok (new {Message = "Successfully unfrieded"}); 
         }
+
+        [HttpPost("search")]
+        //[Authorize]
+        public async Task<IActionResult> Search([FromBody] SearchRequest searchRequest ) {
+            var users = await _userService.SearchUsersByFirstNameOrLastNameAsync(searchRequest);
+            return Ok(users);
+        }
+
     }
 }

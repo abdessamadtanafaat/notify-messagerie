@@ -3,5 +3,6 @@ public interface IMessageRepostory {
     Task<IEnumerable<Message>> GetMessagesForUser(string userId);
 
     Task<IEnumerable<Message>> GetMessagesForDiscussion(string discussionId); 
+    Task UpdateMessageAsync(string IdMessage, Message message); 
 
 }

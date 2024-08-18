@@ -37,8 +37,18 @@ public class DiscussionService : IDiscussionService{
  
     var messages = await _messageRepository.GetMessagesForDiscussion(discussion.Id);
 
+    var lastMessage = messages.OrderByDescending(m => m.Timestamp).FirstOrDefault();
+
     var receiver = await _userRepository.GetUserByIdAsync(selectedUserId);
 
+        // mark as read because you get the discussion
+        if (!lastMessage.Read && lastMessage.SenderId == userId){
+
+        lastMessage.Read = true;
+        lastMessage.ReadTime = DateTime.Now;
+        await _messageRepository.UpdateMessageAsync(lastMessage.Id, lastMessage); 
+        }
+        
     var discussionDto = new SingleDiscussion {
             Id = discussion.Id,
             Users = new UserDto
@@ -58,6 +68,7 @@ public class DiscussionService : IDiscussionService{
         ReceiverId = m.ReceiverId, 
         DiscussionId = m.DiscussionId, 
         Read = m.Read, 
+        ReadTime = m.ReadTime,
     }).ToList()
 
     }; 
@@ -94,6 +105,10 @@ public class DiscussionService : IDiscussionService{
         var messages = await _messageRepository.GetMessagesForDiscussion(discussion.Id);
         var lastMessage = messages.OrderByDescending(m => m.Timestamp).FirstOrDefault();
 
+
+
+
+            //lastMessage.ReadTime = DateTime() ; 
         discussionDtos.Add(new DiscussionDto
         {
             Id = discussion.Id,
