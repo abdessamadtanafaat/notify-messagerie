@@ -42,12 +42,12 @@ public class DiscussionService : IDiscussionService{
     var receiver = await _userRepository.GetUserByIdAsync(selectedUserId);
 
         // mark as read because you get the discussion
-        if (!lastMessage.Read && lastMessage.SenderId == userId){
+        // if (!lastMessage.Read && lastMessage.SenderId == userId){
 
-        lastMessage.Read = true;
-        lastMessage.ReadTime = DateTime.Now;
-        await _messageRepository.UpdateMessageAsync(lastMessage.Id, lastMessage); 
-        }
+        // lastMessage.Read = true;
+        // lastMessage.ReadTime = DateTime.Now;
+        // await _messageRepository.UpdateMessageAsync(lastMessage.Id, lastMessage); 
+        // }
         
     var discussionDto = new SingleDiscussion {
             Id = discussion.Id,

@@ -1,6 +1,7 @@
 using System.Text;
 using System.Net.WebSockets;
 using System.Text.Json;
+using System.Text.Json.Serialization;
 using System.Collections.Concurrent;
 using System.Threading.Tasks;
 using System.Threading;
@@ -22,151 +23,130 @@ public class WebSocketService : IWebSocketService
     {
         _userConnections[userId] = webSocket;
         var buffer = new byte[1024 * 8];
-        WebSocketReceiveResult result = await webSocket.ReceiveAsync(new ArraySegment<byte>(buffer), CancellationToken.None);
 
-        while (!result.CloseStatus.HasValue)
+        try
         {
-            var messageJson = Encoding.UTF8.GetString(buffer, 0, result.Count);
-            Console.WriteLine($"Received message: {messageJson}");
-
-            try
+            while (webSocket.State == WebSocketState.Open)
             {
-                // Handle typing notifications
-                // if (IsTypingNotification(messageJson))
-                // {
-                //     var typingNotification = MapTypingCamelCaseToPascalCase<TypingNotification>(messageJson);
+                WebSocketReceiveResult result = await webSocket.ReceiveAsync(new ArraySegment<byte>(buffer), CancellationToken.None);
 
-                //     if (typingNotification == null)
-                //     {
-                //         Console.WriteLine("Failed to deserialize TypingNotification.");
-                //         continue;
-                //     }
-
-                //     Console.WriteLine($"Typing Notification: UserId = {typingNotification.UserId}");
-
-                //     // Skip sending typing notification to the sender
-                //     if (_userConnections.TryGetValue(typingNotification.UserId, out var receiverSocket))
-                //     {
-                //         Console.WriteLine($"User {typingNotification.UserId} is connected.");
-                //         var responseMessage = Encoding.UTF8.GetBytes(messageJson);
-                //         await receiverSocket.SendAsync(new ArraySegment<byte>(responseMessage), WebSocketMessageType.Text, true, CancellationToken.None);
-                //         Console.WriteLine($"Typing notification sent to User {typingNotification.UserId}");
-                //     }
-                //     else
-                //     {
-                //         Console.WriteLine($"User {typingNotification.UserId} is not connected.");
-                //     }
-
-                //     continue;
-                // }
-
-                // Handle regular messages
-                var message = MapCamelCaseToUpperCase(messageJson);
-
-                if (message != null)
+                if (result.MessageType == WebSocketMessageType.Close)
                 {
-                        // Save message and update discussion
-                        await _messageService.SendMessage(message);
-                        await _discussionService.UpdateDiscussion(message.DiscussionId, message);
+                    break;
+                }
 
-                    // Route message to the intended recipient
-                    if (_userConnections.TryGetValue(message.ReceiverId, out var receiverSocket))
+                var messageJson = Encoding.UTF8.GetString(buffer, 0, result.Count);
+                Console.WriteLine($"Received message: {messageJson}");
+
+                try
+                {
+                    var jsonDoc = JsonDocument.Parse(messageJson);
+                    if (jsonDoc.RootElement.TryGetProperty("type", out JsonElement typeElement))
                     {
-                        var responseMessage = Encoding.UTF8.GetBytes(JsonSerializer.Serialize(message));
-                        await receiverSocket.SendAsync(new ArraySegment<byte>(responseMessage), WebSocketMessageType.Text, true, CancellationToken.None);
-                        Console.WriteLine($"Message sent to User {message.ReceiverId}");
+                        var type = typeElement.GetString();
+                        if (type == "typing")
+                        {
+                            var notification = JsonSerializer.Deserialize<TypingNotification>(messageJson);
+                            if (notification != null)
+                            {
+                                await HandleTypingNotification(notification);
+                            }
+                        }
 
-                        Console.WriteLine($"Message saved in the database: {message.Id}");
+                        else if (type == "seen")
+                        {
+                            var seen = JsonSerializer.Deserialize<SeenNotification>(messageJson);
+                            if (seen != null)
+                            {
+                                await HandleSeenNotification(seen);
+                            }
+                        }
+
+                        else
+                        {
+                            var message = JsonSerializer.Deserialize<Message>(messageJson);
+                            if (message != null)
+                            {
+                                await HandleMessage(message);
+                            }
+                        }
                     }
                     else
                     {
-                        Console.WriteLine($"User {message.ReceiverId} is not connected.");
+                        Console.WriteLine("Invalid message format: missing 'type' field.");
                     }
                 }
-                else
+                catch (JsonException ex)
                 {
-                    Console.WriteLine("Deserialization returned null");
+                    Console.WriteLine($"JsonException: {ex.Message}");
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"Exception: {ex.Message}");
                 }
             }
-            catch (JsonException ex)
-            {
-                Console.WriteLine($"JsonException: {ex.Message}");
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"Exception: {ex.Message}");
-            }
-
-            result = await webSocket.ReceiveAsync(new ArraySegment<byte>(buffer), CancellationToken.None);
         }
-
-        _userConnections.TryRemove(userId, out _);
-        await webSocket.CloseAsync(result.CloseStatus.Value, result.CloseStatusDescription, CancellationToken.None);
-    }
-
-    // private bool IsTypingNotification(string json)
-    // {
-    //     try
-    //     {
-    //         var jsonDoc = JsonDocument.Parse(json);
-    //         return jsonDoc.RootElement.GetProperty("type").GetString() == "typing";
-    //     }
-    //     catch
-    //     {
-    //         return false;
-    //     }
-    // }
-
-    public Message MapCamelCaseToUpperCase(string json)
-    {
-        var dictionary = JsonSerializer.Deserialize<Dictionary<string, JsonElement>>(json);
-
-        var mappedDictionary = new Dictionary<string, JsonElement>();
-
-        foreach (var kvp in dictionary)
+        finally
         {
-            var key = kvp.Key switch
+            _userConnections.TryRemove(userId, out _);
+            if (webSocket.State == WebSocketState.Open)
             {
-                "discussionId" => "DiscussionId",
-                "senderId" => "SenderId",
-                "receiverId" => "ReceiverId",
-                "content" => "Content",
-                "timestamp" => "Timestamp",
-                "read" => "Read",
-                _ => kvp.Key
-            };
-
-            mappedDictionary[key] = kvp.Value;
+                await webSocket.CloseAsync(WebSocketCloseStatus.NormalClosure, "Closed by the server", CancellationToken.None);
+            }
         }
-
-        var mappedJson = JsonSerializer.Serialize(mappedDictionary);
-
-        return JsonSerializer.Deserialize<Message>(mappedJson);
     }
 
+    private async Task HandleTypingNotification(TypingNotification notification)
+    {
+        if (_userConnections.TryGetValue(notification.ReceiverId, out var receiverSocket))
+        {
+            var notificationJson = JsonSerializer.Serialize(notification);
+            var responseMessage = Encoding.UTF8.GetBytes(notificationJson);
+            await receiverSocket.SendAsync(new ArraySegment<byte>(responseMessage), WebSocketMessageType.Text, true, CancellationToken.None);
+            Console.WriteLine($"Typing notification sent to User {notification.ReceiverId}");
+        }
+        else
+        {
+            Console.WriteLine($"User {notification.ReceiverId} is not connected.");
+        }
+    }
 
-    // private T MapTypingCamelCaseToPascalCase<T>(string json)
-    // {
-    //     var dictionary = JsonSerializer.Deserialize<Dictionary<string, JsonElement>>(json);
-    //     var mappedDictionary = new Dictionary<string, JsonElement>();
+    private async Task HandleMessage(Message message)
+    {
+        await _messageService.SendMessage(message);
+        await _discussionService.UpdateDiscussion(message.DiscussionId, message);
 
-    //     foreach (var kvp in dictionary)
-    //     {
-    //         var key = ToPascalCase(kvp.Key);
-    //         mappedDictionary[key] = kvp.Value;
-    //     }
+        if (_userConnections.TryGetValue(message.ReceiverId, out var receiverSocket))
+        {
+            var responseMessage = Encoding.UTF8.GetBytes(JsonSerializer.Serialize(message));
+            await receiverSocket.SendAsync(new ArraySegment<byte>(responseMessage), WebSocketMessageType.Text, true, CancellationToken.None);
+            Console.WriteLine($"Message sent to User {message.ReceiverId}");
+            Console.WriteLine($"Message saved in the database: {message.Id}");
+        }
+        else
+        {
+            Console.WriteLine($"User {message.ReceiverId} is not connected.");
+        }
+    }
 
-    //     var mappedJson = JsonSerializer.Serialize(mappedDictionary);
-    //     return JsonSerializer.Deserialize<T>(mappedJson);
-    // }
+    // HandleSeenNotification method to process seen notifications
+private async Task HandleSeenNotification(SeenNotification notification)
+{
+    // Update the message status to "seen" in the database
+    await _messageService.MarkMessageAsSeen(notification.MessageId, notification.ReceiverId);
 
-//     private string ToPascalCase(string camelCase)
-//     {
-//         if (string.IsNullOrEmpty(camelCase))
-//         {
-//             return camelCase;
-//         }
+    // Notify the sender that the message was seen
+    if (_userConnections.TryGetValue(notification.ReceiverId, out var senderSocket))
+    {
+        var notificationJson = JsonSerializer.Serialize(notification);
+        var responseMessage = Encoding.UTF8.GetBytes(notificationJson);
+        await senderSocket.SendAsync(new ArraySegment<byte>(responseMessage), WebSocketMessageType.Text, true, CancellationToken.None);
+        Console.WriteLine($"Seen notification sent to User {notification.ReceiverId}");
+    }
+    else
+    {
+        Console.WriteLine($"User {notification.SenderId} is not connected.");
+    }
+}
 
-//         return char.ToUpper(camelCase[0]) + camelCase.Substring(1);
-//     }
- }
+}

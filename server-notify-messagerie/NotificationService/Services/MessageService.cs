@@ -1,3 +1,4 @@
+using MongoDB.Driver;
 using NotificationService.Repositories;
 
 
@@ -24,6 +25,32 @@ public class MessageService : IMessageService {
 
     } 
 
+
+    public async Task MarkMessageAsSeen(string messageId, string userId)
+    {
+    var currentMessage = await _messageRepository.GetMessageByIdAsync(messageId);
+
+    if (currentMessage == null)
+    {
+        throw new Exception("Message not found.");
+    }
+
+
+    if (!currentMessage.Read == false){
+    var updatedMessage = new Message
+    {
+        Id = currentMessage.Id,
+        Content = currentMessage.Content,
+        SenderId = currentMessage.SenderId,
+        ReceiverId = currentMessage.ReceiverId,
+        Read = true, // Set the Read status to true
+        ReadTime = DateTime.UtcNow // Set the ReadTime to current UTC time
+        // Include other properties if needed, ensuring they are set correctly
+    };
+        await _messageRepository.UpdateMessageAsync(messageId, updatedMessage);
+    }
+
+    }
 
 }
 

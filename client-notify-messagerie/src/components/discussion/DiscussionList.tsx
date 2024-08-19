@@ -43,7 +43,7 @@ const DiscussionList: React.FC = () => {
         try {
             if (user) {
                 const discussionData = await messageService.getDiscussion(receiver.id, user.id)
-                console.log(discussionData.messages)
+                //console.log(discussionData.messages)
                 setMessages(discussionData.messages)
                 setIdDiscussion(discussionData.id)
             }
@@ -86,7 +86,6 @@ const DiscussionList: React.FC = () => {
             if (user) {
                 const searchRequest = { userId, searchReq }
                 const response = await userService.searchUsersByFirstNameOrLastName(searchRequest)
-                console.log
                 setUsersSearch(response)
             }
         } catch (error) {

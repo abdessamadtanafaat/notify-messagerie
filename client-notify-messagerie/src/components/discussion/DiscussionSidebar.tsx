@@ -32,7 +32,7 @@ const DiscussionSidebar: React.FC<DiscussionSidebarProps> = ({ receiver, idDiscu
         try {
             if (user) {
                 const discussionData = await messageService.getDiscussion(receiver.id, user.id)
-                console.log(discussionData.messages)
+                // console.log(discussionData.messages)
                 setMessages(discussionData.messages)
             }
         } catch (error) {
@@ -42,14 +42,6 @@ const DiscussionSidebar: React.FC<DiscussionSidebarProps> = ({ receiver, idDiscu
         }
     }
 
-
-
-    // Log the messages to verify
-    useEffect(() => {
-        console.log('Messages updated:', messages)
-    }, [messages])  // This will log messages whenever they are updated
-
-
     // useEffect to fetch messages when necessary
     useEffect(() => {
         fetchMessages()
@@ -57,11 +49,9 @@ const DiscussionSidebar: React.FC<DiscussionSidebarProps> = ({ receiver, idDiscu
 
     // Handle new messages (consider moving this to a WebSocket handler in real-world applications)
     const handleNewMessage = (message: Message) => {
-        console.log('Received raw message:', message)
+        // console.log('Received raw message:', message)
 
         const camelCaseMessage = convertKeysToCamelCase(message)
-
-        console.log('Updating state with new message:', camelCaseMessage)
 
         setMessages((prevMessages) => [...prevMessages, camelCaseMessage])
 
@@ -74,6 +64,7 @@ const DiscussionSidebar: React.FC<DiscussionSidebarProps> = ({ receiver, idDiscu
     const [isExpanded, setIsExpanded] = useState(false)
     const toggleSidebar = () => setIsExpanded(!isExpanded)
     const { theme } = useThemeContext()
+
     const lastMessage = messages[messages.length - 1]
 
     useEffect(() => {
@@ -85,16 +76,11 @@ const DiscussionSidebar: React.FC<DiscussionSidebarProps> = ({ receiver, idDiscu
         messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
     }
 
-
-
     return (
         <>
             {loading ? (
-
                 <DiscussionSidebarSkeleton />
-
             ) : (
-
                 <DiscussionHandler
                     render={({
                         handleChange,
@@ -107,10 +93,20 @@ const DiscussionSidebar: React.FC<DiscussionSidebarProps> = ({ receiver, idDiscu
                         sendFile,
                         handleSend,
                         handleKeyDown,
-                        // typingUser,
+                        sendTypingNotification,
+                        typingUser,
+                        sendSeenNotification,
+                        seenNotif,
                     }) => (
                         <>
+
                             {/* Header Rectangle */}
+                            {seenNotif.isSeen ? (
+                                                <p className="font-normal truncate text-dark dark:text-white text-xs" >Is Seen...{getTimeDifference(seenNotif.seenDate)}</p>
+
+                                            ) : (
+                                                <p>blablalabla</p>
+                                            )} 
                             <div className="w-full h-12 bg-white dark:bg-gray-800 rounded-lg mt-2 shadow-md">
                                 <div className="flex items-center justify-between px-5">
                                     <div className="relative flex items-center space-x-4">
@@ -127,7 +123,11 @@ const DiscussionSidebar: React.FC<DiscussionSidebarProps> = ({ receiver, idDiscu
                                         </div>
                                         <div className="flex flex-col text-xs">
                                             <p className="font-bold truncate text-dark dark:text-white text-xs">{receiver.firstName} {receiver.lastName}</p>
-                                            <StatusMessage user={receiver} />
+                                            {typingUser ? (
+                                                <p className="font-normal truncate text-dark dark:text-white text-xs" >Is typing...</p>
+                                            ) : (
+                                                <StatusMessage user={receiver} />
+                                            )} 
                                         </div>
                                     </div>
                                     <div className="flex space-x-2">
@@ -197,19 +197,35 @@ const DiscussionSidebar: React.FC<DiscussionSidebarProps> = ({ receiver, idDiscu
                                                 </p>
                                             )}
 
-                                            {msg === lastMessage && msg.read && user?.id === msg.senderId &&(
+                                            {/* {msg === lastMessage && msg.read && user?.id === msg.senderId && (
                                                 <p className="text-gray-500 text-[9px] mt-1 ml-1">
-                                                  Seen {getTimeDifference(msg.readTime)}
+                                                    Seen {getTimeDifference(msg.readTime)}
+
+                                                </p>
+                                            )} */}
+
+                                            {msg === lastMessage && seenNotif.isSeen  && (
+                                                <p className="text-gray-500 text-[9px] mt-1 ml-1">
+                                                    Seen {getTimeDifference(seenNotif.seenDate)}
 
                                                 </p>
                                             )}
+                                            {msg === lastMessage && typingUser && 
+                                            
+                                            <div className="typing mt-2">
+                                            <div className="typing__dot"></div>
+                                            <div className="typing__dot"></div>
+                                            <div className="typing__dot"></div>
+                                          </div>
+                                            
+                                            }
 
                                         </div>
                                     ))}
                                     <div ref={messagesEndRef} />
                                 </div>
-                            </div>
 
+                            </div>
                             {/* Input Area */}
                             <div className='absolute h-24 bottom-0 left-0 right-0 bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-700'>
                                 <div className='flex items-center justify-center space-x-1 mt-4'>
@@ -240,7 +256,12 @@ const DiscussionSidebar: React.FC<DiscussionSidebarProps> = ({ receiver, idDiscu
                                             name='message'
                                             placeholder='Type a message...'
                                             value={message}
-                                            onChange={(e) => handleChange('message', e.target.value)}
+                                            onChange={(e) => {
+                                                handleChange('message', e.target.value)
+                                                sendTypingNotification(receiver)
+                                                sendSeenNotification(lastMessage.id, receiver)
+
+                                            }}
                                             onKeyDown={(e) => handleKeyDown(e, receiver, idDiscussion)}
                                             autoFocus={true}
                                             className='w-full h-10 px-2 text-sm border-b-2 bg-gray-200 border-gray-600 rounded-2xl placeholder:font-light placeholder:text-gray-500 dark:bg-gray-700 focus:border-blue-400 focus:outline-none'

@@ -10,8 +10,8 @@ import { toast } from 'react-toastify'
   const getDiscussions  = async (userId: string) => {
     try {
       const response = await axiosInstance.get(`${API_ENDPOINTS.GET_MESSAGES}/${userId}`)
-      console.log(response)
-      console.log(response.data)
+      //console.log(response)
+      //console.log(response.data)
       return response.data
     } catch (error) {
       if (axios.isAxiosError(error) && error.response) {
@@ -27,8 +27,8 @@ import { toast } from 'react-toastify'
   const getDiscussion  = async (userId: string, selectedUserId: string) => {
     try {
       const response = await axiosInstance.get(`${API_ENDPOINTS.GET_DISCUSSION}/${userId}/${selectedUserId}`)
-      console.log(response)
-      console.log(response.data)
+      //console.log(response)
+      //console.log(response.data)
       return response.data
     } catch (error) {
       if (axios.isAxiosError(error) && error.response) {

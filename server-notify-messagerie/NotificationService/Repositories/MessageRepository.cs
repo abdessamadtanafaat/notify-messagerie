@@ -57,6 +57,16 @@ public class MessageRepository : IMessageRepostory {
             var objectId = new ObjectId(IdMessage); 
             await _message.ReplaceOneAsync(d => d.Id == IdMessage, message);
     }
+
+        public async Task<Message> GetMessageByIdAsync(string messageId)
+    {
+        var filter = Builders<Message>.Filter.Eq(msg => msg.Id, messageId);
+        
+        var message = await _message.Find(filter).FirstOrDefaultAsync();
+
+        return message;
+    }
+
     }
 
 

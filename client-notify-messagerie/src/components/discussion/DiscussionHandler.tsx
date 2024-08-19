@@ -1,12 +1,10 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
-import React, { useEffect, useRef, useState } from 'react'
+// src/components/DiscussionHandler.tsx
+import React, { useRef, useState } from 'react'
 import { Emoji } from '@emoji-mart/data'
 import { useAuth } from '../../contexte/AuthContext'
-import { ErrorResponse, User } from '../../interfaces'
-import { Message, } from '../../interfaces/Discussion'
-import { WebSocketService } from '../../services/WebSocketService'
-import API_ENDPOINTS from '../../api/endpoints'
-
+import { Message, SeenNotif } from '../../interfaces/Discussion'
+import { User } from '../../interfaces'
+import { useWebSocket } from '../../hooks/webSocketHook'
 
 interface DiscussionHandlerProps {
     render: (props: {
@@ -16,82 +14,31 @@ interface DiscussionHandlerProps {
         togglePicker: (picker: 'message') => void;
         addEmoji: (emoji: Emoji) => void;
         setPickerRef: (field: 'message') => (el: HTMLDivElement | null) => void;
-        sendImage: (event: React.ChangeEvent<HTMLInputElement>) => void,
-        sendFile: (event: React.ChangeEvent<HTMLInputElement>) => void,
-        handleSend: (receiver: User, IdDiscussion: string) => void,
-        handleKeyDown: (e: React.KeyboardEvent<HTMLInputElement>, receiver: User, idDiscussion: string) => void,
-    }) => React.ReactNode
-    onNewMessage?: (message: Message) => void // New prop for handling new messages
-    //onTypingNotification?: (typingNotification: TypingNotification) => void; // New prop for handling typing notifications
+        sendImage: (event: React.ChangeEvent<HTMLInputElement>) => void;
+        sendFile: (event: React.ChangeEvent<HTMLInputElement>) => void;
+        handleSend: (receiver: User, IdDiscussion: string) => void;
+        handleKeyDown: (e: React.KeyboardEvent<HTMLInputElement>, receiver: User, idDiscussion: string) => void;
+        sendTypingNotification: (receiver: User) => void;
+        typingUser: string | null;
+        sendSeenNotification: (messageId: string, receiver: User) => void;
+        seenNotif: SeenNotif; 
 
+    }) => React.ReactNode;
+    onNewMessage?: (message: Message) => void;
 }
 
 export const DiscussionHandler: React.FC<DiscussionHandlerProps> = ({ render, onNewMessage }) => {
-
     const { user, refreshUserData } = useAuth()
-
     const [message, setMessage] = useState<string>('')
     const [messages, setMessages] = useState<Message[]>([])
-    const [webSocketService, setWebSocketService] = useState<WebSocketService | null>(null)
 
-    //const webSocketService = useRef(new WebSocketService(API_ENDPOINTS.WEBSOCKET_URL, user.id)).current
-
-    useEffect(() => {
-        document.addEventListener('mousedown', handleClickOutside)
-        return () => {
-            document.removeEventListener('mousedown', handleClickOutside)
-        }
-
-    }, [])
-
-    const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>, receiver: User, idDiscussion: string) => {
-        if (e.key === 'Enter') {
-            e.preventDefault()
-            handleSend(receiver, idDiscussion)
-            //handleChange('message', message) 
-            //console.log("presssed enter")
-        }
-    }
-
-    useEffect(() => {
-
-        if (!user) return
-        const webSocketService = new WebSocketService(API_ENDPOINTS.WEBSOCKET_URL, user.id)
-        setWebSocketService(webSocketService)
-
-        webSocketService.connect()
-
-        webSocketService.onMessage((message: Message) => {
-            console.log('Message received: ', message)
-            if (onNewMessage) {
-                onNewMessage(message)
-            }
-        })
-
-        // webSocketService.onTypingNotification((typingNotification: TypingNotification) => {
-        //     console.log('Typing notification received: ', typingNotification)
-        //     if (onTypingNotification) {
-        //         onTypingNotification(typingNotification)
-        //     }
-        // })
-
-        webSocketService.onError((error: ErrorResponse) => {
-            console.log('WebSocket error: ', error.error)
-        })
-
-        webSocketService.onClose(() => {
-            console.log('WebSocket conenction closed')
-        })
-
-        return () => {
-            webSocketService.disconnect()
-        }
-
-    }, [user?.id])
+    // WebSocket hook
+    const { webSocketService, sendMessage, typingUser, sendTypingNotification,sendSeenNotification,seenNotif } = useWebSocket(user, onNewMessage)
 
     const handleSend = async (receiver: User, IdDiscussion: string) => {
+        console.log('blabla', webSocketService)
+
         if (message.trim() && user && webSocketService) {
-            console.log('Message sent:', message)
             const messageDTO: Message = {
                 discussionId: IdDiscussion,
                 senderId: user.id,
@@ -99,36 +46,27 @@ export const DiscussionHandler: React.FC<DiscussionHandlerProps> = ({ render, on
                 content: message,
                 timestamp: new Date(),
                 read: false,
+                type: 'message'
+                //readTime: new Date(),
             }
 
             try {
-                if (messageDTO) {
-                    console.log(messageDTO)
-                    webSocketService.send(messageDTO)
-                    setMessages((prevMessages) => [...prevMessages, messageDTO])
-                    console.log(messages)
-                    setMessage('')
-                    refreshUserData()
-                }
+                await sendMessage(messageDTO)
+                setMessages(prevMessages => [...prevMessages, messageDTO])
+                setMessage('')
+                refreshUserData()
             } catch (error) {
-                console.log('Failed to fetch messages')
+                console.error('Failed to send message:', error)
             }
-
-        } else {
-            return null
         }
     }
 
-    // const handleTyping = () => {
-    //     if (user && webSocketService) {
-    //         const typingNotification: TypingNotification = {
-    //             type: 'typing',
-    //             userId: user.id
-    //         }
-
-    //         webSocketService.send(typingNotification)
-    //     }
-    // }
+    const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>, receiver: User, idDiscussion: string) => {
+        if (e.key === 'Enter') {
+            e.preventDefault()
+            handleSend(receiver, idDiscussion)
+        }
+    }
 
     const pickerRef = useRef<{ message: HTMLDivElement | null }>({
         message: null,
@@ -141,44 +79,35 @@ export const DiscussionHandler: React.FC<DiscussionHandlerProps> = ({ render, on
     const togglePicker = (picker: 'message') => {
         setShowEmojiPicker(prev => ({
             ...prev,
-            [picker]: !prev[picker]
+            [picker]: !prev[picker],
         }))
-    }
-
-    const handleClickOutside = (event: MouseEvent) => {
-        if (
-            pickerRef.current.message &&
-            !pickerRef.current.message.contains(event.target as Node)
-        ) {
-            setShowEmojiPicker(prev => ({ ...prev, message: false }))
-        }
     }
 
     const addEmoji = (emoji: Emoji) => {
         const emojiStr: string = emoji.native
-        setMessage((prev) => prev + emojiStr)
+        setMessage(prev => prev + emojiStr)
     }
 
     const sendImage = async (event: React.ChangeEvent<HTMLInputElement>) => {
         const file = event.target.files?.[0]
-
         if (file) {
             try {
-                console.log('hello image')
+                console.log('Image file selected:', file)
+                // Handle image file upload
             } catch (err) {
-                console.log('error')
+                console.error('Error handling image file:', err)
             }
         }
     }
 
     const sendFile = async (event: React.ChangeEvent<HTMLInputElement>) => {
         const file = event.target.files?.[0]
-
         if (file) {
             try {
-                console.log('hello file')
+                console.log('File selected:', file)
+                // Handle file upload
             } catch (err) {
-                console.log('error')
+                console.error('Error handling file:', err)
             }
         }
     }
@@ -186,14 +115,16 @@ export const DiscussionHandler: React.FC<DiscussionHandlerProps> = ({ render, on
     const handleChange = (field: 'message', value: string) => {
         if (field === 'message') {
             setMessage(value)
-            //handleTyping() // Notify others when typing
+            // Optionally handle typing notifications here if needed
         }
     }
+
     const setPickerRef = (field: 'message') => (el: HTMLDivElement | null) => {
         if (pickerRef.current) {
             pickerRef.current[field] = el
         }
     }
+
 
     return render({
         handleChange,
@@ -206,6 +137,9 @@ export const DiscussionHandler: React.FC<DiscussionHandlerProps> = ({ render, on
         sendFile,
         handleSend,
         handleKeyDown,
-        //messages,
+        sendTypingNotification,
+        typingUser,
+        sendSeenNotification,
+        seenNotif,
     })
 }

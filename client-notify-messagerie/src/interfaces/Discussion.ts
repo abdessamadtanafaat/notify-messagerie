@@ -1,6 +1,7 @@
 import { User } from './User'
 
 export interface Message {
+    id: string;
     discussionId: string;
     senderId: string;
     receiverId: string;
@@ -8,6 +9,7 @@ export interface Message {
     timestamp: Date; 
     read: boolean;
     readTime: Date;
+    type: string;
 }
 
 export interface Discussion {
@@ -21,5 +23,20 @@ export interface Discussion {
 
 export interface TypingNotification {
     type: 'typing';
-    userId: string;
+    senderId: string;
+    receiverId : string;
+
+}
+
+export interface SeenNotification {
+    type: 'seen'
+    messageId: string; 
+    senderId: string;
+    receiverId: string;
+    readTime: Date; 
+    isSeen: boolean;
+}
+export interface SeenNotif {
+    isSeen: boolean;
+    seenDate?: Date;
 }
