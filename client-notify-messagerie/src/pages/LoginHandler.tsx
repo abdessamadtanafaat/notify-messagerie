@@ -20,6 +20,7 @@ type RenderProps = {
 
 
 const LoginPage: React.FC<RenderProps> = ({ render }) => {
+
     // Component state
     const [formData, setFormData] = useState<FormDataLogin>({
         emailOrPhoneNumber: '',

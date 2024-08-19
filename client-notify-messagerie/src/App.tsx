@@ -15,22 +15,22 @@ import NotFoundPage from './pages/NotFoundPage'
 import Personnes from './components/personnes/Personnes'
 import Layout from './components/layout/Layout'
 import Archive from './components/archive/Archive'
-import Discussion from './components/discussion/Discussion'
 import Settings from './components/settings/Settings'
 import Home from './pages/Home'
 import Demandes from './components/demandes/Demandes'
 import Friends from './components/friends/Friends'
 import UpdateProfile from './components/profile/Profile'
+import DiscussionList from './components/discussion/DiscussionList'
 
 
 const App: React.FC = () => {
 
   return (
-  <div className="min-h-screen bg-gray-200 dark:bg-gray-600">
-    <Router>
+
+<Router>
      <Layout>
       <Routes>
-      <Route path="/" element={<Navigate to="login"/>} />
+      <Route path="/" element={<Navigate to="/login"/>} />
           <Route path="/login" element={<LoginPage />} />
           <Route path="/reset-password-byPhoneNumber" element={<ResetPasswordByPhoneNumberPage />} />
           <Route path="/register" element={<RegisterPage />} />
@@ -41,7 +41,7 @@ const App: React.FC = () => {
           <Route path="/reset-password-by-email" element={<ResetPasswordByEmail />} />
           <Route path="/home" element={<ProtectedRoute element={<Home />} redirectPath="/login" />} />
           <Route path="/personnes" element={<ProtectedRoute element={<Personnes />} redirectPath="/login" />} />
-          <Route path="/discussions" element={<ProtectedRoute element={<Discussion />} redirectPath="/login" />} />
+          <Route path="/discussions" element={<ProtectedRoute element={<DiscussionList />} redirectPath="/login" />} />
           <Route path="/archive" element={<ProtectedRoute element={<Archive />} redirectPath="/login" />} />
           <Route path="/settings" element={<ProtectedRoute element={<Settings />} redirectPath="/login" />} />
           <Route path="/demandes" element={<ProtectedRoute element={<Demandes />} redirectPath="/login" />} />
@@ -51,7 +51,6 @@ const App: React.FC = () => {
       </Routes>
      </Layout> 
     </Router>
-  </div>
 )
 }
 

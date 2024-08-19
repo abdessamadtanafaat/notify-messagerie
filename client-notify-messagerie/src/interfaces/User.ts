@@ -81,3 +81,9 @@ export interface UnfriendRequest {
   userId: string; 
   friendId: string;
 }
+
+export interface SearchRequest {
+  userId: string; 
+  searchReq: string;
+}
+

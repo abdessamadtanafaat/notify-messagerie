@@ -1,32 +1,73 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
-import React, { useEffect, useRef, useState } from 'react'
+// src/components/DiscussionHandler.tsx
+import React, { useRef, useState } from 'react'
 import { Emoji } from '@emoji-mart/data'
-
+import { useAuth } from '../../contexte/AuthContext'
+import { Message, SeenNotif } from '../../interfaces/Discussion'
+import { User } from '../../interfaces'
+import { useWebSocket } from '../../hooks/webSocketHook'
 
 interface DiscussionHandlerProps {
     render: (props: {
         handleChange: (field: 'message', value: string) => void;
         message: string;
-        showEmojiPicker: {message: boolean};
+        showEmojiPicker: { message: boolean };
         togglePicker: (picker: 'message') => void;
         addEmoji: (emoji: Emoji) => void;
         setPickerRef: (field: 'message') => (el: HTMLDivElement | null) => void;
-        SendImage:(event: React.ChangeEvent<HTMLInputElement>) => void,
-        SendFile: (event: React.ChangeEvent<HTMLInputElement>) => void,
-        handleSend: ()=> void,
-    }) => React.ReactNode
+        sendImage: (event: React.ChangeEvent<HTMLInputElement>) => void;
+        sendFile: (event: React.ChangeEvent<HTMLInputElement>) => void;
+        handleSend: (receiver: User, IdDiscussion: string) => void;
+        handleKeyDown: (e: React.KeyboardEvent<HTMLInputElement>, receiver: User, idDiscussion: string) => void;
+        sendTypingNotification: (receiver: User) => void;
+        typingUser: string | null;
+        sendSeenNotification: (messageId: string, receiver: User) => void;
+        seenNotif: SeenNotif; 
+
+    }) => React.ReactNode;
+    onNewMessage?: (message: Message) => void;
 }
 
-export const DiscussionHandler: React.FC<DiscussionHandlerProps> = ({ render }) => {
+export const DiscussionHandler: React.FC<DiscussionHandlerProps> = ({ render, onNewMessage }) => {
+    const { user, refreshUserData } = useAuth()
+    const [message, setMessage] = useState<string>('')
+    const [messages, setMessages] = useState<Message[]>([])
 
+    // WebSocket hook
+    const { webSocketService, sendMessage, typingUser, sendTypingNotification,sendSeenNotification,seenNotif } = useWebSocket(user, onNewMessage)
 
-    useEffect(() => {
-        document.addEventListener('mousedown', handleClickOutside)
-        return () => {
-            document.removeEventListener('mousedown', handleClickOutside)
+    const handleSend = async (receiver: User, IdDiscussion: string) => {
+        console.log('blabla', webSocketService)
+
+        if (message.trim() && user && webSocketService) {
+            const messageDTO: Message = {
+                discussionId: IdDiscussion,
+                senderId: user.id,
+                receiverId: receiver.id,
+                content: message,
+                timestamp: new Date(),
+                read: false,
+                type: 'message'
+                //readTime: new Date(),
+            }
+
+            try {
+                await sendMessage(messageDTO)
+                setMessages(prevMessages => [...prevMessages, messageDTO])
+                setMessage('')
+                refreshUserData()
+            } catch (error) {
+                console.error('Failed to send message:', error)
+            }
         }
-    }, [])
-    
+    }
+
+    const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>, receiver: User, idDiscussion: string) => {
+        if (e.key === 'Enter') {
+            e.preventDefault()
+            handleSend(receiver, idDiscussion)
+        }
+    }
+
     const pickerRef = useRef<{ message: HTMLDivElement | null }>({
         message: null,
     })
@@ -35,72 +76,55 @@ export const DiscussionHandler: React.FC<DiscussionHandlerProps> = ({ render }) 
         message: false,
     })
 
-    const [message, setMessage] = useState<string>('')
     const togglePicker = (picker: 'message') => {
         setShowEmojiPicker(prev => ({
             ...prev,
-            [picker]: !prev[picker]
+            [picker]: !prev[picker],
         }))
     }
 
-    const handleClickOutside = (event: MouseEvent) => {
-        if (
-            pickerRef.current.message &&
-            !pickerRef.current.message.contains(event.target as Node)
-        ) {
-            setShowEmojiPicker(prev => ({ ...prev, message: false }))
-        }
-    }
-
-    const handleSend = ()=> {
-        if (message.trim()) {
-            // Handle sending the message (e.g., API call, updating state)
-            console.log('Message sent:', message)
-            setMessage('') 
-
-        }else {
-            return null
-        }
-    }
     const addEmoji = (emoji: Emoji) => {
         const emojiStr: string = emoji.native
-        setMessage((prev) => prev + emojiStr)
+        setMessage(prev => prev + emojiStr)
     }
 
-    const SendImage = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const sendImage = async (event: React.ChangeEvent<HTMLInputElement>) => {
         const file = event.target.files?.[0]
-        
         if (file) {
-          try {
-            console.log('hello image')
-          } catch (err) {
-            console.log('error')
-          }
+            try {
+                console.log('Image file selected:', file)
+                // Handle image file upload
+            } catch (err) {
+                console.error('Error handling image file:', err)
+            }
         }
-      }
+    }
 
-      const SendFile = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const sendFile = async (event: React.ChangeEvent<HTMLInputElement>) => {
         const file = event.target.files?.[0]
-        
         if (file) {
-          try {
-            console.log('hello file')
-          } catch (err) {
-            console.log('error')
-          }
+            try {
+                console.log('File selected:', file)
+                // Handle file upload
+            } catch (err) {
+                console.error('Error handling file:', err)
+            }
         }
-      }
+    }
 
     const handleChange = (field: 'message', value: string) => {
         if (field === 'message') {
-                setMessage(value)
-            }
+            setMessage(value)
+            // Optionally handle typing notifications here if needed
+        }
     }
+
     const setPickerRef = (field: 'message') => (el: HTMLDivElement | null) => {
         if (pickerRef.current) {
             pickerRef.current[field] = el
         }
     }
+
 
     return render({
         handleChange,
@@ -109,8 +133,13 @@ export const DiscussionHandler: React.FC<DiscussionHandlerProps> = ({ render }) 
         togglePicker,
         addEmoji,
         setPickerRef,
-        SendImage,
-        SendFile,
+        sendImage,
+        sendFile,
         handleSend,
+        handleKeyDown,
+        sendTypingNotification,
+        typingUser,
+        sendSeenNotification,
+        seenNotif,
     })
 }

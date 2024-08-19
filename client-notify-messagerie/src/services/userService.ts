@@ -2,7 +2,7 @@ import axios from 'axios'
 import { ErrorResponse } from '../interfaces/ErrorResponse'
 import axiosInstance from '../api/axiosInstance'
 import API_ENDPOINTS from '../api/endpoints'
-import { UnfriendRequest, UpdateProfileReq, User } from '../interfaces/User'
+import { SearchRequest, UnfriendRequest, UpdateProfileReq, User } from '../interfaces/User'
 
 
 const getUserInfo = async (id: string): Promise<User> => {
@@ -120,5 +120,25 @@ const unfriend = async (unfriendRequest:UnfriendRequest) => {
   }
 }
 
+const searchUsersByFirstNameOrLastName = async (searchRequest:SearchRequest) => {
+  try {
+    const response = await axiosInstance.post(API_ENDPOINTS.SEARCH_USERS_DISCUSSION ,searchRequest)
+    return response.data
+  } catch (error) {
+    if (axios.isAxiosError(error) && error.response) {
+      const typedError = error.response.data as ErrorResponse
+      console.log(typedError)
+      throw typedError
+    } else {
+      throw { error: 'An unknown error occurred', statusCode: 500 }
+    }
+  }
+}
 
-  export default {getUserInfo, updateUserInfo,fetchUsers,fetchUsersByIds,unfriend}
+  export default {getUserInfo,
+     updateUserInfo,
+     fetchUsers,
+     fetchUsersByIds,
+     unfriend,
+     searchUsersByFirstNameOrLastName
+    }

@@ -4,6 +4,7 @@ export default function Archive() {
     return (
         // <ArchiveHandler
         //     render={({ }) => (
+            <div className={'fixed top-4 left-20 md:w-80 lg:w-48 flex-shrink-0 rounded-2xl bg-white dark:bg-gray-800 h-screen shadow-xl px-4 md:px-8 overflow-y-auto'}>
                         <div className="space-y-4 md:space-y-5 mt-5">
                             <h1 className="hidden md:block font-bold text-sm md:text-xl text-start dark:text-white">
                                 Archive
@@ -19,6 +20,7 @@ export default function Archive() {
                                 /> */}
                             </div>
                         </div> 
+             </div>           
 
 )
 }

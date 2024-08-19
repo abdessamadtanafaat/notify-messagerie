@@ -19,6 +19,8 @@ using NotificationService.Security.Repositories;
 using NotificationService.Security.Service;
 using NotificationService.Services;
 using NotificationService.Validators;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 
 namespace NotificationService
 {
@@ -29,7 +31,9 @@ namespace NotificationService
         public Startup(IConfiguration configuration)
         {
             Configuration = configuration;
+
         }
+
 
         public IConfiguration Configuration { get; }
 
@@ -62,9 +66,12 @@ namespace NotificationService
                         .AllowAnyMethod()
                         .AllowCredentials();
                 });
-                
+
             });
-            
+
+            services.AddSingleton<IWebSocketService, WebSocketService>();
+
+
             // Register MongoDbContext with the connection string and database name
             services.AddSingleton<MongoDbContext>(serviceProvider =>
                 new MongoDbContext(mongoConnectionString, mongoDatabaseName));
@@ -75,26 +82,26 @@ namespace NotificationService
                 var context = serviceProvider.GetRequiredService<MongoDbContext>();
                 return context.Users;
             });
-            services.AddHostedService<TokenCleanupService>(); 
-            
+            services.AddHostedService<TokenCleanupService>();
+
 
 
             //Register EmailService 
             services.Configure<EmailSettings>(Configuration.GetSection("EmailSettings"));
             services.AddTransient<IEmailService, EmailService>();
-        
+
             //Register SmsAuthService 
             services.Configure<SmsSettings>(Configuration.GetSection("SMSSettings"));
-            services.AddTransient<ISmsService, SmsService>(); 
-            
+            services.AddTransient<ISmsService, SmsService>();
+
             services.Configure<JwtSettings>(Configuration.GetSection("JwtSettings"));
             //services.AddSingleton<JwtHandler>();
             services.AddTransient<IJwtHandler, JwtHandler>();
 
-            
+
             //Register MEDIATORS
             services.AddMediatR(cfg => cfg.RegisterServicesFromAssembly(Assembly.GetExecutingAssembly()));
-            
+
             //Configure logging 
             services.AddLogging(config =>
             {
@@ -102,28 +109,33 @@ namespace NotificationService
                 config.AddConsole();
                 config.AddDebug();
 
-            }); 
-            
+            });
+
             // Register AutoMapper
-            services.AddAutoMapper(typeof(Startup)); 
-            
-            
+            services.AddAutoMapper(typeof(Startup));
+
+
             // Add other services as needed
             services.AddTransient<IUserService, UserService>();
             //services.AddTransient<IJwtHandler, JwtHandler>();
             services.AddTransient<IAuthService, AuthService>();
+            services.AddTransient<IMessageService, MessageService>();
+            services.AddTransient<IDiscussionService, DiscussionService>();  
             services.AddTransient<IUserRepository, UserRepository>();
             services.AddTransient<ITokenRepository, TokenRepository>();
+            services.AddTransient<IMessageRepostory, MessageRepository>(); 
+            services.AddTransient<IDiscussionRepository, DiscussionRepository>(); 
 
             // Register UserValidator as a singleton or scoped service, depending on your needs
             services.AddScoped<IUserValidators, UserValidators>();
-            
+
             // Add global exception filter
             services.AddControllersWithViews(options =>
             {
                 options.Filters.Add(typeof(GlobalExceptionFilter));
+
             });
-            
+
             var jwtSettings = Configuration.GetSection("JwtSettings").Get<JwtSettings>();
             var key = Encoding.ASCII.GetBytes(jwtSettings.Secret);
 
@@ -164,7 +176,7 @@ namespace NotificationService
                     };
                 });
 
-            
+
             // Swagger Configuration
             services.AddSwaggerGen(c =>
             {
@@ -193,7 +205,7 @@ namespace NotificationService
                     }
                 });
             });
-            
+
         }
 
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
@@ -201,7 +213,7 @@ namespace NotificationService
             if (env.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();
-                app.UseCors(); 
+                app.UseCors();
                 // Enable middleware to serve generated Swagger as a JSON endpoint
                 app.UseSwagger();
 
@@ -222,6 +234,33 @@ namespace NotificationService
             {
                 endpoints.MapControllers();
             });
+
+
+            app.UseWebSockets();
+            app.Use(async (context, next) =>
+            {
+                if (context.Request.Path == "/ws")
+                {
+                    if (context.WebSockets.IsWebSocketRequest)
+                    {
+                        var userId = context.Request.Query["userId"].ToString(); 
+                        var webSocket = await context.WebSockets.AcceptWebSocketAsync();
+                        var webSocketService = context.RequestServices.GetRequiredService<IWebSocketService>();
+                        await webSocketService.HandleWebSocketAsync(webSocket,userId);
+                    }
+                    else
+                    {
+                        context.Response.StatusCode = 400;
+                    }
+                }
+                else
+                {
+                    await next();
+                }
+
+            }); 
         }
     }
+
+
 }

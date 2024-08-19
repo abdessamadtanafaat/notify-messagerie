@@ -39,7 +39,6 @@ namespace NotificationService.Repositories
             await _users.ReplaceOneAsync(u => u.Id == id, user);
         }
 
-
         public async Task DeleteUserAsync(string id)
         {
             await _users.DeleteOneAsync(u => u.Id == id);
@@ -122,5 +121,27 @@ namespace NotificationService.Repositories
             return await _users.Find(filter).ToListAsync();
         }
 
+
+        public async Task<List<User>> GetFriendsBySearchRequestAsync(String[] friendIds, string searchRequest)
+        {
+    // Create a filter for matching friend IDs
+    var friendIdsFilter = Builders<User>.Filter.In(u => u.Id, friendIds);
+
+    // Create a filter for matching the search request in first name or last name
+    var searchFilter = Builders<User>.Filter.Or(
+        Builders<User>.Filter.Regex(u => u.FirstName, new BsonRegularExpression(searchRequest, "i")),
+        Builders<User>.Filter.Regex(u => u.LastName, new BsonRegularExpression(searchRequest, "i"))
+    );
+
+    // Combine the filters with AND
+    var combinedFilter = Builders<User>.Filter.And(friendIdsFilter, searchFilter);
+
+    // Execute the query and return the results
+    var matchingFriends = await _users
+                                        .Find(combinedFilter)
+                                        .ToListAsync();
+
+    return matchingFriends;
+        }
     }
 }

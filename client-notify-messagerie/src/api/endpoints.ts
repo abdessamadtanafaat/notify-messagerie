@@ -18,9 +18,22 @@
     //PUT_AVATAR_URL: '/update-avatar',
     PUT_PROFILE_URL: '/update-profile',
     UNFRIEND: 'User/unfriend',
+    SEARCH_USERS_DISCUSSION: 'User/search',
     // ====================================== STRAPI ====================================== // 
     
-    USERS: 'n-users'
+    USERS: 'n-users',
+
+//==========================MessagesEndpointes===================================//
+
+      GET_MESSAGES: '/Discussions/messages',  // ALL THE DISCUSSIONS OF THE USER 
+      SEND_MESSAGE: '/Discussions/send', 
+      GET_DISCUSSION: '/Discussions/Discussion', // GET THE DISCUSSION OF THE USERAUTH AND SELECTED USER IN THE BAR CHAT
+
+
+      //====================WEB SOCKET  ==================
+
+      WEBSOCKET_URL: 'ws://localhost:5000/ws' 
+
  }
 
  export default API_ENDPOINTS

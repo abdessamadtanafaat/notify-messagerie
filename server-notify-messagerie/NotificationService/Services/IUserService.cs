@@ -15,6 +15,7 @@ namespace NotificationService.Services
         Task UpdateProfileAsync(string id, UpdateProfileReq updateProfileReq);
         Task<List<User>> GetUsersByIdsAsync(List<string> ids);
         Task UnfriendAsync(string userId, string friendId); 
+        Task<List<User>> SearchUsersByFirstNameOrLastNameAsync(SearchRequest searchRequest); 
 
 
 

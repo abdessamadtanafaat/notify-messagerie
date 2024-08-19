@@ -58,9 +58,9 @@ const Sidebar: React.FC = () => {
         <SkeletonSidebar />
       ) : (
         <>
-          <div className="flex h-screen w-20 flex-col justify-between border-e dark:border-gray-700 bg-gray-200 dark:bg-gray-700">
+          <div className="flex fixed h-full flex-col rounded-2xl justify-between border-e dark:border-gray-700 bg-gray-200 dark:bg-gray-700 overflow-y-auto overflow-x-hidden">
             <div>
-              <div className="inline-flex size-20 items-center justify-center">
+              <div className="inline-flex size-14 items-center justify-center">
               <Link
                to="/profile"
                onClick={()=> handleImageClick(false,'profile') }
@@ -78,7 +78,7 @@ const Sidebar: React.FC = () => {
               </span>
               <div className="border-gray-300 dark:border-gray-700">
                 <div className="px-2">
-                  <ul className="space-y-6 border-gray-100 pt-2 dark:border-gray-700">
+                  <ul className="space-y-5 border-gray-100 pt-2 dark:border-gray-700">
                     <li>
                       <Link
                         to="/discussions"
@@ -88,7 +88,7 @@ const Sidebar: React.FC = () => {
                         <MessagesSquareIcon />
 
                         <span
-                          className="invisible absolute z-20 start-full top-1/2 ms-4 -translate-y-1/2 rounded bg-gray-600 px-2 py-1.5 text-xs font-medium text-white group-hover:visible"
+                          className="invisible absolute z-50 start-full top-1/2 ms-4 -translate-y-1/2 rounded bg-gray-600 px-2 py-1.5 text-xs font-medium text-white group-hover:visible"
                         >
                           Discussions
                         </span>
