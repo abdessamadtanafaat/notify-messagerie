@@ -10,6 +10,7 @@ import { useThemeContext } from '../../contexte/ThemeContext'
 import { getAvatarUrl, getTimeDifference } from '../../utils/userUtils'
 import DiscussionListSkeleton from './DiscussionListSkeleton'
 import userService from '../../services/userService'
+import { useWebSocket } from '../../hooks/webSocketHook'
 
 const DiscussionList: React.FC = () => {
 
@@ -23,6 +24,9 @@ const DiscussionList: React.FC = () => {
 
     const { theme } = useThemeContext()
     const { user, refreshUserData } = useAuth()
+
+    const {sendSeenNotification } = useWebSocket(user)
+
 
     const fetchDiscussions = async () => {
         try {
@@ -43,9 +47,16 @@ const DiscussionList: React.FC = () => {
         try {
             if (user) {
                 const discussionData = await messageService.getDiscussion(receiver.id, user.id)
-                //console.log(discussionData.messages)
+                console.log(discussionData.messages)
                 setMessages(discussionData.messages)
+                const lastMessage = messages[messages.length - 1]
                 setIdDiscussion(discussionData.id)
+                if(!lastMessage.read) {
+                    sendSeenNotification(lastMessage.id, lastMessage.discussionId, receiver)
+                    console.log('dazt')
+                } else {
+                    console.log('already read.')
+                }
             }
             refreshUserData()
         } catch (error) {
@@ -265,6 +276,7 @@ const DiscussionList: React.FC = () => {
                                 idDiscussion={idDiscussion}
                                 messages={messages}
                                 onMessageSent={handleNewMessage}
+                                
                             />
                         </div>
 

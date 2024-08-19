@@ -23,6 +23,7 @@ export interface Discussion {
 
 export interface TypingNotification {
     type: 'typing';
+    discussionId: string;
     senderId: string;
     receiverId : string;
 
@@ -30,6 +31,7 @@ export interface TypingNotification {
 
 export interface SeenNotification {
     type: 'seen'
+    discussionId: string;
     messageId: string; 
     senderId: string;
     receiverId: string;

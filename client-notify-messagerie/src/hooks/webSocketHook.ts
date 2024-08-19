@@ -8,8 +8,7 @@ import { ErrorResponse, User } from '../interfaces'
 export const useWebSocket = (user: User | null, onNewMessage?: (message: Message) => void) => {
     const [webSocketService, setWebSocketService] = useState<WebSocketService | null>(null)
     const [typingUser, setTypingUser] = useState<string | null>(null)
-    // const [isSeen, setIsSeen] = useState<boolean>(false)
-    // const [seenDate, setIsSeenDate] = useState<Date>()
+    const [seenUser, setSeenUser] = useState<boolean>(false)
 
     const [seenNotif, setSeenNotif] = useState({
         isSeen: false,
@@ -28,7 +27,12 @@ export const useWebSocket = (user: User | null, onNewMessage?: (message: Message
         console.log('Seen notification received:', notification)
         console.log(notification.isSeen)
         console.log(notification.readTime)
-
+        if (notification.isSeen && notification.readTime) {
+            updateSeenNotifState({
+                isSeen: true,
+                seenDate: new Date(notification.readTime)
+            })
+        }
 
         // Update your state or UI as needed
     }, [])
@@ -49,16 +53,15 @@ export const useWebSocket = (user: User | null, onNewMessage?: (message: Message
                 // It's a Message
                 if (onNewMessage) onNewMessage(message as Message)
                     setTypingUser(null)
+                    setSeenUser(false)
             } else if (message.type === 'typing') {
                 // It's a TypingNotification
                 setTypingUser(message.senderId)
+                setSeenUser(false)
             } else if (message.type === 'seen') {
                 // It's a SeenNotification
-                updateSeenNotifState({
-                    isSeen: true,
-                    seenDate: new Date()
-                })
                 handleSeenNotification(message as SeenNotification)
+                setSeenUser(true)
             }
         })
     
@@ -80,7 +83,7 @@ export const useWebSocket = (user: User | null, onNewMessage?: (message: Message
             const timeout = setTimeout(() => setTypingUser(null), 3000)
             return () => clearTimeout(timeout)
         }
-    }, [typingUser])
+    }, [typingUser,seenUser])
 
 
     const sendMessage = useCallback(async (messageDTO: Message) => {
@@ -92,16 +95,18 @@ export const useWebSocket = (user: User | null, onNewMessage?: (message: Message
                 console.error('Failed to send message:', error)
             } finally {
                 setTypingUser(null)
+                setSeenUser(false)
             }
         } else {
             console.warn('WebSocketService is not initialized.')
         }
     }, [webSocketService])
 
-    const sendTypingNotification = useCallback((receiver: User) => {
+    const sendTypingNotification = useCallback((discussionId: string,receiver: User) => {
         if (user && webSocketService) {
             const typingNotification: TypingNotification = {
                 type: 'typing',
+                discussionId,
                 senderId: user.id,
                 receiverId: receiver.id,
             }
@@ -116,11 +121,12 @@ export const useWebSocket = (user: User | null, onNewMessage?: (message: Message
         }
     }, [user, webSocketService])
 
-    const sendSeenNotification = useCallback((messageId: string, receiver: User) => {
+    const sendSeenNotification = useCallback((messageId: string,discussionId: string, receiver: User) => {
         if (user && webSocketService) {
             const seenNotification: SeenNotification = {
                 type: 'seen',
                 messageId,
+                discussionId,
                 senderId: user.id,
                 receiverId: receiver.id,
                 readTime: new Date(),
@@ -138,5 +144,5 @@ export const useWebSocket = (user: User | null, onNewMessage?: (message: Message
         }
     }, [user, webSocketService])
 
-    return { webSocketService, typingUser, sendMessage, sendTypingNotification,sendSeenNotification,seenNotif }
+    return { webSocketService, typingUser,seenUser, sendMessage, sendTypingNotification,sendSeenNotification,seenNotif }
 }

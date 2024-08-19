@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 // src/components/DiscussionHandler.tsx
 import React, { useRef, useState } from 'react'
 import { Emoji } from '@emoji-mart/data'
@@ -18,9 +19,10 @@ interface DiscussionHandlerProps {
         sendFile: (event: React.ChangeEvent<HTMLInputElement>) => void;
         handleSend: (receiver: User, IdDiscussion: string) => void;
         handleKeyDown: (e: React.KeyboardEvent<HTMLInputElement>, receiver: User, idDiscussion: string) => void;
-        sendTypingNotification: (receiver: User) => void;
+        sendTypingNotification: (discussionId: string,receiver: User) => void;
         typingUser: string | null;
-        sendSeenNotification: (messageId: string, receiver: User) => void;
+        seenUser: boolean | null;
+        sendSeenNotification: (messageId: string,discussionId: string, receiver: User) => void;
         seenNotif: SeenNotif; 
 
     }) => React.ReactNode;
@@ -33,7 +35,7 @@ export const DiscussionHandler: React.FC<DiscussionHandlerProps> = ({ render, on
     const [messages, setMessages] = useState<Message[]>([])
 
     // WebSocket hook
-    const { webSocketService, sendMessage, typingUser, sendTypingNotification,sendSeenNotification,seenNotif } = useWebSocket(user, onNewMessage)
+    const { webSocketService, sendMessage, typingUser,seenUser, sendTypingNotification,sendSeenNotification,seenNotif } = useWebSocket(user, onNewMessage)
 
     const handleSend = async (receiver: User, IdDiscussion: string) => {
         console.log('blabla', webSocketService)
@@ -46,15 +48,17 @@ export const DiscussionHandler: React.FC<DiscussionHandlerProps> = ({ render, on
                 content: message,
                 timestamp: new Date(),
                 read: false,
-                type: 'message'
+                type: 'message',
                 //readTime: new Date(),
             }
-
+            
             try {
                 await sendMessage(messageDTO)
+                console.log(messageDTO.discussionId)
                 setMessages(prevMessages => [...prevMessages, messageDTO])
                 setMessage('')
                 refreshUserData()
+                
             } catch (error) {
                 console.error('Failed to send message:', error)
             }
@@ -139,6 +143,7 @@ export const DiscussionHandler: React.FC<DiscussionHandlerProps> = ({ render, on
         handleKeyDown,
         sendTypingNotification,
         typingUser,
+        seenUser,
         sendSeenNotification,
         seenNotif,
     })

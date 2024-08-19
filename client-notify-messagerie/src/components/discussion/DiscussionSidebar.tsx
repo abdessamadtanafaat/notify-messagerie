@@ -32,8 +32,9 @@ const DiscussionSidebar: React.FC<DiscussionSidebarProps> = ({ receiver, idDiscu
         try {
             if (user) {
                 const discussionData = await messageService.getDiscussion(receiver.id, user.id)
-                // console.log(discussionData.messages)
+                console.log('messagaat jdad ',discussionData.messages)
                 setMessages(discussionData.messages)
+                console.log(idDiscussion)
             }
         } catch (error) {
             console.log('Failed to fetch messages')
@@ -45,7 +46,7 @@ const DiscussionSidebar: React.FC<DiscussionSidebarProps> = ({ receiver, idDiscu
     // useEffect to fetch messages when necessary
     useEffect(() => {
         fetchMessages()
-    }, [idDiscussion, user, receiver.id]) // Only depend on idDiscussion, user, and receiver.id
+    }, [idDiscussion, user, receiver.id,onMessageSent]) // Only depend on idDiscussion, user, and receiver.id
 
     // Handle new messages (consider moving this to a WebSocket handler in real-world applications)
     const handleNewMessage = (message: Message) => {
@@ -69,8 +70,10 @@ const DiscussionSidebar: React.FC<DiscussionSidebarProps> = ({ receiver, idDiscu
 
     useEffect(() => {
         scrollToBottom()
+        // if (lastMessage) {
+        //     sendSeenNotification(lastMessage.id, lastMessage.discussionId, receiver)
+        // }
     }, [messages])
-
 
     const scrollToBottom = () => {
         messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
@@ -95,18 +98,13 @@ const DiscussionSidebar: React.FC<DiscussionSidebarProps> = ({ receiver, idDiscu
                         handleKeyDown,
                         sendTypingNotification,
                         typingUser,
+                        seenUser,
                         sendSeenNotification,
                         seenNotif,
                     }) => (
                         <>
 
                             {/* Header Rectangle */}
-                            {seenNotif.isSeen ? (
-                                                <p className="font-normal truncate text-dark dark:text-white text-xs" >Is Seen...{getTimeDifference(seenNotif.seenDate)}</p>
-
-                                            ) : (
-                                                <p>blablalabla</p>
-                                            )} 
                             <div className="w-full h-12 bg-white dark:bg-gray-800 rounded-lg mt-2 shadow-md">
                                 <div className="flex items-center justify-between px-5">
                                     <div className="relative flex items-center space-x-4">
@@ -191,25 +189,55 @@ const DiscussionSidebar: React.FC<DiscussionSidebarProps> = ({ receiver, idDiscu
                                                     </span>
                                                 </div>
                                             </div>
-                                            {msg === lastMessage && !msg.read && user?.id === msg.senderId && (
+                                            {/* {msg === lastMessage && user?.id === lastMessage.senderId  && msg.readTime && (
                                                 <p className="text-gray-500 text-[9px] mt-1 ml-1">
                                                     Sent
                                                 </p>
-                                            )}
-
-                                            {/* {msg === lastMessage && msg.read && user?.id === msg.senderId && (
+                                            )} */}
+                                            
+                                                    {/* {seenUser && msg === lastMessage && user?.id === lastMessage.senderId  && msg.read && (
                                                 <p className="text-gray-500 text-[9px] mt-1 ml-1">
-                                                    Seen {getTimeDifference(msg.readTime)}
-
+                                                Seen {getTimeDifference(msg.readTime)}
                                                 </p>
                                             )} */}
 
-                                            {msg === lastMessage && seenNotif.isSeen  && (
+
+{
+    msg === lastMessage && user?.id === lastMessage.senderId ? (
+        seenUser? (
+            <p className="text-gray-500 text-[9px] mt-1 ml-1">
+                Seen {getTimeDifference(seenNotif.seenDate)}
+            </p>
+        ) : (
+            <p className="text-gray-500 text-[9px] mt-1 ml-1">
+                Sent
+            </p>
+        )
+    ) : null
+}
+
+
+
+{/* 
+                                            {msg === lastMessage  && user?.id === lastMessage.senderId  && !msg.read && (
+                                                <p className="text-gray-500 text-[9px] mt-1 ml-1">
+                                                    Sent
+                                                </p>
+                                            )} */}
+                                            
+                                            {/* {seenUser && msg === lastMessage && user?.id === lastMessage.senderId && (
+                                                <p className="text-gray-500 text-[9px] mt-1 ml-1">
+                                                Seen {getTimeDifference(seenNotif.seenDate)}
+                                            </p>
+                                            )}  */}
+                                            
+                                            {/* { msg === lastMessage && seenNotif.isSeen && user?.id === lastMessage.senderId  &&(
                                                 <p className="text-gray-500 text-[9px] mt-1 ml-1">
                                                     Seen {getTimeDifference(seenNotif.seenDate)}
 
                                                 </p>
-                                            )}
+                                            )} */}
+
                                             {msg === lastMessage && typingUser && 
                                             
                                             <div className="typing mt-2">
@@ -258,11 +286,14 @@ const DiscussionSidebar: React.FC<DiscussionSidebarProps> = ({ receiver, idDiscu
                                             value={message}
                                             onChange={(e) => {
                                                 handleChange('message', e.target.value)
-                                                sendTypingNotification(receiver)
-                                                sendSeenNotification(lastMessage.id, receiver)
+                                                sendTypingNotification(lastMessage.discussionId,receiver)
 
                                             }}
                                             onKeyDown={(e) => handleKeyDown(e, receiver, idDiscussion)}
+                                            onFocus={() => {
+                                                    sendSeenNotification(lastMessage.id, lastMessage.discussionId, receiver)
+                                                
+                                            }}
                                             autoFocus={true}
                                             className='w-full h-10 px-2 text-sm border-b-2 bg-gray-200 border-gray-600 rounded-2xl placeholder:font-light placeholder:text-gray-500 dark:bg-gray-700 focus:border-blue-400 focus:outline-none'
                                         />

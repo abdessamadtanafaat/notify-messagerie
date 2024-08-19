@@ -132,6 +132,16 @@ public class WebSocketService : IWebSocketService
     // HandleSeenNotification method to process seen notifications
 private async Task HandleSeenNotification(SeenNotification notification)
 {
+
+    var currentMessage = await _messageService.GetMessageById(notification.MessageId); 
+
+        if (currentMessage.Read)
+    {
+        // The message has already been read, no further action needed
+        Console.WriteLine($"Message {notification.MessageId} has already been read at {currentMessage.ReadTime}");
+        return;
+    }
+
     // Update the message status to "seen" in the database
     await _messageService.MarkMessageAsSeen(notification.MessageId, notification.ReceiverId);
 

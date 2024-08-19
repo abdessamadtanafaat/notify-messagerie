@@ -1,4 +1,6 @@
+using MongoDB.Bson;
 using MongoDB.Driver;
+using NotificationService.Exceptions;
 using NotificationService.Repositories;
 
 
@@ -26,7 +28,7 @@ public class MessageService : IMessageService {
     } 
 
 
-    public async Task MarkMessageAsSeen(string messageId, string userId)
+    public async Task MarkMessageAsSeen(string messageId,string userId)
     {
     var currentMessage = await _messageRepository.GetMessageByIdAsync(messageId);
 
@@ -36,23 +38,41 @@ public class MessageService : IMessageService {
     }
 
 
-    if (!currentMessage.Read == false){
+    if (!currentMessage.Read){
     var updatedMessage = new Message
     {
         Id = currentMessage.Id,
         Content = currentMessage.Content,
+        DiscussionId = currentMessage.DiscussionId,
         SenderId = currentMessage.SenderId,
+        Timestamp = currentMessage.Timestamp,
         ReceiverId = currentMessage.ReceiverId,
-        Read = true, // Set the Read status to true
-        ReadTime = DateTime.UtcNow // Set the ReadTime to current UTC time
-        // Include other properties if needed, ensuring they are set correctly
+        Read = true, 
+        ReadTime = DateTime.UtcNow 
     };
         await _messageRepository.UpdateMessageAsync(messageId, updatedMessage);
     }
 
     }
 
-}
+    public async Task<Message> GetMessageById(string messageId) {
+
+                 // Check if id is a valid ObjectId
+                if (!ObjectId.TryParse(messageId, out _))
+                {
+                    throw new NotFoundException($"Message with ID '{messageId}' not found.");
+                }
+                var message = await _messageRepository.GetMessageByIdAsync(messageId);
+                if (message == null)
+                {
+                    throw new NotFoundException($"Message with ID '{messageId}' not found.");
+                }
+                return message;
+                
+    }
+
+
+    }
 
 
 }
