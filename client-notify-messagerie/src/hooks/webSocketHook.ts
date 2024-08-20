@@ -4,6 +4,7 @@ import { WebSocketService } from '../services/WebSocketService'
 import API_ENDPOINTS from '../api/endpoints'
 import { Message, SeenNotification, TypingNotification } from '../interfaces/Discussion'
 import { ErrorResponse, User } from '../interfaces'
+import { toast } from 'react-toastify'
 
 export const useWebSocket = (user: User | null, onNewMessage?: (message: Message) => void) => {
     const [webSocketService, setWebSocketService] = useState<WebSocketService | null>(null)
@@ -15,34 +16,12 @@ export const useWebSocket = (user: User | null, onNewMessage?: (message: Message
         seenDate: undefined as Date | undefined
     })
 
-        // Function to update the state object
-        const updateSeenNotifState = (newState: Partial<typeof seenNotif>) => {
-            setSeenNotif(prevState => ({
-                ...prevState,
-                ...newState
-            }))
-        }
 
-    const handleSeenNotification = useCallback((notification: SeenNotification) => {
-        console.log('Seen notification received:', notification)
-        console.log(notification.isSeen)
-        console.log(notification.readTime)
-        if (notification.isSeen && notification.readTime) {
-            updateSeenNotifState({
-                isSeen: true,
-                seenDate: new Date(notification.readTime)
-            })
-        }
-
-        // Update your state or UI as needed
-    }, [])
-
-    
     useEffect(() => {
-        if (!user) return
+        if (!user || webSocketService) return
     
         const wsService = new WebSocketService(API_ENDPOINTS.WEBSOCKET_URL, user.id)
-        console.log('Initializing WebSocketService:', wsService)
+        //console.log('Initializing WebSocketService:', wsService)
     
         wsService.connect()
     
@@ -54,6 +33,7 @@ export const useWebSocket = (user: User | null, onNewMessage?: (message: Message
                 if (onNewMessage) onNewMessage(message as Message)
                     setTypingUser(null)
                     setSeenUser(false)
+                    handleNewMessage(message as Message) //affiche the toast
             } else if (message.type === 'typing') {
                 // It's a TypingNotification
                 setTypingUser(message.senderId)
@@ -70,13 +50,13 @@ export const useWebSocket = (user: User | null, onNewMessage?: (message: Message
         })
     
         wsService.onClose(() => {
-            console.log('WebSocket connection closed')
+            //console.log('WebSocket connection closed')
             setWebSocketService(null) // Reset on close
         })
     
         setWebSocketService(wsService)
     
-    }, [user, onNewMessage, handleSeenNotification])
+    }, [user, onNewMessage,])
     
     useEffect(() => {
         if (typingUser) {
@@ -84,6 +64,35 @@ export const useWebSocket = (user: User | null, onNewMessage?: (message: Message
             return () => clearTimeout(timeout)
         }
     }, [typingUser,seenUser])
+
+
+const handleNewMessage = (newMessage: Message) => {
+    toast(`New message from ${newMessage.senderId}`)
+}
+
+        // Function to update the state object
+        const updateSeenNotifState = (newState: Partial<typeof seenNotif>) => {
+            setSeenNotif(prevState => ({
+                ...prevState,
+                ...newState
+            }))
+        }
+
+    const handleSeenNotification = (notification: SeenNotification) => {
+        //console.log('Seen notification received:', notification)
+        //console.log(notification.isSeen)
+        //console.log(notification.readTime)
+        toast(`your message is seen from ${notification.senderId}`)
+
+        if (notification.isSeen && notification.readTime) {
+            updateSeenNotifState({
+                isSeen: true,
+                seenDate: new Date(notification.readTime)
+            })
+        }
+
+        
+    }
 
 
     const sendMessage = useCallback(async (messageDTO: Message) => {

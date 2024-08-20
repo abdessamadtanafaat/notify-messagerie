@@ -8,10 +8,12 @@ import { GoogleOAuthProvider } from '@react-oauth/google'
 import App from './App'
 import { AuthProvider } from './contexte/AuthContext'
 import { ThemeProvider } from './contexte/ThemeContext'
+// import { WebSocketProvider } from './contexte/WebSocketContext'
 
 
 const rootElement = document.getElementById('root')
 const root = createRoot(rootElement!)
+
 
 root.render(
   
@@ -21,8 +23,10 @@ root.render(
         <ToastContainer position="top-center" />
         <ThemeProvider>
         <AuthProvider>
+        {/* <DiscussionProvider> */}
         <App />
-      </AuthProvider>
+        {/* </DiscussionProvider> */}
+        </AuthProvider>
       </ThemeProvider>
     {/* </React.StrictMode> */}
     </GoogleOAuthProvider>

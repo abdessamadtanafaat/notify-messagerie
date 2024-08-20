@@ -25,7 +25,7 @@ const DiscussionList: React.FC = () => {
     const { theme } = useThemeContext()
     const { user, refreshUserData } = useAuth()
 
-    const {sendSeenNotification } = useWebSocket(user)
+    //const { sendSeenNotification } = useWebSocket(user)
 
 
     const fetchDiscussions = async () => {
@@ -51,7 +51,7 @@ const DiscussionList: React.FC = () => {
                 setMessages(discussionData.messages)
                 const lastMessage = messages[messages.length - 1]
                 setIdDiscussion(discussionData.id)
-                if(!lastMessage.read) {
+                if (!lastMessage.read) {
                     sendSeenNotification(lastMessage.id, lastMessage.discussionId, receiver)
                     console.log('dazt')
                 } else {
@@ -91,6 +91,12 @@ const DiscussionList: React.FC = () => {
         setMessages(prevMessages => [...prevMessages, newMessage])
     }
 
+    // const handleSeenNotification = (newMessage: Message) => {
+
+    // }
+
+    const { sendSeenNotification } = useWebSocket(user, handleNewMessage)
+
     const searchUsers = async (userId: string, searchReq: string) => {
 
         try {
@@ -121,13 +127,13 @@ const DiscussionList: React.FC = () => {
             }
         }
     }
-    useEffect(() => {
-        fetchDiscussions()
-    }, [user])
 
     const handleClearSearch = () => {
         setSearchInDiscussion('')
     }
+    useEffect(() => {
+        fetchDiscussions()
+    }, [user])
 
     return (
         <>
@@ -270,13 +276,13 @@ const DiscussionList: React.FC = () => {
                     </div>
                     {selectedUser && (
                         <div className="fixed bottom-4 top-4 left-96 rounded-2xl bg-white dark:bg-gray-800 h-screen shadow-xl w-48 md:w-56 lg:w-7/12 xl:w-3/5"
-                                >
+                        >
                             <DiscussionSidebar
                                 receiver={selectedUser}
                                 idDiscussion={idDiscussion}
                                 messages={messages}
                                 onMessageSent={handleNewMessage}
-                                
+
                             />
                         </div>
 

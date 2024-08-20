@@ -26,7 +26,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       if(userInfo?.id){
         const response = await axiosInstance.get<User>(`${API_ENDPOINTS.GET_USER_INFO}/${userInfo.id}`)
         const updatedUser = response.data
-        console.log(updatedUser) 
+        //console.log(updatedUser) 
         localStorage.setItem('user', JSON.stringify(updatedUser))
         dispatch(setAuthState({
           token: getCookie('token'),
@@ -73,7 +73,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   }
 
   useEffect(() => {
-    console.log('AuthProvider values:', { isAuthenticated, userInfo, isLoading })
+    //console.log('AuthProvider values:', { isAuthenticated, userInfo, isLoading })
   }, [isAuthenticated, userInfo, isLoading])
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>

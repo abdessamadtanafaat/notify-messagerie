@@ -29,7 +29,7 @@ export const getTimeDifference = (logoutTime: Date | string | undefined): string
     const secondsInMonth = 2592000
 
     if (differenceInSeconds < secondsInMinute ) {
-        return `${differenceInSeconds} seconds ago`
+        return 'now'
     }else if (differenceInSeconds < secondsInHour) {
         return `${Math.floor(differenceInSeconds / secondsInMinute)} minutes ago`
     }else if(differenceInSeconds < secondsInDay){
