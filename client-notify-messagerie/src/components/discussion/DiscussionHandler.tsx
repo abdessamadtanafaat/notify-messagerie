@@ -19,11 +19,11 @@ interface DiscussionHandlerProps {
         sendFile: (event: React.ChangeEvent<HTMLInputElement>) => void;
         handleSend: (receiver: User, IdDiscussion: string) => void;
         handleKeyDown: (e: React.KeyboardEvent<HTMLInputElement>, receiver: User, idDiscussion: string) => void;
-        sendTypingNotification: (discussionId: string,receiver: User) => void;
+        sendTypingNotification: (discussionId: string, receiver: User) => void;
         typingUser: string | null;
         seenUser: boolean | null;
-        sendSeenNotification: (messageId: string,discussionId: string, receiver: User) => void;
-        seenNotif: SeenNotif; 
+        sendSeenNotification: (messageId: string, discussionId: string, receiver: User) => void;
+        seenNotif: SeenNotif;
 
     }) => React.ReactNode;
     onNewMessage?: (message: Message) => void;
@@ -35,10 +35,9 @@ export const DiscussionHandler: React.FC<DiscussionHandlerProps> = ({ render, on
     const [messages, setMessages] = useState<Message[]>([])
 
     // WebSocket hook
-    const { webSocketService, sendMessage, typingUser,seenUser, sendTypingNotification,sendSeenNotification,seenNotif } = useWebSocket(user, onNewMessage)
+    const { webSocketService, sendMessage, typingUser, seenUser, sendTypingNotification, sendSeenNotification, seenNotif } = useWebSocket(user, onNewMessage)
 
     const handleSend = async (receiver: User, IdDiscussion: string) => {
-        console.log('blabla', webSocketService)
 
         if (message.trim() && user && webSocketService) {
             const messageDTO: Message = {
@@ -49,16 +48,15 @@ export const DiscussionHandler: React.FC<DiscussionHandlerProps> = ({ render, on
                 timestamp: new Date(),
                 read: false,
                 type: 'message',
-                //readTime: new Date(),
             }
-            
+
             try {
                 await sendMessage(messageDTO)
                 console.log(messageDTO.discussionId)
                 setMessages(prevMessages => [...prevMessages, messageDTO])
                 setMessage('')
                 refreshUserData()
-                
+
             } catch (error) {
                 console.error('Failed to send message:', error)
             }
@@ -119,7 +117,6 @@ export const DiscussionHandler: React.FC<DiscussionHandlerProps> = ({ render, on
     const handleChange = (field: 'message', value: string) => {
         if (field === 'message') {
             setMessage(value)
-            // Optionally handle typing notifications here if needed
         }
     }
 
@@ -128,7 +125,6 @@ export const DiscussionHandler: React.FC<DiscussionHandlerProps> = ({ render, on
             pickerRef.current[field] = el
         }
     }
-
 
     return render({
         handleChange,

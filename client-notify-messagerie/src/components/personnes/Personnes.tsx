@@ -26,7 +26,7 @@ export default function Personnes() {
             setSelectedUser(user)
             if (userAuth) {
                 const discussionData = await messageService.getDiscussion(userAuth.id, user.id)
-                console.log(discussionData.messages)
+                console.log(discussionData)
                 setMessages(discussionData.messages)
                 setIdDiscussion(discussionData.id)
                 const lastMessage = messages[messages.length - 1]

@@ -26,8 +26,13 @@ const DiscussionSidebar: React.FC<DiscussionSidebarProps> = ({ receiver, idDiscu
     const messagesEndRef = useRef<HTMLDivElement>(null)
     const [loading, setLoading] = useState<boolean>(true)
 
+    const [isExpanded, setIsExpanded] = useState(false)
+    const toggleSidebar = () => setIsExpanded(!isExpanded)
+    const { theme } = useThemeContext()
 
-    // Function to fetch messages
+    const lastMessage = messages[messages.length - 1]
+
+
     const fetchMessages = async () => {
         try {
             if (user) {
@@ -43,41 +48,30 @@ const DiscussionSidebar: React.FC<DiscussionSidebarProps> = ({ receiver, idDiscu
         }
     }
 
-    // useEffect to fetch messages when necessary
-    useEffect(() => {
-        fetchMessages()
-    }, [idDiscussion, user, receiver.id, onMessageSent]) // Only depend on idDiscussion, user, and receiver.id
-
-    // Handle new messages (consider moving this to a WebSocket handler in real-world applications)
     const handleNewMessage = (message: Message) => {
         // console.log('Received raw message:', message)
 
         const camelCaseMessage = convertKeysToCamelCase(message)
-        
+
         setMessages((prevMessages) => [...prevMessages, camelCaseMessage])
-        console.log('men handlenew message',messages)
+        console.log('men handlenew message', messages)
         if (onMessageSent) {
             onMessageSent(camelCaseMessage)
         }
 
     }
 
-    const [isExpanded, setIsExpanded] = useState(false)
-    const toggleSidebar = () => setIsExpanded(!isExpanded)
-    const { theme } = useThemeContext()
-
-    const lastMessage = messages[messages.length - 1]
-
-    useEffect(() => {
-        scrollToBottom()
-        // if (lastMessage) {
-        //     sendSeenNotification(lastMessage.id, lastMessage.discussionId, receiver)
-        // }
-    }, [messages])
-
     const scrollToBottom = () => {
         messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
     }
+
+    useEffect(() => {
+        fetchMessages()
+    }, [idDiscussion, user, receiver.id, onMessageSent])
+
+    useEffect(() => {
+        scrollToBottom()
+    }, [messages])
 
     return (
         <>
@@ -197,12 +191,19 @@ const DiscussionSidebar: React.FC<DiscussionSidebarProps> = ({ receiver, idDiscu
                                                             Seen {formatDateTime(seenNotif.seenDate)}
                                                         </p>
                                                     ) : (
-                                                        <p className="text-gray-500 text-[9px] mt-1 ml-1">
-                                                            Sent
-                                                        </p>
+                                                        lastMessage.read ? (
+                                                            <p className="text-gray-500 text-[9px] mt-1 ml-1">
+                                                                {formatDateTime(lastMessage.timestamp)}
+                                                            </p>
+                                                        ) : (
+                                                            <p className="text-gray-500 text-[9px] mt-1 ml-1">
+                                                                Sent
+                                                            </p>
+                                                        )
                                                     )
                                                 ) : null
                                             }
+
                                             {msg === lastMessage && typingUser &&
 
                                                 <div className="typing mt-2">
@@ -256,7 +257,10 @@ const DiscussionSidebar: React.FC<DiscussionSidebarProps> = ({ receiver, idDiscu
                                             }}
                                             onKeyDown={(e) => handleKeyDown(e, receiver, idDiscussion)}
                                             onFocus={() => {
-                                                sendSeenNotification(lastMessage.id, lastMessage.discussionId, receiver)
+                                                if (user?.id === lastMessage.receiverId) {
+
+                                                    sendSeenNotification(lastMessage.id, lastMessage.discussionId, receiver)
+                                                }
 
                                             }}
                                             autoFocus={true}

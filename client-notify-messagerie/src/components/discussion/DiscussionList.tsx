@@ -1,6 +1,7 @@
+/* eslint-disable react-hooks/exhaustive-deps */
 import React, { useEffect, useState } from 'react'
 import { User } from '../../interfaces'
-import { ChevronLeft, SearchIcon } from 'lucide-react'
+import { CheckCheck, ChevronLeft, SearchIcon } from 'lucide-react'
 import { useAuth } from '../../contexte/AuthContext'
 import { Discussion, Message } from '../../interfaces/Discussion'
 
@@ -25,9 +26,6 @@ const DiscussionList: React.FC = () => {
     const { theme } = useThemeContext()
     const { user, refreshUserData } = useAuth()
 
-    //const { sendSeenNotification } = useWebSocket(user)
-
-
     const fetchDiscussions = async () => {
         try {
             if (user) {
@@ -51,11 +49,10 @@ const DiscussionList: React.FC = () => {
                 setMessages(discussionData.messages)
                 const lastMessage = messages[messages.length - 1]
                 setIdDiscussion(discussionData.id)
-                if (!lastMessage.read) {
+
+                if (user?.id === lastMessage.receiverId) {
+
                     sendSeenNotification(lastMessage.id, lastMessage.discussionId, receiver)
-                    console.log('dazt')
-                } else {
-                    console.log('already read.')
                 }
             }
             refreshUserData()
@@ -90,10 +87,6 @@ const DiscussionList: React.FC = () => {
 
         setMessages(prevMessages => [...prevMessages, newMessage])
     }
-
-    // const handleSeenNotification = (newMessage: Message) => {
-
-    // }
 
     const { sendSeenNotification } = useWebSocket(user, handleNewMessage)
 
@@ -261,6 +254,11 @@ const DiscussionList: React.FC = () => {
                                                                         <div className="absolute -top-1 -right-2 w-2 h-2 rounded-full bg-blue-500" />
                                                                     </div>
                                                                 )}
+
+{lastMessage.read && isMyMessage && (
+<CheckCheck  className='w-3 h-3'/>
+                                                                )}
+
                                                             </div>
                                                         </div>
                                                     </div>

@@ -24,7 +24,7 @@ const DiscussionSidebarSkeleton = () => {
               <Skeleton
                 height={16}
                 width={150}
-                style={{ backgroundColor: 'rgba(229, 231, 235, 0.4)' }} 
+                style={{ backgroundColor: 'rgba(229, 231, 235, 0.4)' }}
                 className="dark:bg-gray-600 dark:bg-opacity-40"
               />
             </div>
