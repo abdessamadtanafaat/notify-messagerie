@@ -55,6 +55,7 @@ export const DiscussionHandler: React.FC<DiscussionHandlerProps> = ({ render, on
                 console.log(messageDTO.discussionId)
                 setMessages(prevMessages => [...prevMessages, messageDTO])
                 setMessage('')
+                fetchMessages()
                 refreshUserData()
 
             } catch (error) {

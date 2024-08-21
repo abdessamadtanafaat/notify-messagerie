@@ -35,59 +35,61 @@ const DiscussionSidebar: React.FC<DiscussionSidebarProps> = ({ receiver, idDiscu
 
     const [cursor, setCursor] = useState<Date | null>(null)
     const [hasMore, setHasMore] = useState<boolean>(true)
+    const [scrollTop, setScrollTop] = useState<number>(0)
+
 
     const fetchMessages = useCallback(async (cursor?: Date | null) => {
         try {
             if (user) {
-                // Convert null to undefined if necessary
+                const currentScrollTop = messagesEndRef.current ? messagesEndRef.current.scrollTop : 0
                 const discussionData = await messageService.getDiscussion(receiver.id, user.id, cursor ?? undefined)
                 const newMessages = discussionData.messages
 
-                // Log the new messages for debugging
-                console.log('New messages:', newMessages)
-
-                // Filter out duplicate messages
                 setMessages(prevMessages => {
-                    // Create a Set of existing message IDs for quick lookup
                     const existingMessageIds = new Set(prevMessages.map(msg => msg.id))
-                    // Filter out messages that already exist
                     const filteredMessages = newMessages.filter(msg => !existingMessageIds.has(msg.id))
-                    // Return the updated list of messages with non-duplicate new messages
                     return [...filteredMessages, ...prevMessages]
                 })
 
-                // Update cursor and hasMore based on new messages
                 setCursor(newMessages.length > 0 ? new Date(newMessages[0].timestamp) : null)
                 setHasMore(newMessages.length > 0)
+
+                // Restore the previous scroll position
+                if (messagesEndRef.current) {
+                    messagesEndRef.current.scrollTop = currentScrollTop
+                }
+                // Scroll to bottom on initial fetch
+                scrollToBottom()
             }
         } catch (error) {
             console.log('Failed to fetch messages:', error)
         } finally {
-            setLoading(false) // Ensure loading is set to false regardless of success or failure
+            setLoading(false)
         }
-    }, [user, receiver]) // Ensure to include dependencies
-
-
-
+    }, [user, receiver])
 
     const handleNewMessage = (message: Message) => {
-        // console.log('Received raw message:', message)
+    // console.log('Received raw message:', message)
 
-        const camelCaseMessage = convertKeysToCamelCase(message)
+    const camelCaseMessage = convertKeysToCamelCase(message) 
+    // Append the new message to the end of the messages array
+    setMessages(prevMessages => [...prevMessages, camelCaseMessage])
 
-        setMessages((prevMessages) => [...prevMessages, camelCaseMessage])
+    // Scroll to the bottom after adding the new message
+    scrollToBottom()
+
         console.log('men handlenew message', messages)
         if (onMessageSent) {
             onMessageSent(camelCaseMessage)
         }
 
+
     }
 
-
-
-
     const handleScroll = (e: React.UIEvent<HTMLDivElement, UIEvent>) => {
-        const top = e.currentTarget.scrollTop === 0
+        const scrollTop = e.currentTarget.scrollTop
+        setScrollTop(scrollTop)
+        const top = scrollTop === 0
         if (top && hasMore && !loading) {
             fetchMessages(cursor || undefined)
         }
@@ -98,12 +100,16 @@ const DiscussionSidebar: React.FC<DiscussionSidebarProps> = ({ receiver, idDiscu
     }, [idDiscussion, user, receiver.id, onMessageSent])
 
     const scrollToBottom = () => {
-        messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
+        if (messagesEndRef.current) {
+            messagesEndRef.current.scrollIntoView({ behavior: 'smooth', block: 'end' })
+        }
     }
 
-    useEffect(() => {
-        scrollToBottom()
-    }, [messages])
+    const scrollToBottomInput = () => {
+        if (messagesEndRef.current) {
+            messagesEndRef.current.scrollTop = messagesEndRef.current.scrollHeight
+        }
+    }
 
     return (
         <>
@@ -171,7 +177,14 @@ const DiscussionSidebar: React.FC<DiscussionSidebarProps> = ({ receiver, idDiscu
                             {/* Main Content */}
                             <div className="flex flex-col h-[calc(100vh-6rem)]">
                                 <div className="flex flex-col flex-grow p-3"
-                                    onScroll={handleScroll} style={{ height: '500px', overflowY: 'auto', overflowX: 'hidden' }}>
+                                    onScroll={handleScroll}
+                                    style={{ height: '100%',
+                                                    overflowY: 'auto',
+                                                    overflowX: 'hidden',
+                                                    paddingTop: '50px', // Add padding to the top
+                                                    position: 'relative'  }}
+                                    ref={messagesEndRef}
+                                    >
                                     {/* Avatar */}
                                     <div className="flex flex-col items-center space-y-1">
                                         <img
@@ -238,23 +251,16 @@ const DiscussionSidebar: React.FC<DiscussionSidebarProps> = ({ receiver, idDiscu
                                             }
 
                                             {msg === lastMessage && typingUser &&
-
-
-
                                                 <div className="typing mt-4">
                                                     <div className="typing__dot"></div>
                                                     <div className="typing__dot"></div>
                                                     <div className="typing__dot"></div>
                                                 </div>
-
-
-
                                             }
-
                                         </div>
                                     ))}
 
-                                    {/* <div ref={messagesEndRef} /> */}
+                                    <div ref={messagesEndRef} />
                                 </div>
 
                             </div>
@@ -291,15 +297,19 @@ const DiscussionSidebar: React.FC<DiscussionSidebarProps> = ({ receiver, idDiscu
                                             onChange={(e) => {
                                                 handleChange('message', e.target.value)
                                                 sendTypingNotification(lastMessage.discussionId, receiver)
+                                                scrollToBottomInput()
+
 
                                             }}
-                                            onKeyDown={(e) => handleKeyDown(e, receiver, idDiscussion)}
+                                            onKeyDown={(e) => {handleKeyDown(e, receiver, idDiscussion)
+                                                scrollToBottomInput()
+                                            }}
                                             onFocus={() => {
                                                 if (user?.id === lastMessage.receiverId) {
 
                                                     sendSeenNotification(lastMessage.id, lastMessage.discussionId, receiver)
                                                 }
-
+                                                scrollToBottomInput()
                                             }}
                                             autoFocus={true}
                                             className='w-full h-10 px-2 text-sm border-b-2 bg-gray-200 border-gray-600 rounded-2xl placeholder:font-light placeholder:text-gray-500 dark:bg-gray-700 focus:border-blue-400 focus:outline-none'
