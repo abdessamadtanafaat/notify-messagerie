@@ -45,6 +45,8 @@ public class MessageService : IMessageService {
         Content = currentMessage.Content,
         DiscussionId = currentMessage.DiscussionId,
         SenderId = currentMessage.SenderId,
+        FirstName = currentMessage.FirstName,
+        LastName = currentMessage.LastName,
         Timestamp = currentMessage.Timestamp,
         ReceiverId = currentMessage.ReceiverId,
         Read = true, 

@@ -34,6 +34,7 @@ export const DiscussionHandler: React.FC<DiscussionHandlerProps> = ({ render, on
     const [message, setMessage] = useState<string>('')
     const [messages, setMessages] = useState<Message[]>([])
 
+    
     // WebSocket hook
     const { webSocketService, sendMessage, typingUser, seenUser, sendTypingNotification, sendSeenNotification, seenNotif } = useWebSocket(user, onNewMessage)
 
@@ -41,12 +42,16 @@ export const DiscussionHandler: React.FC<DiscussionHandlerProps> = ({ render, on
 
         if (message.trim() && user && webSocketService) {
             const messageDTO: Message = {
+                id: '',
                 discussionId: IdDiscussion,
                 senderId: user.id,
+                firstName: user.firstName,
+                lastName: user.lastName,
                 receiverId: receiver.id,
                 content: message,
                 timestamp: new Date(),
                 read: false,
+                readTime: new Date(),
                 type: 'message',
             }
 
@@ -55,7 +60,6 @@ export const DiscussionHandler: React.FC<DiscussionHandlerProps> = ({ render, on
                 console.log(messageDTO.discussionId)
                 setMessages(prevMessages => [...prevMessages, messageDTO])
                 setMessage('')
-                fetchMessages()
                 refreshUserData()
 
             } catch (error) {

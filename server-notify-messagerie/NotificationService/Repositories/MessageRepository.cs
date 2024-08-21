@@ -18,7 +18,9 @@ public class MessageRepository : IMessageRepostory {
 
         var messageDto = new Message 
         {
-            SenderId = message.SenderId, 
+            SenderId = message.SenderId,
+            FirstName = message.FirstName,
+            LastName = message.LastName,
             ReceiverId = message.ReceiverId,
             Content = message.Content,
             Timestamp = message.Timestamp,

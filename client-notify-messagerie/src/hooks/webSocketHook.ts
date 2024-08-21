@@ -5,6 +5,8 @@ import API_ENDPOINTS from '../api/endpoints'
 import { Message, SeenNotification, TypingNotification } from '../interfaces/Discussion'
 import { ErrorResponse, User } from '../interfaces'
 import { toast } from 'react-toastify'
+import notificationSound from '../assets/notification.mp3'
+
 
 export const useWebSocket = (user: User | null, onNewMessage?: (message: Message) => void) => {
     const [webSocketService, setWebSocketService] = useState<WebSocketService | null>(null)
@@ -67,10 +69,12 @@ export const useWebSocket = (user: User | null, onNewMessage?: (message: Message
 
 
 const handleNewMessage = (newMessage: Message) => {
-    toast(`New message from ${newMessage.senderId}`)
+    const audio = new Audio(notificationSound)
+    console.log(audio)
+    audio.play()
+    toast.info(`${newMessage.firstName} ${newMessage.lastName} sent you a new message`)
     
 }
-
         // Function to update the state object
         const updateSeenNotifState = (newState: Partial<typeof seenNotif>) => {
             setSeenNotif(prevState => ({
@@ -80,11 +84,8 @@ const handleNewMessage = (newMessage: Message) => {
         }
 
     const handleSeenNotification = (notification: SeenNotification) => {
-        //console.log('Seen notification received:', notification)
-        //console.log(notification.isSeen)
-        //console.log(notification.readTime)
-        toast(`your message is seen from ${notification.senderId}`)
-
+        // toast.info(`${notification.senderId} see your message`)
+        
         if (notification.isSeen && notification.readTime) {
             updateSeenNotifState({
                 isSeen: true,

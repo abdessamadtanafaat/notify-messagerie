@@ -4,6 +4,8 @@ export interface Message {
     id: string;
     discussionId: string;
     senderId: string;
+    firstName: string;
+    lastName: string;
     receiverId: string;
     content: string;
     timestamp: Date; 
