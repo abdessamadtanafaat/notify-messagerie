@@ -43,15 +43,25 @@ public class MessageRepository : IMessageRepostory {
             return messages;
         }
 
-        public async Task<IEnumerable<Message>> GetMessagesForDiscussion(string discussionId)
-        {
+public async Task<IEnumerable<Message>> GetMessagesForDiscussion(string discussionId, DateTime? cursor, int limit)
+{
+    var filterBuilder = Builders<Message>.Filter;
+    var filter = filterBuilder.Eq(m => m.DiscussionId, discussionId);
 
-        return await _message.Find(m => m.DiscussionId == discussionId)
-                               .SortBy(m => m.Timestamp)
-                               .ToListAsync();
-    
+    if (cursor.HasValue)
+    {
+        filter = filter & filterBuilder.Lt(m => m.Timestamp, cursor.Value);
+    }
 
-        }
+    var query = _message.Find(filter)
+                        .SortByDescending(m => m.Timestamp)
+                        .Limit(limit);
+
+    return await query.ToListAsync();
+}
+
+
+
         public async Task UpdateMessageAsync(string IdMessage, Message message)
     {
             var objectId = new ObjectId(IdMessage); 

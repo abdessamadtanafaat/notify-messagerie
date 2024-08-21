@@ -21,7 +21,7 @@ public class DiscussionService : IDiscussionService{
         _userRepository = userRepository;
     }
 
-    public async Task <SingleDiscussion> GetDiscussionForTwoUsers(string userId, string selectedUserId)
+    public async Task <SingleDiscussion> GetDiscussionForTwoUsers(string userId, string selectedUserId, DateTime? cursor = null, int limit = 10)
     {
     if (string.IsNullOrWhiteSpace(userId))
     {
@@ -35,19 +35,14 @@ public class DiscussionService : IDiscussionService{
 
     var discussion = await _discussionRepository.GetDiscussionForTwoUsers(userId, selectedUserId);
  
-    var messages = await _messageRepository.GetMessagesForDiscussion(discussion.Id);
+    var messages = await _messageRepository.GetMessagesForDiscussion(discussion.Id, cursor, limit);
+    var reversedMessages = messages.Reverse().ToList();
 
-    var lastMessage = messages.OrderByDescending(m => m.Timestamp).FirstOrDefault();
+
+    //var lastMessage = messages.OrderByDescending(m => m.Timestamp).FirstOrDefault();
 
     var receiver = await _userRepository.GetUserByIdAsync(selectedUserId);
 
-        // mark as read because you get the discussion
-        // if (!lastMessage.Read && lastMessage.SenderId == userId){
-
-        // lastMessage.Read = true;
-        // lastMessage.ReadTime = DateTime.Now;
-        // await _messageRepository.UpdateMessageAsync(lastMessage.Id, lastMessage); 
-        // }
         
     var discussionDto = new SingleDiscussion {
             Id = discussion.Id,
@@ -60,7 +55,7 @@ public class DiscussionService : IDiscussionService{
                 Active = receiver.Active,
                 LastLogout = receiver.LastLogout,
             },
-            Messages = messages.Select(m=> new Message{
+            Messages = reversedMessages.Select(m=> new Message{
              Id = m.Id, 
             Content = m.Content,
         Timestamp = m.Timestamp,
@@ -101,8 +96,7 @@ public class DiscussionService : IDiscussionService{
             // Handle case where user is not found
             continue;
         }
-
-        var messages = await _messageRepository.GetMessagesForDiscussion(discussion.Id);
+        var messages = await _messageRepository.GetMessagesForDiscussion(discussion.Id,null, 10);
         var lastMessage = messages.OrderByDescending(m => m.Timestamp).FirstOrDefault();
 
 

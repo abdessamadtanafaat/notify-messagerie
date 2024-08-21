@@ -68,6 +68,7 @@ export const useWebSocket = (user: User | null, onNewMessage?: (message: Message
 
 const handleNewMessage = (newMessage: Message) => {
     toast(`New message from ${newMessage.senderId}`)
+    
 }
 
         // Function to update the state object

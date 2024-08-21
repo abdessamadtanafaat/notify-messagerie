@@ -30,6 +30,7 @@ const DiscussionList: React.FC = () => {
         try {
             if (user) {
                 const discussionsData = await messageService.getDiscussions(user.id)
+                console.log(discussionsData)
                 setDiscussions(discussionsData)
             }
         } catch (error) {
@@ -255,8 +256,8 @@ const DiscussionList: React.FC = () => {
                                                                     </div>
                                                                 )}
 
-{lastMessage.read && isMyMessage && (
-<CheckCheck  className='w-3 h-3'/>
+                                                                {lastMessage.read && isMyMessage && (
+                                                                    <CheckCheck className='w-3 h-3' />
                                                                 )}
 
                                                             </div>

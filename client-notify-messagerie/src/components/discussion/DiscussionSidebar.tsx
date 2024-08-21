@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react'
+import React, { useCallback, useEffect, useRef, useState } from 'react'
 import { User } from '../../interfaces'
 import { CircleEllipsis, FileIcon, ImageIcon, LockKeyholeIcon, Mic, Phone, SendIcon, Smile, Video } from 'lucide-react'
 import StatusMessage from '../common/StatusMessage'
@@ -33,20 +33,42 @@ const DiscussionSidebar: React.FC<DiscussionSidebarProps> = ({ receiver, idDiscu
     const lastMessage = messages[messages.length - 1]
 
 
-    const fetchMessages = async () => {
+    const [cursor, setCursor] = useState<Date | null>(null)
+    const [hasMore, setHasMore] = useState<boolean>(true)
+
+    const fetchMessages = useCallback(async (cursor?: Date | null) => {
         try {
             if (user) {
-                const discussionData = await messageService.getDiscussion(receiver.id, user.id)
-                console.log('messagaat jdad ', discussionData.messages)
-                setMessages(discussionData.messages)
-                console.log(idDiscussion)
+                // Convert null to undefined if necessary
+                const discussionData = await messageService.getDiscussion(receiver.id, user.id, cursor ?? undefined)
+                const newMessages = discussionData.messages
+
+                // Log the new messages for debugging
+                console.log('New messages:', newMessages)
+
+                // Filter out duplicate messages
+                setMessages(prevMessages => {
+                    // Create a Set of existing message IDs for quick lookup
+                    const existingMessageIds = new Set(prevMessages.map(msg => msg.id))
+                    // Filter out messages that already exist
+                    const filteredMessages = newMessages.filter(msg => !existingMessageIds.has(msg.id))
+                    // Return the updated list of messages with non-duplicate new messages
+                    return [...filteredMessages, ...prevMessages]
+                })
+
+                // Update cursor and hasMore based on new messages
+                setCursor(newMessages.length > 0 ? new Date(newMessages[0].timestamp) : null)
+                setHasMore(newMessages.length > 0)
             }
         } catch (error) {
-            console.log('Failed to fetch messages')
+            console.log('Failed to fetch messages:', error)
         } finally {
-            setLoading(false)
+            setLoading(false) // Ensure loading is set to false regardless of success or failure
         }
-    }
+    }, [user, receiver]) // Ensure to include dependencies
+
+
+
 
     const handleNewMessage = (message: Message) => {
         // console.log('Received raw message:', message)
@@ -61,13 +83,23 @@ const DiscussionSidebar: React.FC<DiscussionSidebarProps> = ({ receiver, idDiscu
 
     }
 
-    const scrollToBottom = () => {
-        messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
+
+
+
+    const handleScroll = (e: React.UIEvent<HTMLDivElement, UIEvent>) => {
+        const top = e.currentTarget.scrollTop === 0
+        if (top && hasMore && !loading) {
+            fetchMessages(cursor || undefined)
+        }
     }
 
     useEffect(() => {
         fetchMessages()
     }, [idDiscussion, user, receiver.id, onMessageSent])
+
+    const scrollToBottom = () => {
+        messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
+    }
 
     useEffect(() => {
         scrollToBottom()
@@ -138,7 +170,8 @@ const DiscussionSidebar: React.FC<DiscussionSidebarProps> = ({ receiver, idDiscu
 
                             {/* Main Content */}
                             <div className="flex flex-col h-[calc(100vh-6rem)]">
-                                <div className="flex flex-col flex-grow overflow-y-auto p-3">
+                                <div className="flex flex-col flex-grow p-3"
+                                    onScroll={handleScroll} style={{ height: '500px', overflowY: 'auto', overflowX: 'hidden' }}>
                                     {/* Avatar */}
                                     <div className="flex flex-col items-center space-y-1">
                                         <img
@@ -206,17 +239,22 @@ const DiscussionSidebar: React.FC<DiscussionSidebarProps> = ({ receiver, idDiscu
 
                                             {msg === lastMessage && typingUser &&
 
-                                                <div className="typing mt-2">
+
+
+                                                <div className="typing mt-4">
                                                     <div className="typing__dot"></div>
                                                     <div className="typing__dot"></div>
                                                     <div className="typing__dot"></div>
                                                 </div>
 
+
+
                                             }
 
                                         </div>
                                     ))}
-                                    <div ref={messagesEndRef} />
+
+                                    {/* <div ref={messagesEndRef} /> */}
                                 </div>
 
                             </div>

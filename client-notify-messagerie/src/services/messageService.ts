@@ -24,11 +24,14 @@ import { toast } from 'react-toastify'
     }
   }
 
-  const getDiscussion  = async (userId: string, selectedUserId: string) => {
+  const getDiscussion = async (userId: string, selectedUserId: string, cursor?: Date) => {
     try {
-      const response = await axiosInstance.get(`${API_ENDPOINTS.GET_DISCUSSION}/${userId}/${selectedUserId}`)
-      //console.log(response)
-      //console.log(response.data)
+      const response = await axiosInstance.get(`${API_ENDPOINTS.GET_DISCUSSION}/${userId}/${selectedUserId}`, {
+        params: {
+          cursor: cursor ? cursor.toISOString() : undefined,
+          limit: 10
+        }
+      })
       return response.data
     } catch (error) {
       if (axios.isAxiosError(error) && error.response) {
@@ -40,6 +43,7 @@ import { toast } from 'react-toastify'
       }
     }
   }
+  
 
   const sendMessage = async(message: Message): Promise<void> =>{
 

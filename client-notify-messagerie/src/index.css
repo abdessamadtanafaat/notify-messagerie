@@ -45,14 +45,16 @@ html, body {
 }
 
 .typing {
-  width: 3em;
+  width: 2em;
   height: 2em;
   position: relative;
-  padding: 10px;
+  padding: 3px;
   margin-left: 5px;
   /* background: #e6e6e6; */
-  border-radius: 20px;
+  border-radius: 10px;
 }
+
+
 
 .typing__dot {
   float: left;
