@@ -33,8 +33,8 @@ public class MessageController : ControllerBase
     }
 
     [HttpGet("Discussion/{userId}/{selectedUserId}")]
-    public async Task<IActionResult> GetDiscussion(string userId, string selectedUserId){
-        var discussion = await _discussionService.GetDiscussionForTwoUsers(userId, selectedUserId);
+public async Task<IActionResult> GetDiscussion(string userId, string selectedUserId, DateTime? cursor = null, int limit = 10){
+        var discussion = await _discussionService.GetDiscussionForTwoUsers(userId, selectedUserId, cursor, limit);
         return Ok(discussion); 
     }
 }

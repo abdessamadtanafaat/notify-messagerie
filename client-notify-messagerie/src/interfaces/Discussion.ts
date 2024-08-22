@@ -4,6 +4,8 @@ export interface Message {
     id: string;
     discussionId: string;
     senderId: string;
+    firstName: string;
+    lastName: string;
     receiverId: string;
     content: string;
     timestamp: Date; 
@@ -23,6 +25,7 @@ export interface Discussion {
 
 export interface TypingNotification {
     type: 'typing';
+    discussionId: string;
     senderId: string;
     receiverId : string;
 
@@ -30,6 +33,7 @@ export interface TypingNotification {
 
 export interface SeenNotification {
     type: 'seen'
+    discussionId: string;
     messageId: string; 
     senderId: string;
     receiverId: string;

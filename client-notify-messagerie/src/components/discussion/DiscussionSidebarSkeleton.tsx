@@ -24,11 +24,11 @@ const DiscussionSidebarSkeleton = () => {
               <Skeleton
                 height={16}
                 width={150}
-                style={{ backgroundColor: 'rgba(229, 231, 235, 0.4)' }} 
+                style={{ backgroundColor: 'rgba(229, 231, 235, 0.4)' }}
                 className="dark:bg-gray-600 dark:bg-opacity-40"
               />
             </div>
-            <div className="flex space-x-2 ml-40">
+            {/* <div className="flex space-x-2 ml-40">
               <Skeleton
                 height={24}
                 width={24}
@@ -47,7 +47,7 @@ const DiscussionSidebarSkeleton = () => {
                 style={{ borderRadius: '50%', backgroundColor: 'rgba(229, 231, 235, 0.4)' }} // light mode background with opacity
                 className="dark:bg-gray-600 dark:bg-opacity-40"
               />
-            </div>
+            </div> */}
           </div>
         </div>
       </div>

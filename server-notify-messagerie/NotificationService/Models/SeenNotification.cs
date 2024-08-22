@@ -4,6 +4,8 @@ public class SeenNotification
 {
     [JsonPropertyName("type")]
     public string Type { get; set; } = "seen";
+    [JsonPropertyName("discussionId")]
+    public string DiscussionId { get; set; }
 
     [JsonPropertyName("messageId")]
     public string MessageId { get; set; }

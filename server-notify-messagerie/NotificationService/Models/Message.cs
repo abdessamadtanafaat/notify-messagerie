@@ -16,6 +16,11 @@ public class Message
     [JsonPropertyName("receiverId")]
     public string ReceiverId { get; set; }
 
+    [JsonPropertyName("firstName")]
+    public string FirstName { get; set; }  //of the sender
+    [JsonPropertyName("lastName")]
+    public string LastName { get; set; } // of the sender
+
     [JsonPropertyName("content")]
     public string Content { get; set; }
 

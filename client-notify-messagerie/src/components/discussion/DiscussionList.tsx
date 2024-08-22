@@ -1,6 +1,7 @@
+/* eslint-disable react-hooks/exhaustive-deps */
 import React, { useEffect, useState } from 'react'
 import { User } from '../../interfaces'
-import { ChevronLeft, SearchIcon } from 'lucide-react'
+import { CheckCheck, ChevronLeft, SearchIcon } from 'lucide-react'
 import { useAuth } from '../../contexte/AuthContext'
 import { Discussion, Message } from '../../interfaces/Discussion'
 
@@ -10,6 +11,7 @@ import { useThemeContext } from '../../contexte/ThemeContext'
 import { getAvatarUrl, getTimeDifference } from '../../utils/userUtils'
 import DiscussionListSkeleton from './DiscussionListSkeleton'
 import userService from '../../services/userService'
+import { useWebSocket } from '../../hooks/webSocketHook'
 
 const DiscussionList: React.FC = () => {
 
@@ -28,6 +30,7 @@ const DiscussionList: React.FC = () => {
         try {
             if (user) {
                 const discussionsData = await messageService.getDiscussions(user.id)
+                //console.log(discussionsData)
                 setDiscussions(discussionsData)
             }
         } catch (error) {
@@ -45,7 +48,13 @@ const DiscussionList: React.FC = () => {
                 const discussionData = await messageService.getDiscussion(receiver.id, user.id)
                 //console.log(discussionData.messages)
                 setMessages(discussionData.messages)
+                const lastMessage = messages[messages.length - 1]
                 setIdDiscussion(discussionData.id)
+
+                if (user?.id === lastMessage.receiverId) {
+
+                    sendSeenNotification(lastMessage.id, lastMessage.discussionId, receiver)
+                }
             }
             refreshUserData()
         } catch (error) {
@@ -80,6 +89,8 @@ const DiscussionList: React.FC = () => {
         setMessages(prevMessages => [...prevMessages, newMessage])
     }
 
+    const { sendSeenNotification } = useWebSocket(user, handleNewMessage)
+
     const searchUsers = async (userId: string, searchReq: string) => {
 
         try {
@@ -110,13 +121,13 @@ const DiscussionList: React.FC = () => {
             }
         }
     }
-    useEffect(() => {
-        fetchDiscussions()
-    }, [user])
 
     const handleClearSearch = () => {
         setSearchInDiscussion('')
     }
+    useEffect(() => {
+        fetchDiscussions()
+    }, [user])
 
     return (
         <>
@@ -244,6 +255,11 @@ const DiscussionList: React.FC = () => {
                                                                         <div className="absolute -top-1 -right-2 w-2 h-2 rounded-full bg-blue-500" />
                                                                     </div>
                                                                 )}
+
+                                                                {lastMessage.read && isMyMessage && (
+                                                                    <CheckCheck className='w-3 h-3' />
+                                                                )}
+
                                                             </div>
                                                         </div>
                                                     </div>
@@ -259,12 +275,13 @@ const DiscussionList: React.FC = () => {
                     </div>
                     {selectedUser && (
                         <div className="fixed bottom-4 top-4 left-96 rounded-2xl bg-white dark:bg-gray-800 h-screen shadow-xl w-48 md:w-56 lg:w-7/12 xl:w-3/5"
-                                >
+                        >
                             <DiscussionSidebar
                                 receiver={selectedUser}
                                 idDiscussion={idDiscussion}
                                 messages={messages}
                                 onMessageSent={handleNewMessage}
+
                             />
                         </div>
 

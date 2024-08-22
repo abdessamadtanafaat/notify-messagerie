@@ -7,6 +7,7 @@ import DiscussionSidebar from '../discussion/DiscussionSidebar'
 import { useAuth } from '../../contexte/AuthContext'
 import messageService from '../../services/messageService'
 import { Message } from 'postcss'
+import { useWebSocket } from '../../hooks/webSocketHook'
 
 
 export default function Personnes() {
@@ -17,22 +18,25 @@ export default function Personnes() {
     const [messages, setMessages] = useState<Message[]>([])
 
     const [idDiscussion, setIdDiscussion] = useState<string>('')
+    const {sendSeenNotification } = useWebSocket(userAuth)
 
 
     const handleUserClick = async (user: User) => {
-        //console.log('Clicked !')
         try {
             setSelectedUser(user)
-            //console.log(user)
             if (userAuth) {
-                //console.log(userAuth.id)
                 const discussionData = await messageService.getDiscussion(userAuth.id, user.id)
-                console.log(discussionData.messages)
-
+                console.log(discussionData)
                 setMessages(discussionData.messages)
-                //console.log(messages)
                 setIdDiscussion(discussionData.id)
-                //console.log(idDiscussion)
+                const lastMessage = messages[messages.length - 1]
+                console.log(lastMessage)                
+                if(!lastMessage.read) {
+                    sendSeenNotification(lastMessage.id, lastMessage.discussionId, user)
+                    console.log('dazt')
+                } else {
+                    console.log('already read.')
+                }
             }
             refreshUserData()
         } catch (error) {
