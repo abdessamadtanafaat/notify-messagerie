@@ -3,9 +3,10 @@
 import React, { useRef, useState } from 'react'
 import { Emoji } from '@emoji-mart/data'
 import { useAuth } from '../../contexte/AuthContext'
-import { Message, SeenNotif } from '../../interfaces/Discussion'
+import { AudioMessage, Message, SeenNotif } from '../../interfaces/Discussion'
 import { User } from '../../interfaces'
 import { useWebSocket } from '../../hooks/webSocketHook'
+import cloudinaryService from '../../services/cloudinaryService'
 
 interface DiscussionHandlerProps {
     render: (props: {
@@ -24,10 +25,10 @@ interface DiscussionHandlerProps {
         seenUser: boolean | null;
         sendSeenNotification: (messageId: string, discussionId: string, receiver: User) => void;
         seenNotif: SeenNotif;
-
+        handleSendAudio: (blob: Blob, IdDiscussion: string,receiver: User)=> void;
     }) => React.ReactNode;
     onNewMessage?: (message: Message) => void;
-    fetchMessages: () => void;
+    //fetchMessages: () => void;
 }
 
 export const DiscussionHandler: React.FC<DiscussionHandlerProps> = ({ render, onNewMessage  }) => {
@@ -122,6 +123,39 @@ export const DiscussionHandler: React.FC<DiscussionHandlerProps> = ({ render, on
         }
     }
 
+
+    const handleSendAudio = async (blob: Blob, IdDiscussion: string,receiver: User) => {
+        try {
+            const audioFilePath = await cloudinaryService.uploadAudioFile(blob)
+            if (message.trim() && user) {
+
+            const audioMessage: AudioMessage = {
+                id: '', // Implement unique ID generation
+                discussionId: IdDiscussion,
+                firstName: user.firstName,
+                lastName: user.lastName,
+                senderId: user.id,
+                receiverId: receiver.id,
+                content: audioFilePath,
+                type: 'audio',
+                //audioFilePath: audioFilePath,
+                readTime: new Date(),
+                read: false,
+                timestamp: new Date()
+            }
+            await sendMessage(audioMessage)
+            setMessages(prevMessages => [...prevMessages, audioMessage])
+            //console.log('sift messaghat',messages)
+            setMessage('')
+            //refreshUserData()
+            console.log(audioMessage)
+        }
+    
+        } catch (error) {
+            console.error('Failed to upload or send audio message:', error)
+        }
+    }
+    
     const handleChange = (field: 'message', value: string) => {
         if (field === 'message') {
             setMessage(value)
@@ -150,5 +184,6 @@ export const DiscussionHandler: React.FC<DiscussionHandlerProps> = ({ render, on
         seenUser,
         sendSeenNotification,
         seenNotif,
+        handleSendAudio,
     })
 }

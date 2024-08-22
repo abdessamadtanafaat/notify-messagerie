@@ -2,7 +2,7 @@
 import { useEffect, useState, useCallback } from 'react'
 import { WebSocketService } from '../services/WebSocketService'
 import API_ENDPOINTS from '../api/endpoints'
-import { Message, SeenNotification, TypingNotification } from '../interfaces/Discussion'
+import { AudioMessage, Message, SeenNotification, TypingNotification } from '../interfaces/Discussion'
 import { ErrorResponse, User } from '../interfaces'
 import { toast } from 'react-toastify'
 import notificationSound from '../assets/notification.mp3'
@@ -92,16 +92,13 @@ const handleNewMessage = (newMessage: Message) => {
                 seenDate: new Date(notification.readTime)
             })
         }
-
-        
     }
 
-
-    const sendMessage = useCallback(async (messageDTO: Message) => {
+    const sendMessage = useCallback(async (messageDTO: Message | AudioMessage) => {
         if (webSocketService) {
             try {
                 await webSocketService.send(messageDTO)
-                //console.log('Message sent:', messageDTO)
+                console.log('Message sent:', messageDTO)
             } catch (error) {
                 console.error('Failed to send message:', error)
             } finally {

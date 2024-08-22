@@ -97,3 +97,5 @@ H:\notify-messagerie\server-notify-messagerie\NotificationService\obj\Debug\net6
 H:\notify-messagerie\server-notify-messagerie\NotificationService\obj\Debug\net6.0\NotificationService.pdb
 H:\notify-messagerie\server-notify-messagerie\NotificationService\obj\Debug\net6.0\NotificationService.genruntimeconfig.cache
 H:\notify-messagerie\server-notify-messagerie\NotificationService\bin\Debug\net6.0\System.Net.WebSockets.WebSocketProtocol.dll
+H:\notify-messagerie\server-notify-messagerie\NotificationService\bin\Debug\net6.0\CloudinaryDotNet.dll
+H:\notify-messagerie\server-notify-messagerie\NotificationService\bin\Debug\net6.0\dotenv.net.dll

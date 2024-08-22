@@ -4,6 +4,8 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using MongoDB.Driver;
 
+
+
 namespace NotificationService
 {
     public class Program
@@ -12,6 +14,8 @@ namespace NotificationService
         {
             CreateHostBuilder(args).Build().Run();
         }
+
+
 
         public static IHostBuilder CreateHostBuilder(string[] args) =>
             Host.CreateDefaultBuilder(args)
@@ -27,6 +31,7 @@ namespace NotificationService
                     webBuilder.UseStartup<Startup>();
                 })
                 .UseEnvironment("Development"); // Set the environment to Development
+
 
 
     }

@@ -21,6 +21,7 @@
     "@strapi/strapi": "4.25.4",
     "better-sqlite3": "8.6.0",
     "cloudinary": "^2.3.0",
+    "messagerie-project": "file:",
     "react": "^18.0.0",
     "react-dom": "^18.0.0",
     "react-router-dom": "5.3.4",

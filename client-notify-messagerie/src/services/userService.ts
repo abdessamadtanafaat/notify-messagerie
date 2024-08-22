@@ -52,7 +52,8 @@ const getUserInfo = async (id: string): Promise<User> => {
     }
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any 
+  // with cloudinary . 
   export async function uploadFile(file: File, userId: string | null): Promise<any> {
 
     const preset_key = import.meta.env.VITE_PRESET_KEY

@@ -1,5 +1,8 @@
 
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Http;
+
+
 
 namespace NotificationService.Controllers
 {
@@ -10,13 +13,20 @@ public class MessageController : ControllerBase
 {
     private readonly IMessageService _messageService;
     private readonly IDiscussionService _discussionService;
+    private readonly IWebSocketService _webSocketService;
 
 
 
-    public MessageController(IMessageService messageService, IDiscussionService discussionService) 
+
+
+    public MessageController(IMessageService messageService,
+                             IDiscussionService discussionService,
+                             IWebSocketService webSocketService
+                            ) 
     {
         _messageService = messageService;
         _discussionService = discussionService;
+        _webSocketService = webSocketService;
     }
 
     [HttpPost]
@@ -37,5 +47,14 @@ public async Task<IActionResult> GetDiscussion(string userId, string selectedUse
         var discussion = await _discussionService.GetDiscussionForTwoUsers(userId, selectedUserId, cursor, limit);
         return Ok(discussion); 
     }
+
+    [HttpPost]
+    [Route("uploadAudio")]
+    public async Task<ActionResult> UploadAudio (IFormFile file) {
+        string audioFilePath = await _webSocketService.SaveAudioFile(file); 
+        return Ok(new { secure_url = audioFilePath });
+        }
 }
+
+
 }

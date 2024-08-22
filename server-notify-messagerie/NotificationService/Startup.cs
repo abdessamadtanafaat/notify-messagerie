@@ -21,6 +21,9 @@ using NotificationService.Services;
 using NotificationService.Validators;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using CloudinaryDotNet;
+using CloudinaryDotNet.Actions;
+using dotenv.net;
 
 namespace NotificationService
 {
@@ -32,10 +35,20 @@ namespace NotificationService
         {
             Configuration = configuration;
 
+        DotEnv.Load(options: new DotEnvOptions(probeForEnv: true));
+        
+        var cloudinary = new Cloudinary(Environment.GetEnvironmentVariable("CLOUDINARY_URL"));
+        cloudinary.Api.Secure = true;
+
+        Cloudinary = cloudinary;
+
+
         }
 
 
         public IConfiguration Configuration { get; }
+            public Cloudinary Cloudinary { get; }
+
 
         public void ConfigureServices(IServiceCollection services)
         {
@@ -72,6 +85,10 @@ namespace NotificationService
             services.AddSingleton<IWebSocketService, WebSocketService>();
 
 
+       // Register Cloudinary as a singleton if needed
+        services.AddSingleton(Cloudinary);
+
+
             // Register MongoDbContext with the connection string and database name
             services.AddSingleton<MongoDbContext>(serviceProvider =>
                 new MongoDbContext(mongoConnectionString, mongoDatabaseName));
@@ -89,6 +106,7 @@ namespace NotificationService
             //Register EmailService 
             services.Configure<EmailSettings>(Configuration.GetSection("EmailSettings"));
             services.AddTransient<IEmailService, EmailService>();
+            services.AddTransient<IWebSocketService, WebSocketService>();
 
             //Register SmsAuthService 
             services.Configure<SmsSettings>(Configuration.GetSection("SMSSettings"));

@@ -27,9 +27,17 @@ public class Message
     [JsonPropertyName("timestamp")]
     public DateTime Timestamp { get; set; }
 
+
     [JsonPropertyName("read")]
     public bool Read { get; set; }
 
     [JsonPropertyName("readTime")]
     public DateTime ReadTime { get; set; }
+
+        [JsonPropertyName("type")]
+    public string Type { get; set; }
+
+    // [JsonPropertyName("audioFilePath")]
+    // public string AudioFilePath { get; set; }
+
 }

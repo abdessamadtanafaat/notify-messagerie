@@ -6,17 +6,28 @@ using System.Collections.Concurrent;
 using System.Threading.Tasks;
 using System.Threading;
 using NotificationService.Security;
+using Microsoft.AspNetCore.Http;
+using CloudinaryDotNet;
+using CloudinaryDotNet.Actions;
+
 
 public class WebSocketService : IWebSocketService
 {
     private readonly IMessageService _messageService;
     private readonly IDiscussionService _discussionService;
     private readonly ConcurrentDictionary<string, WebSocket> _userConnections = new ConcurrentDictionary<string, WebSocket>();
+    private readonly Cloudinary _cloudinary;
 
-    public WebSocketService(IMessageService messageService, IDiscussionService discussionService)
+
+    public WebSocketService(IMessageService messageService,
+     IDiscussionService discussionService,
+         Cloudinary cloudinary
+     )
     {
         _messageService = messageService;
         _discussionService = discussionService;
+        _cloudinary = cloudinary;
+
     }
 
     public async Task HandleWebSocketAsync(WebSocket webSocket, string userId)
@@ -111,8 +122,13 @@ public class WebSocketService : IWebSocketService
         }
     }
 
-    private async Task HandleMessage(Message message)
+    private async Task HandleMessage(Message message, IFormFile audioFile = null)
     {
+
+        if (message.Type == "audio" && audioFile != null) {
+            string audioFilePath = await SaveAudioFile(audioFile); 
+            message.Content = audioFilePath;
+        }
         await _messageService.SendMessage(message);
         await _discussionService.UpdateDiscussion(message.DiscussionId, message);
 
@@ -128,6 +144,23 @@ public class WebSocketService : IWebSocketService
             Console.WriteLine($"User {message.ReceiverId} is not connected.");
         }
     }
+
+public async Task<string> SaveAudioFile(IFormFile audioFile)
+{
+    var uploadParams = new VideoUploadParams
+    {
+        File = new FileDescription(audioFile.FileName, audioFile.OpenReadStream()),
+    };
+
+    var uploadResult = await _cloudinary.UploadAsync(uploadParams);
+    Console.WriteLine(uploadResult); 
+    if (uploadResult.StatusCode == System.Net.HttpStatusCode.OK)
+    {
+        return uploadResult.SecureUrl.AbsoluteUri;
+    }
+
+    throw new Exception("Failed to upload audio file to Cloudinary");
+}
 
     // HandleSeenNotification method to process seen notifications
 private async Task HandleSeenNotification(SeenNotification notification)

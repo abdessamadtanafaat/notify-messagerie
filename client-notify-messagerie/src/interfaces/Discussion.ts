@@ -12,6 +12,13 @@ export interface Message {
     read: boolean;
     readTime: Date;
     type: string;
+
+
+}
+
+export interface AudioMessage extends Message {
+    type: 'audio';
+    //audioFilePath: string; 
 }
 
 export interface Discussion {

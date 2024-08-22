@@ -11,6 +11,7 @@ import { Message } from '../../interfaces/Discussion'
 import messageService from '../../services/messageService'
 import { useAuth } from '../../contexte/AuthContext'
 import DiscussionSidebarSkeleton from './DiscussionSidebarSkeleton'
+import AudioRecorder from './AudioRecorder'
 
 
 interface DiscussionSidebarProps {
@@ -138,6 +139,27 @@ const DiscussionSidebar: React.FC<DiscussionSidebarProps> = ({ receiver, idDiscu
         }
     }
 
+    // const handleSendAudio = async (blob: Blob) => {
+    //     try {
+    //         const audioUrl = await uploadAudioFile(blob)
+    
+    //         const audioMessage: AudioMessage = {
+    //             id: '', // Implement unique ID generation
+    //             discussionId: currentDiscussionId,
+    //             senderId: currentUser.id,
+    //             receiverId: receiverId,
+    //             content: audioUrl,
+    //             type: 'audio',
+    //             audioUrl: audioUrl,
+    //             timestamp: new Date()
+    //         }
+    
+    //         await sendMessage(audioMessage)
+    //     } catch (error) {
+    //         console.error('Failed to upload or send audio message:', error)
+    //     }
+    // }
+
     return (
         <>
             {loading ? (
@@ -160,6 +182,7 @@ const DiscussionSidebar: React.FC<DiscussionSidebarProps> = ({ receiver, idDiscu
                         seenUser,
                         sendSeenNotification,
                         seenNotif,
+                        handleSendAudio,
                     }) => (
                         <>
 
@@ -362,9 +385,11 @@ const DiscussionSidebar: React.FC<DiscussionSidebarProps> = ({ receiver, idDiscu
         </div>
 
         <div className='flex items-center space-x-1 px-1'>
-            <button className="p-2 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700">
+            {/* <button className="p-2 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700">
                 <Mic className='w-4 h-4 text-blue-600 cursor-pointer dark:text-gray-400 dark:hover:text-white' />
-            </button>
+            </button> */}
+            <AudioRecorder onSend={(blob) => handleSendAudio(blob,idDiscussion,receiver )} />
+
             <button
                 onClick={() => handleSend(receiver, idDiscussion)}
                 className="p-2 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700">
