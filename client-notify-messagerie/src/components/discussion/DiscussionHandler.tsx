@@ -27,17 +27,18 @@ interface DiscussionHandlerProps {
 
     }) => React.ReactNode;
     onNewMessage?: (message: Message) => void;
+    fetchMessages: () => void;
 }
 
-export const DiscussionHandler: React.FC<DiscussionHandlerProps> = ({ render, onNewMessage }) => {
+export const DiscussionHandler: React.FC<DiscussionHandlerProps> = ({ render, onNewMessage  }) => {
     const { user, refreshUserData } = useAuth()
     const [message, setMessage] = useState<string>('')
     const [messages, setMessages] = useState<Message[]>([])
 
-    
     // WebSocket hook
     const { webSocketService, sendMessage, typingUser, seenUser, sendTypingNotification, sendSeenNotification, seenNotif } = useWebSocket(user, onNewMessage)
 
+    
     const handleSend = async (receiver: User, IdDiscussion: string) => {
 
         if (message.trim() && user && webSocketService) {
@@ -55,10 +56,12 @@ export const DiscussionHandler: React.FC<DiscussionHandlerProps> = ({ render, on
                 type: 'message',
             }
 
+
             try {
                 await sendMessage(messageDTO)
-                console.log(messageDTO.discussionId)
+                //console.log(messageDTO.discussionId)
                 setMessages(prevMessages => [...prevMessages, messageDTO])
+                //console.log('sift messaghat',messages)
                 setMessage('')
                 refreshUserData()
 

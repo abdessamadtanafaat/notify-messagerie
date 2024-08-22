@@ -4,6 +4,7 @@ import { Message, SeenNotification, TypingNotification } from '../interfaces/Dis
 import { ErrorResponse } from '../interfaces/ErrorResponse'
 
 export class WebSocketService {
+    private static instance: WebSocketService | null = null
     private webSocket: WebSocket | null = null
     private onMessageCallback: (message: Message) => void = () => {}
     private onErrorCallback: (error: ErrorResponse) => void = () => {}
@@ -11,9 +12,16 @@ export class WebSocketService {
 
     constructor(private url: string, private userId: string) {}
 
+    public static getInstance(url: string, userId: string): WebSocketService {
+        if (!WebSocketService.instance) {
+            WebSocketService.instance = new WebSocketService(url, userId)
+        }
+        return WebSocketService.instance
+    }
+    
     connect(): void {
         if (this.webSocket) {
-            console.warn('WebSocket is already connected')
+            //console.warn('WebSocket is already connected')
             return
         }
 
@@ -24,10 +32,10 @@ export class WebSocketService {
         }
 
         this.webSocket.onmessage = (event) => {
-            console.log('Raw message received:', event.data)
+            //console.log('Raw message received:', event.data)
             try {
                 const parsedMessage = JSON.parse(event.data)
-                console.log('Parsed message:', parsedMessage)
+                //console.log('Parsed message:', parsedMessage)
                 this.onMessageCallback(parsedMessage)
             } catch (error) {
                 console.error('Failed to parse message:', error)
@@ -50,7 +58,7 @@ export class WebSocketService {
 
     send(message: Message | TypingNotification |SeenNotification): void {
         if (this.webSocket && this.webSocket.readyState === WebSocket.OPEN) {
-            console.log('Sending message:', message)
+            //console.log('Sending message:', message)
             this.webSocket.send(JSON.stringify(message))
         } else {
             console.error('WebSocket is not connected or not in OPEN state')

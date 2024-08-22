@@ -20,15 +20,15 @@ export const useWebSocket = (user: User | null, onNewMessage?: (message: Message
 
 
     useEffect(() => {
-        if (!user || webSocketService) return
+        if (!user) return
     
-        const wsService = new WebSocketService(API_ENDPOINTS.WEBSOCKET_URL, user.id)
+        const wsService = WebSocketService.getInstance(API_ENDPOINTS.WEBSOCKET_URL, user.id)
         //console.log('Initializing WebSocketService:', wsService)
     
         wsService.connect()
     
         wsService.onMessage((message: Message | TypingNotification | SeenNotification) => {
-            console.log('Message received:', message)
+            //console.log('Message received:', message)
     
             if ('content' in message) {
                 // It's a Message
@@ -57,7 +57,8 @@ export const useWebSocket = (user: User | null, onNewMessage?: (message: Message
         })
     
         setWebSocketService(wsService)
-    
+
+
     }, [user, onNewMessage,])
     
     useEffect(() => {
@@ -73,7 +74,6 @@ const handleNewMessage = (newMessage: Message) => {
     console.log(audio)
     audio.play()
     toast.info(`${newMessage.firstName} ${newMessage.lastName} sent you a new message`)
-    
 }
         // Function to update the state object
         const updateSeenNotifState = (newState: Partial<typeof seenNotif>) => {
@@ -101,7 +101,7 @@ const handleNewMessage = (newMessage: Message) => {
         if (webSocketService) {
             try {
                 await webSocketService.send(messageDTO)
-                console.log('Message sent:', messageDTO)
+                //console.log('Message sent:', messageDTO)
             } catch (error) {
                 console.error('Failed to send message:', error)
             } finally {
@@ -123,7 +123,7 @@ const handleNewMessage = (newMessage: Message) => {
             }
             try {
                 webSocketService.send(typingNotification)
-                console.log('Typing notification sent:', typingNotification)
+                //console.log('Typing notification sent:', typingNotification)
             } catch (error) {
                 console.error('Failed to send typing notification:', error)
             }
@@ -146,7 +146,7 @@ const handleNewMessage = (newMessage: Message) => {
             }
             try {
                 webSocketService.send(seenNotification)
-                console.log('Seen notification sent:', seenNotification)
+                //console.log('Seen notification sent:', seenNotification)
             } catch (error) {
                 console.error('Failed to send seen notification:', error)
             }

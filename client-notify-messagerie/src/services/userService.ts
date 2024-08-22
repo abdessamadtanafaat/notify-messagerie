@@ -8,7 +8,7 @@ import { SearchRequest, UnfriendRequest, UpdateProfileReq, User } from '../inter
 const getUserInfo = async (id: string): Promise<User> => {
     try {
       const response = await axiosInstance.get<User>(`${API_ENDPOINTS.GET_USER_INFO}/${id}`)
-      console.log(response.data)
+      //console.log(response.data)
       return response.data
     } catch (error) {
       if (axios.isAxiosError(error) && error.response) {
@@ -24,7 +24,7 @@ const getUserInfo = async (id: string): Promise<User> => {
   const fetchUsers = async () => {
     try {
       const response = await axiosInstance.get('/User')
-      console.log(response.data)
+      //console.log(response.data)
       return response.data
     } catch (error) {
       if (axios.isAxiosError(error) && error.response) {
@@ -39,7 +39,7 @@ const getUserInfo = async (id: string): Promise<User> => {
   const fetchUsersByIds = async (ids: string[]) => {
     try {
       const response = await axiosInstance.post(`${API_ENDPOINTS.GET_USER_BY_IDS}`,ids)
-      console.log(response.data)
+      //console.log(response.data)
       return response.data
     } catch (error) {
       if (axios.isAxiosError(error) && error.response) {
@@ -73,7 +73,7 @@ const getUserInfo = async (id: string): Promise<User> => {
           }
 
           await axiosInstance.put(`${API_ENDPOINTS.PUT_PROFILE_URL}/${userId}`,updateProfileReq)
-          console.log('Avatar URL updated successfully')
+          //console.log('Avatar URL updated successfully')
           return response.data
 
     } catch (error) {

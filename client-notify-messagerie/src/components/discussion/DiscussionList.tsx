@@ -30,7 +30,7 @@ const DiscussionList: React.FC = () => {
         try {
             if (user) {
                 const discussionsData = await messageService.getDiscussions(user.id)
-                console.log(discussionsData)
+                //console.log(discussionsData)
                 setDiscussions(discussionsData)
             }
         } catch (error) {
@@ -46,7 +46,7 @@ const DiscussionList: React.FC = () => {
         try {
             if (user) {
                 const discussionData = await messageService.getDiscussion(receiver.id, user.id)
-                console.log(discussionData.messages)
+                //console.log(discussionData.messages)
                 setMessages(discussionData.messages)
                 const lastMessage = messages[messages.length - 1]
                 setIdDiscussion(discussionData.id)
