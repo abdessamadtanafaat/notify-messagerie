@@ -25,6 +25,7 @@ public class MessageRepository : IMessageRepostory {
             Content = message.Content,
             Timestamp = message.Timestamp,
             Read = message.Read, 
+            Type = message.Type,
         };
 
         await _message.InsertOneAsync(message); 

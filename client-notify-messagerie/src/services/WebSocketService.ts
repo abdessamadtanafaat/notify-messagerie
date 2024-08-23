@@ -1,6 +1,6 @@
 // WebSocketService.ts
 
-import { Message, SeenNotification, TypingNotification } from '../interfaces/Discussion'
+import { Message, RecordingNotification, SeenNotification, TypingNotification } from '../interfaces/Discussion'
 import { ErrorResponse } from '../interfaces/ErrorResponse'
 
 export class WebSocketService {
@@ -56,7 +56,7 @@ export class WebSocketService {
         }
     }
 
-    send(message: Message | TypingNotification |SeenNotification): void {
+    send(message: Message | TypingNotification |SeenNotification|RecordingNotification): void {
         if (this.webSocket && this.webSocket.readyState === WebSocket.OPEN) {
             //console.log('Sending message:', message)
             this.webSocket.send(JSON.stringify(message))
@@ -65,7 +65,7 @@ export class WebSocketService {
         }
     }
 
-    onMessage(callback: (message: Message | TypingNotification | SeenNotification) => void): void {
+    onMessage(callback: (message: Message | TypingNotification | SeenNotification | RecordingNotification) => void): void {
         if (this.webSocket) {
             this.webSocket.onmessage = (event: MessageEvent) => {
                 console.log('Raw message received:', event.data)
@@ -81,6 +81,11 @@ export class WebSocketService {
                             console.log('Seen notification received:', parsedMessage)
                             callback(parsedMessage as SeenNotification)
                         }
+                        else if 
+                        (parsedMessage.type === 'recording') {
+                            console.log('Recording notification received:', parsedMessage)
+                            callback(parsedMessage as RecordingNotification)
+                        }
                         else {
                             console.log('Standard message received:', parsedMessage)
                             callback(parsedMessage as Message)
@@ -94,17 +99,6 @@ export class WebSocketService {
     }
     
 
-    // onTypingNotification(callback: (notification: { senderId: string }) => void): void {
-    //     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    //     this.onMessageCallback = (message: any) => {
-    //         if (message.type === 'typing') {
-    //             console.log('Typing notification from the service:', message)
-    //             callback(message)
-    //         } else {
-    //             this.onMessageCallback(message) // Forward other messages
-    //         }
-    //     }
-    // }
 
     onError(callback: (error: ErrorResponse) => void): void {
         this.onErrorCallback = callback

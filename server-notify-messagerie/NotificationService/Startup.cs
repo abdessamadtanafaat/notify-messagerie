@@ -106,7 +106,6 @@ namespace NotificationService
             //Register EmailService 
             services.Configure<EmailSettings>(Configuration.GetSection("EmailSettings"));
             services.AddTransient<IEmailService, EmailService>();
-            services.AddTransient<IWebSocketService, WebSocketService>();
 
             //Register SmsAuthService 
             services.Configure<SmsSettings>(Configuration.GetSection("SMSSettings"));

@@ -25,21 +25,24 @@ interface DiscussionHandlerProps {
         seenUser: boolean | null;
         sendSeenNotification: (messageId: string, discussionId: string, receiver: User) => void;
         seenNotif: SeenNotif;
-        handleSendAudio: (blob: Blob, IdDiscussion: string,receiver: User)=> void;
+        handleSendAudio: (blob: Blob, IdDiscussion: string, receiver: User) => void;
+        recordingAudio: string | null;
+        sendRecordingNotification: (discussionId: string, receiver: User) => void;
     }) => React.ReactNode;
     onNewMessage?: (message: Message) => void;
     //fetchMessages: () => void;
 }
 
-export const DiscussionHandler: React.FC<DiscussionHandlerProps> = ({ render, onNewMessage  }) => {
+export const DiscussionHandler: React.FC<DiscussionHandlerProps> = ({ render, onNewMessage }) => {
     const { user, refreshUserData } = useAuth()
     const [message, setMessage] = useState<string>('')
     const [messages, setMessages] = useState<Message[]>([])
 
     // WebSocket hook
-    const { webSocketService, sendMessage, typingUser, seenUser, sendTypingNotification, sendSeenNotification, seenNotif } = useWebSocket(user, onNewMessage)
+    const { webSocketService, sendMessage, typingUser, recordingAudio, seenUser, sendTypingNotification, sendSeenNotification, sendRecordingNotification, seenNotif } = useWebSocket(user, onNewMessage)
 
-    
+
+
     const handleSend = async (receiver: User, IdDiscussion: string) => {
 
         if (message.trim() && user && webSocketService) {
@@ -60,7 +63,6 @@ export const DiscussionHandler: React.FC<DiscussionHandlerProps> = ({ render, on
 
             try {
                 await sendMessage(messageDTO)
-                //console.log(messageDTO.discussionId)
                 setMessages(prevMessages => [...prevMessages, messageDTO])
                 //console.log('sift messaghat',messages)
                 setMessage('')
@@ -124,38 +126,41 @@ export const DiscussionHandler: React.FC<DiscussionHandlerProps> = ({ render, on
     }
 
 
-    const handleSendAudio = async (blob: Blob, IdDiscussion: string,receiver: User) => {
+    const handleSendAudio = async (blob: Blob, IdDiscussion: string, receiver: User) => {
         try {
+            // sendRecordingNotification(lastMessage.discussionId, receiver)
             const audioFilePath = await cloudinaryService.uploadAudioFile(blob)
-            if (message.trim() && user) {
+            if (user && webSocketService) {
 
-            const audioMessage: AudioMessage = {
-                id: '', // Implement unique ID generation
-                discussionId: IdDiscussion,
-                firstName: user.firstName,
-                lastName: user.lastName,
-                senderId: user.id,
-                receiverId: receiver.id,
-                content: audioFilePath,
-                type: 'audio',
-                //audioFilePath: audioFilePath,
-                readTime: new Date(),
-                read: false,
-                timestamp: new Date()
+                const audioMessage: AudioMessage = {
+                    id: '', // Implement unique ID generation
+                    discussionId: IdDiscussion,
+                    firstName: user.firstName,
+                    lastName: user.lastName,
+                    senderId: user.id,
+                    receiverId: receiver.id,
+                    content: audioFilePath,
+                    type: 'audio',
+                    //audioFilePath: audioFilePath,
+                    readTime: new Date(),
+                    read: false,
+                    timestamp: new Date()
+                }
+                console.log(audioMessage)
+                const MessageAudio = await sendMessage(audioMessage)
+                console.log(MessageAudio)
+                setMessages(prevMessages => [...prevMessages, audioMessage])
+                //console.log('sift messaghat',messages)
+                setMessage('')
+                refreshUserData()
+                console.log(audioMessage)
             }
-            await sendMessage(audioMessage)
-            setMessages(prevMessages => [...prevMessages, audioMessage])
-            //console.log('sift messaghat',messages)
-            setMessage('')
-            //refreshUserData()
-            console.log(audioMessage)
-        }
-    
+
         } catch (error) {
             console.error('Failed to upload or send audio message:', error)
         }
     }
-    
+
     const handleChange = (field: 'message', value: string) => {
         if (field === 'message') {
             setMessage(value)
@@ -185,5 +190,7 @@ export const DiscussionHandler: React.FC<DiscussionHandlerProps> = ({ render, on
         sendSeenNotification,
         seenNotif,
         handleSendAudio,
+        recordingAudio,
+        sendRecordingNotification,
     })
 }

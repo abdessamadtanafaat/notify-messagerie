@@ -221,7 +221,17 @@ const DiscussionList: React.FC = () => {
 
                                             const isMyMessage = lastMessage.senderId === user?.id
 
-
+                                            const isAudioMessage = lastMessage.type === 'audio'
+                                            let messageText: string
+                                            if (isAudioMessage) {
+                                                if (isMyMessage) {
+                                                    messageText = 'You sent a voice message.'
+                                                } else {
+                                                    messageText = 'sent you a voice message.'
+                                                }
+                                            } else {
+                                                messageText = lastMessage.content
+                                            }
                                             return (
                                                 <li
                                                     key={id}
@@ -246,7 +256,9 @@ const DiscussionList: React.FC = () => {
                                                                 {receiver.firstName} {receiver.lastName}
                                                             </p>
                                                             <div className="flex items-center space-x-2 text-xs text-black dark:text-white">
-                                                                <p className={` truncate ${!lastMessage.read && !isMyMessage ? 'font-bold' : 'font-normal'} `}>{lastMessage.content}</p>
+                                                                <p className={` truncate ${!lastMessage.read && !isMyMessage ? 'font-bold' : 'font-normal'} `}>
+                                                                    {messageText}
+                                                                </p>
                                                                 <p className='text-[12px]'>
                                                                     {getTimeDifference(lastMessage.timestamp)} {/* Format timestamp */}
                                                                 </p>

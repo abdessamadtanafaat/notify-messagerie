@@ -64,6 +64,7 @@ public class DiscussionService : IDiscussionService{
         DiscussionId = m.DiscussionId, 
         Read = m.Read, 
         ReadTime = m.ReadTime,
+        Type = m.Type,
     }).ToList()
 
     }; 

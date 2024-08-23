@@ -2,7 +2,7 @@
 import { useEffect, useState, useCallback } from 'react'
 import { WebSocketService } from '../services/WebSocketService'
 import API_ENDPOINTS from '../api/endpoints'
-import { AudioMessage, Message, SeenNotification, TypingNotification } from '../interfaces/Discussion'
+import { AudioMessage, Message, RecordingNotification, SeenNotification, TypingNotification } from '../interfaces/Discussion'
 import { ErrorResponse, User } from '../interfaces'
 import { toast } from 'react-toastify'
 import notificationSound from '../assets/notification.mp3'
@@ -12,6 +12,8 @@ export const useWebSocket = (user: User | null, onNewMessage?: (message: Message
     const [webSocketService, setWebSocketService] = useState<WebSocketService | null>(null)
     const [typingUser, setTypingUser] = useState<string | null>(null)
     const [seenUser, setSeenUser] = useState<boolean>(false)
+    const [recordingAudio, setRecordingAudio] = useState<string | null>(null)
+
 
     const [seenNotif, setSeenNotif] = useState({
         isSeen: false,
@@ -23,24 +25,30 @@ export const useWebSocket = (user: User | null, onNewMessage?: (message: Message
         if (!user) return
     
         const wsService = WebSocketService.getInstance(API_ENDPOINTS.WEBSOCKET_URL, user.id)
-        //console.log('Initializing WebSocketService:', wsService)
+        console.log('Initializing WebSocketService:', wsService)
     
         wsService.connect()
     
-        wsService.onMessage((message: Message | TypingNotification | SeenNotification) => {
+        wsService.onMessage((message: Message | TypingNotification | SeenNotification | RecordingNotification) => {
             //console.log('Message received:', message)
     
             if ('content' in message) {
                 // It's a Message
                 if (onNewMessage) onNewMessage(message as Message)
                     setTypingUser(null)
+                    setRecordingAudio(null)
                     setSeenUser(false)
                     handleNewMessage(message as Message) //affiche the toast
             } else if (message.type === 'typing') {
                 // It's a TypingNotification
                 setTypingUser(message.senderId)
                 setSeenUser(false)
-            } else if (message.type === 'seen') {
+            } else if (message.type === 'recording') {
+            // It's a TypingNotification
+            setRecordingAudio(message.senderId)
+            setSeenUser(false)
+        }
+            else if (message.type === 'seen') {
                 // It's a SeenNotification
                 handleSeenNotification(message as SeenNotification)
                 setSeenUser(true)
@@ -67,6 +75,14 @@ export const useWebSocket = (user: User | null, onNewMessage?: (message: Message
             return () => clearTimeout(timeout)
         }
     }, [typingUser,seenUser])
+
+    // useEffect(() => {
+    //     if (recordingAudio) {
+    //         const timeout = setTimeout(() => setRecordingAudio(null), 3000)
+    //         return () => clearTimeout(timeout)
+    //     }
+    // }, [recordingAudio,seenUser])
+
 
 
 const handleNewMessage = (newMessage: Message) => {
@@ -120,7 +136,7 @@ const handleNewMessage = (newMessage: Message) => {
             }
             try {
                 webSocketService.send(typingNotification)
-                //console.log('Typing notification sent:', typingNotification)
+                console.log('Typing notification sent:', typingNotification)
             } catch (error) {
                 console.error('Failed to send typing notification:', error)
             }
@@ -128,6 +144,26 @@ const handleNewMessage = (newMessage: Message) => {
             console.warn('User or WebSocketService is not available.')
         }
     }, [user, webSocketService])
+
+    const sendRecordingNotification = useCallback((discussionId: string,receiver: User) => {
+        if (user && webSocketService) {
+            const recordingNotification: RecordingNotification = {
+                type: 'recording',
+                discussionId,
+                senderId: user.id,
+                receiverId: receiver.id,
+            }
+            try {
+                webSocketService.send(recordingNotification)
+                console.log('Recording notification sent:', recordingNotification)
+            } catch (error) {
+                console.error('Failed to send recording notification:', error)
+            }
+        } else {
+            console.warn('User or WebSocketService is not available.')
+        }
+    }, [user, webSocketService])
+
 
     const sendSeenNotification = useCallback((messageId: string,discussionId: string, receiver: User) => {
         if (user && webSocketService) {
@@ -152,5 +188,5 @@ const handleNewMessage = (newMessage: Message) => {
         }
     }, [user, webSocketService])
 
-    return { webSocketService, typingUser,seenUser, sendMessage, sendTypingNotification,sendSeenNotification,seenNotif }
+    return { webSocketService, typingUser,recordingAudio,seenUser, sendMessage, sendTypingNotification,sendSeenNotification,sendRecordingNotification,seenNotif }
 }

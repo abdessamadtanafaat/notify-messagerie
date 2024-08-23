@@ -47,6 +47,14 @@ export interface SeenNotification {
     readTime: Date; 
     isSeen: boolean;
 }
+
+export interface RecordingNotification {
+    type: 'recording'
+    discussionId: string;
+    senderId: string;
+    receiverId: string;
+}
+
 export interface SeenNotif {
     isSeen: boolean;
     seenDate?: Date;

@@ -33,6 +33,7 @@ public class WebSocketService : IWebSocketService
     public async Task HandleWebSocketAsync(WebSocket webSocket, string userId)
     {
         _userConnections[userId] = webSocket;
+            Console.WriteLine($"WebSocket added for user {userId}");
         var buffer = new byte[1024 * 8];
 
         try
@@ -70,6 +71,15 @@ public class WebSocketService : IWebSocketService
                             if (seen != null)
                             {
                                 await HandleSeenNotification(seen);
+                            }
+                        }
+
+                        else if (type == "recording")
+                        {
+                            var recording = JsonSerializer.Deserialize<RecordingNotification>(messageJson);
+                            if (recording != null)
+                            {
+                                await HandleRecordingNotification(recording);
                             }
                         }
 
@@ -134,6 +144,7 @@ public class WebSocketService : IWebSocketService
 
         if (_userConnections.TryGetValue(message.ReceiverId, out var receiverSocket))
         {
+                    Console.WriteLine($"Sending message to user {message.ReceiverId}");
             var responseMessage = Encoding.UTF8.GetBytes(JsonSerializer.Serialize(message));
             await receiverSocket.SendAsync(new ArraySegment<byte>(responseMessage), WebSocketMessageType.Text, true, CancellationToken.None);
             Console.WriteLine($"Message sent to User {message.ReceiverId}");
@@ -141,7 +152,7 @@ public class WebSocketService : IWebSocketService
         }
         else
         {
-            Console.WriteLine($"User {message.ReceiverId} is not connected.");
+        Console.WriteLine($"User {message.ReceiverId} is not connected. Connection count: {_userConnections.Count}");
         }
     }
 
@@ -191,5 +202,24 @@ private async Task HandleSeenNotification(SeenNotification notification)
         Console.WriteLine($"User {notification.SenderId} is not connected.");
     }
 }
+
+
+    private async Task HandleRecordingNotification(RecordingNotification notification)
+    {
+        if (_userConnections.TryGetValue(notification.ReceiverId, out var receiverSocket))
+        {
+            var notificationJson = JsonSerializer.Serialize(notification);
+            var responseMessage = Encoding.UTF8.GetBytes(notificationJson);
+            await receiverSocket.SendAsync(new ArraySegment<byte>(responseMessage), WebSocketMessageType.Text, true, CancellationToken.None);
+            Console.WriteLine($"Recording notification sent to User {notification.ReceiverId}");
+        }
+        else
+        {
+            Console.WriteLine($"User {notification.ReceiverId} is not connected.");
+        }
+    }
+
+
+
 
 }

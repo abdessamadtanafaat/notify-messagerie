@@ -50,7 +50,8 @@ public class MessageService : IMessageService {
         Timestamp = currentMessage.Timestamp,
         ReceiverId = currentMessage.ReceiverId,
         Read = true, 
-        ReadTime = DateTime.UtcNow 
+        ReadTime = DateTime.UtcNow,
+        Type = currentMessage.Type
     };
         await _messageRepository.UpdateMessageAsync(messageId, updatedMessage);
     }
