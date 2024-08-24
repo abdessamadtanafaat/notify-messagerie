@@ -18,9 +18,11 @@ export interface Message {
 
 export interface AudioMessage extends Message {
     type: 'audio';
-    //audioFilePath: string; 
 }
 
+export interface FileMessage extends Message {
+    type: 'file';
+}
 export interface Discussion {
     id: string;
     lastMessage: Message;

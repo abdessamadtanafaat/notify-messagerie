@@ -132,8 +132,12 @@ public class WebSocketService : IWebSocketService
         }
     }
 
-    private async Task HandleMessage(Message message, IFormFile audioFile = null)
+    private async Task HandleMessage(Message message, IFormFile audioFile = null, IFormFile file = null)
     {
+        if (message.Type == "file" && file != null) {
+            string filePath = await UploadFileAsync(audioFile); 
+            message.Content = filePath;
+        }
 
         if (message.Type == "audio" && audioFile != null) {
             string audioFilePath = await SaveAudioFile(audioFile); 
@@ -162,6 +166,28 @@ public async Task<string> SaveAudioFile(IFormFile audioFile)
     {
         File = new FileDescription(audioFile.FileName, audioFile.OpenReadStream()),
     };
+
+    var uploadResult = await _cloudinary.UploadAsync(uploadParams);
+    Console.WriteLine(uploadResult); 
+    if (uploadResult.StatusCode == System.Net.HttpStatusCode.OK)
+    {
+        return uploadResult.SecureUrl.AbsoluteUri;
+    }
+
+    throw new Exception("Failed to upload audio file to Cloudinary");
+}
+
+public async Task<string> UploadFileAsync(IFormFile file)
+{
+            if (file == null || file.Length == 0)
+        {
+            throw new ArgumentException("No file uploaded.");
+        }
+
+        var uploadParams = new ImageUploadParams
+        {
+            File = new FileDescription(file.FileName, file.OpenReadStream())
+        };
 
     var uploadResult = await _cloudinary.UploadAsync(uploadParams);
     Console.WriteLine(uploadResult); 

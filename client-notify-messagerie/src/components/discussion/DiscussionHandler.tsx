@@ -1,9 +1,9 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 // src/components/DiscussionHandler.tsx
-import React, { useRef, useState } from 'react'
+import React, { RefObject, useRef, useState } from 'react'
 import { Emoji } from '@emoji-mart/data'
 import { useAuth } from '../../contexte/AuthContext'
-import { AudioMessage, Message, SeenNotif } from '../../interfaces/Discussion'
+import { AudioMessage, Message, SeenNotif, FileMessage } from '../../interfaces/Discussion'
 import { User } from '../../interfaces'
 import { useWebSocket } from '../../hooks/webSocketHook'
 import cloudinaryService from '../../services/cloudinaryService'
@@ -16,7 +16,7 @@ interface DiscussionHandlerProps {
         togglePicker: (picker: 'message') => void;
         addEmoji: (emoji: Emoji) => void;
         setPickerRef: (field: 'message') => (el: HTMLDivElement | null) => void;
-        sendImage: (event: React.ChangeEvent<HTMLInputElement>) => void;
+        sendImage: (event: React.ChangeEvent<HTMLInputElement>, idDiscussion: string,receiver: User) => void;
         sendFile: (event: React.ChangeEvent<HTMLInputElement>) => void;
         handleSend: (receiver: User, IdDiscussion: string) => void;
         handleKeyDown: (e: React.KeyboardEvent<HTMLInputElement>, receiver: User, idDiscussion: string) => void;
@@ -28,6 +28,8 @@ interface DiscussionHandlerProps {
         handleSendAudio: (blob: Blob, IdDiscussion: string, receiver: User) => void;
         recordingAudio: string | null;
         sendRecordingNotification: (discussionId: string, receiver: User) => void;
+        loading: boolean; 
+        fileInputRef: React.RefObject<HTMLInputElement>
     }) => React.ReactNode;
     onNewMessage?: (message: Message) => void;
     //fetchMessages: () => void;
@@ -37,6 +39,9 @@ export const DiscussionHandler: React.FC<DiscussionHandlerProps> = ({ render, on
     const { user, refreshUserData } = useAuth()
     const [message, setMessage] = useState<string>('')
     const [messages, setMessages] = useState<Message[]>([])
+    const [loading, setLoading] = useState(false)
+    const fileInputRef = useRef(null)
+
 
     // WebSocket hook
     const { webSocketService, sendMessage, typingUser, recordingAudio, seenUser, sendTypingNotification, sendSeenNotification, sendRecordingNotification, seenNotif } = useWebSocket(user, onNewMessage)
@@ -101,14 +106,45 @@ export const DiscussionHandler: React.FC<DiscussionHandlerProps> = ({ render, on
         setMessage(prev => prev + emojiStr)
     }
 
-    const sendImage = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const sendImage = async (event: React.ChangeEvent<HTMLInputElement>,IdDiscussion: string, receiver: User) => {
         const file = event.target.files?.[0]
         if (file) {
+            setLoading(true)
             try {
-                console.log('Image file selected:', file)
-                // Handle image file upload
+                        // sendRecordingNotification(lastMessage.discussionId, receiver)
+                        const filePath = await cloudinaryService.uploadFile(file)
+                        if (user && webSocketService) {
+            
+                            const fileMessage: FileMessage = {
+                                id: '',
+                                discussionId: IdDiscussion,
+                                firstName: user.firstName,
+                                lastName: user.lastName,
+                                senderId: user.id,
+                                receiverId: receiver.id,
+                                content: filePath,
+                                type: 'file',
+                                readTime: new Date(),
+                                read: false,
+                                timestamp: new Date()
+                            }
+                            console.log(fileMessage)
+                            const ImageMessage = await sendMessage(fileMessage)
+                            console.log(ImageMessage)
+                            setMessages(prevMessages => [...prevMessages, fileMessage])
+                            //console.log('sift messaghat',messages)
+                            setMessage('')
+                            refreshUserData()
+                            console.log(fileMessage)
+                        }
             } catch (err) {
                 console.error('Error handling image file:', err)
+            }finally {
+                setLoading(false)
+                if (fileInputRef.current) {
+                    fileInputRef.current.value = '' // Reset the file input value
+                }
+
             }
         }
     }
@@ -155,7 +191,6 @@ export const DiscussionHandler: React.FC<DiscussionHandlerProps> = ({ render, on
                 refreshUserData()
                 console.log(audioMessage)
             }
-
         } catch (error) {
             console.error('Failed to upload or send audio message:', error)
         }
@@ -192,5 +227,7 @@ export const DiscussionHandler: React.FC<DiscussionHandlerProps> = ({ render, on
         handleSendAudio,
         recordingAudio,
         sendRecordingNotification,
+        loading,
+        fileInputRef,
     })
 }

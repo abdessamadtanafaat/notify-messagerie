@@ -8,4 +8,5 @@ public interface IWebSocketService
 {
 Task HandleWebSocketAsync(WebSocket webSocket, string userId);
 Task<string> SaveAudioFile(IFormFile audioFile);
+Task<string> UploadFileAsync(IFormFile file); 
 }

@@ -222,6 +222,8 @@ const DiscussionList: React.FC = () => {
                                             const isMyMessage = lastMessage.senderId === user?.id
 
                                             const isAudioMessage = lastMessage.type === 'audio'
+                                            const isFileMessage = lastMessage.type === 'file'
+
                                             let messageText: string
                                             if (isAudioMessage) {
                                                 if (isMyMessage) {
@@ -232,6 +234,16 @@ const DiscussionList: React.FC = () => {
                                             } else {
                                                 messageText = lastMessage.content
                                             }
+                                            if (isFileMessage) {
+                                                if (isMyMessage) {
+                                                    messageText = 'You sent a file.'
+                                                } else {
+                                                    messageText = 'sent you a file.'
+                                                }
+                                            } else {
+                                                messageText = lastMessage.content
+                                            }
+
                                             return (
                                                 <li
                                                     key={id}

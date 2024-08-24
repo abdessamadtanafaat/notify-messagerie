@@ -12,6 +12,7 @@ import messageService from '../../services/messageService'
 import { useAuth } from '../../contexte/AuthContext'
 import DiscussionSidebarSkeleton from './DiscussionSidebarSkeleton'
 import AudioRecorder from './AudioRecorder'
+import LoadingPage from '../common/LoadingPage'
 
 
 interface DiscussionSidebarProps {
@@ -132,6 +133,8 @@ const DiscussionSidebar: React.FC<DiscussionSidebarProps> = ({ receiver, idDiscu
                         handleSendAudio,
                         recordingAudio,
                         sendRecordingNotification,
+                        loading,
+                        fileInputRef,
                     }) => (
                         <>
 
@@ -176,6 +179,7 @@ const DiscussionSidebar: React.FC<DiscussionSidebarProps> = ({ receiver, idDiscu
                             </div>
 
                             {/* Main Content */}
+                            {/* {loading && (<LoadingPage/>) } */}
                             <div className="flex flex-col h-[calc(100vh-6rem)]">
                                 <div className="flex flex-col flex-grow p-5"
                                     onScroll={handleScroll}
@@ -236,6 +240,11 @@ const DiscussionSidebar: React.FC<DiscussionSidebarProps> = ({ receiver, idDiscu
                                                         </audio>
                                                     )}
 
+                                                    {msg.type === 'file' && (
+                                                        <img
+                                                            className="whitespace-nowrap overflow-hidden text-ellipsis"
+                                                            src={msg.content} />
+                                                    )}
                                                     <span
                                                         className="absolute left-1/2 transform -translate-x-1/2 bottom-full mb-2 p-1 bg-black text-white text-[8px] rounded opacity-0 group-hover:opacity-100 transition-opacity duration-300 whitespace-nowrap overflow-hidden text-ellipsis group-hover:delay-200"
                                                         style={{ minWidth: '60px' }}
@@ -270,9 +279,23 @@ const DiscussionSidebar: React.FC<DiscussionSidebarProps> = ({ receiver, idDiscu
                                                     <div className="typing__dot"></div>
                                                 </div>
                                             }
+
+
                                         </div>
                                     ))}
-
+{!loading && (
+<div className="relative w-32 h-32">
+                    <img
+                        src="src\assets\errorImage.png" // Your placeholder image
+                        alt="Loading..."
+                        className="w-full h-full object-cover"
+                    />
+                    {/* <div className="absolute inset-0 flex items-center justify-center bg-white bg-opacity-75">
+                        <Loader type="Oval" color="#00BFFF" height={30} width={30} />
+                        <p className="ml-2 text-gray-700">Uploading...</p>
+                    </div> */}
+</div>
+)}
                                     <div ref={messagesEndRef} />
                                 </div>
                             </div>
@@ -285,7 +308,8 @@ const DiscussionSidebar: React.FC<DiscussionSidebarProps> = ({ receiver, idDiscu
                                             <input
                                                 type="file"
                                                 name="image"
-                                                onChange={sendImage}
+                                                onChange={(e) => sendImage(e, idDiscussion, receiver)}
+                                                ref={fileInputRef}
                                                 className="absolute inset-0 opacity-0 cursor-pointer"
                                             />
                                             <ImageIcon className='w-4 h-4 text-blue-600 dark:text-gray-400 dark:hover:text-white' />

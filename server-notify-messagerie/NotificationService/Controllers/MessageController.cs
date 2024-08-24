@@ -53,7 +53,16 @@ public async Task<IActionResult> GetDiscussion(string userId, string selectedUse
     public async Task<ActionResult> UploadAudio (IFormFile file) {
         string audioFilePath = await _webSocketService.SaveAudioFile(file); 
         return Ok(new { secure_url = audioFilePath });
-        }
+    }
+
+//  send message type image .
+    [HttpPost]
+    [Route("uploadFile")]
+    public async Task<ActionResult> UploadImage (IFormFile file) {
+        string filePath = await _webSocketService.UploadFileAsync(file); 
+        return Ok(new { secure_url = filePath });
+    }
+
 }
 
 
