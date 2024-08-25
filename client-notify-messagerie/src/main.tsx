@@ -8,6 +8,7 @@ import { GoogleOAuthProvider } from '@react-oauth/google'
 import App from './App'
 import { AuthProvider } from './contexte/AuthContext'
 import { ThemeProvider } from './contexte/ThemeContext'
+import { NotificationProvider } from './contexte/NotificationContext'
 // import { WebSocketProvider } from './contexte/WebSocketContext'
 
 
@@ -16,31 +17,32 @@ const root = createRoot(rootElement!)
 
 
 root.render(
-  
+
   <Provider store={store}>
+        <NotificationProvider>
     <GoogleOAuthProvider clientId={import.meta.env.VITE_GOOGLE_CLIENT_ID}>
       {/* <React.StrictMode> */}
       <ToastContainer
-position="bottom-left"
-autoClose={4000}
-hideProgressBar={false}
-newestOnTop={false}
-closeOnClick
-rtl={false}
-pauseOnFocusLoss
-draggable
-pauseOnHover
-theme="colored"
-/>
-        <ThemeProvider>
+        position="bottom-left"
+        autoClose={4000}
+        hideProgressBar={false}
+        newestOnTop={false}
+        closeOnClick
+        rtl={false}
+        pauseOnFocusLoss
+        draggable
+        pauseOnHover
+        theme="colored"
+      />
+      <ThemeProvider>
         <AuthProvider>
-        {/* <DiscussionProvider> */}
-        <App />
-        {/* </DiscussionProvider> */}
+          {/* <DiscussionProvider> */}
+          <App />
+          {/* </DiscussionProvider> */}
         </AuthProvider>
       </ThemeProvider>
-    {/* </React.StrictMode> */}
+      {/* </React.StrictMode> */}
     </GoogleOAuthProvider>
-
+    </NotificationProvider>
   </Provider>
 )

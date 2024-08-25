@@ -56,7 +56,7 @@ export default function Personnes() {
                     <FriendInfoSidebar
                         user={selectedUser}
                     />
-                    <div className="fixed top-4 left-1/2 transform -translate-x-1/2 rounded-2xl bg-white dark:bg-gray-800 h-screen shadow-xl w-48 md:w-56 lg:w-7/12 xl:w-4/12">
+                    <div className="fixed top-4 left-1/2 transform -translate-x-1/2 rounded-2xl bg-white dark:bg-gray-800 h-screen shadow-xl ">
                         <DiscussionSidebar
                             receiver={selectedUser}
                             idDiscussion={idDiscussion}

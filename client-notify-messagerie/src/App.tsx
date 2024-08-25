@@ -21,15 +21,10 @@ import Demandes from './components/demandes/Demandes'
 import Friends from './components/friends/Friends'
 import UpdateProfile from './components/profile/Profile'
 import DiscussionList from './components/discussion/DiscussionList'
-import AudioRecorder from './components/discussion/AudioRecorder'
 
 
 const App: React.FC = () => {
 
-  const handleSend = (blob: Blob) => {
-    // Handle the blob, e.g., upload it or process it
-    console.log('Audio blob received:', blob)
-  }
   return (
 
 <Router>
@@ -37,8 +32,6 @@ const App: React.FC = () => {
       <Routes>
       <Route path="/" element={<Navigate to="/login"/>} />
           <Route path="/login" element={<LoginPage />} />
-          <Route path="/recorder" element={<AudioRecorder onSend={handleSend} />} />
-
           <Route path="/reset-password-byPhoneNumber" element={<ResetPasswordByPhoneNumberPage />} />
           <Route path="/register" element={<RegisterPage />} />
           <Route path="/test" element={<ProtectedRoute element={<TestPage />} redirectPath="/login" />}  />

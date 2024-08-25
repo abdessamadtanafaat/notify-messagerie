@@ -12,6 +12,7 @@ import { getAvatarUrl, getTimeDifference } from '../../utils/userUtils'
 import DiscussionListSkeleton from './DiscussionListSkeleton'
 import userService from '../../services/userService'
 import { useWebSocket } from '../../hooks/webSocketHook'
+import { useNotification } from '../../contexte/NotificationContext'
 
 const DiscussionList: React.FC = () => {
 
@@ -22,6 +23,9 @@ const DiscussionList: React.FC = () => {
     const [loading, setLoading] = useState<boolean>(true)
     const [searchInDiscussion, setSearchInDiscussion] = useState<string>('')
     const [usersSearch, setUsersSearch] = useState<User[]>([])
+
+    const { setHasUnreadMessages } = useNotification()
+
 
     const { theme } = useThemeContext()
     const { user, refreshUserData } = useAuth()
@@ -63,6 +67,9 @@ const DiscussionList: React.FC = () => {
     }
 
     const handleNewMessage = (newMessage: Message) => {
+
+        setHasUnreadMessages(true)
+
         const timestamp = newMessage.timestamp instanceof Date ? newMessage.timestamp : new Date(newMessage.timestamp)
 
         setDiscussions(prevDiscussions => {
@@ -121,7 +128,6 @@ const DiscussionList: React.FC = () => {
             }
         }
     }
-
     const handleClearSearch = () => {
         setSearchInDiscussion('')
     }
@@ -132,13 +138,10 @@ const DiscussionList: React.FC = () => {
     return (
         <>
             {loading ? (
-
                 <DiscussionListSkeleton />
-
             ) : (
-                <div className="flex">
-                    <div className={'fixed top-4 left-20 md:w-80 lg:w-72 flex-shrink-0 rounded-2xl bg-white dark:bg-gray-800 h-screen shadow-xl px-4 md:px-8 overflow-y-auto'}>
-
+                <div className="flex h-screen pl-16">
+                    <div className="flex-grow rounded-2xl pl-5 pr-5 pt-4 w-5 bg-white dark:bg-gray-800 overflow-y-auto">
                         <div className="space-y-4 md:space-y-3 mt-5">
                             <h1 className="hidden md:block font-bold text-sm md:text-xl text-start dark:text-white">
                                 Discussion
@@ -175,8 +178,6 @@ const DiscussionList: React.FC = () => {
 
                                     <ul className="list-none flex flex-col space-y-2">
                                         {usersSearch.map((friend, index) => {
-
-
                                             return (
                                                 <li
                                                     key={index}
@@ -207,8 +208,7 @@ const DiscussionList: React.FC = () => {
                                 ) : (
                                     <p className="text-gray-500 dark:text-gray-400 text-sm text-center">No users found.</p>
                                 )
-                            )
-                                : (
+                            ): (
 
                                     <ul className="list-none flex flex-col space-y-2">
                                         {discussions.map((discussion) => {
@@ -224,25 +224,14 @@ const DiscussionList: React.FC = () => {
                                             const isAudioMessage = lastMessage.type === 'audio'
                                             const isFileMessage = lastMessage.type === 'file'
 
-                                            let messageText: string
-                                            if (isAudioMessage) {
-                                                if (isMyMessage) {
-                                                    messageText = 'You sent a voice message.'
-                                                } else {
-                                                    messageText = 'sent you a voice message.'
-                                                }
-                                            } else {
-                                                messageText = lastMessage.content
+                                            let messageText = lastMessage.content
+
+                                            if (isAudioMessage || isFileMessage) {
+                                                messageText = isMyMessage
+                                                    ? (isAudioMessage ? 'You sent a voice message.' : 'You sent a file.')
+                                                    : (isAudioMessage ? 'Sent you a voice message.' : 'Sent you a file.')
                                             }
-                                            if (isFileMessage) {
-                                                if (isMyMessage) {
-                                                    messageText = 'You sent a file.'
-                                                } else {
-                                                    messageText = 'sent you a file.'
-                                                }
-                                            } else {
-                                                messageText = lastMessage.content
-                                            }
+
 
                                             return (
                                                 <li
@@ -271,7 +260,7 @@ const DiscussionList: React.FC = () => {
                                                                 <p className={` truncate ${!lastMessage.read && !isMyMessage ? 'font-bold' : 'font-normal'} `}>
                                                                     {messageText}
                                                                 </p>
-                                                                <p className='text-[12px]'>
+                                                                <p className='truncate text-[12px]'>
                                                                     {getTimeDifference(lastMessage.timestamp)} {/* Format timestamp */}
                                                                 </p>
                                                                 {!lastMessage.read && !isMyMessage && (
@@ -279,7 +268,6 @@ const DiscussionList: React.FC = () => {
                                                                         <div className="absolute -top-1 -right-2 w-2 h-2 rounded-full bg-blue-500" />
                                                                     </div>
                                                                 )}
-
                                                                 {lastMessage.read && isMyMessage && (
                                                                     <CheckCheck className='w-3 h-3' />
                                                                 )}
@@ -293,13 +281,11 @@ const DiscussionList: React.FC = () => {
                                     </ul>
 
                                 )}
-
-
                         </div>
                     </div>
                     {selectedUser && (
-                        <div className="fixed bottom-4 top-4 left-96 rounded-2xl bg-white dark:bg-gray-800 h-screen shadow-xl w-48 md:w-56 lg:w-7/12 xl:w-3/5"
-                        >
+                        <div className="flex-grow rounded-2xl bg-white dark:bg-gray-800 h-full shadow-xl ml-4 lg:ml-6">
+
                             <DiscussionSidebar
                                 receiver={selectedUser}
                                 idDiscussion={idDiscussion}
@@ -316,7 +302,5 @@ const DiscussionList: React.FC = () => {
 
         </>
     )
-
-
 }
 export default DiscussionList
