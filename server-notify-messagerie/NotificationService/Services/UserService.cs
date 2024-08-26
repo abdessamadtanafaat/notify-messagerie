@@ -134,6 +134,68 @@ namespace NotificationService.Services
 
             await _userRepository.DeleteUserAsync(id);
         }
+       
+        public async Task<IEnumerable<User>> GetFriendsAsync(string userId)
+        {
+            if (string.IsNullOrWhiteSpace(userId)) {
+                    throw new ArgumentNullException("User ID cannot be empty or whitespace."); 
+            } 
+            var user = await _userRepository.GetUserByIdAsync(userId); 
+            if (user == null) {
+                throw new NotFoundException ($"User With ID '{userId}' not found."); 
+            }
+            if (user.Friends == null){
+                return Enumerable.Empty<User>();
+            }
+            var friendTasks = user.Friends.Select(friendId => _userRepository.GetUserByIdAsync(friendId)).ToArray(); 
+            var friends = await Task.WhenAll(friendTasks); 
+
+                        var sortedFriends = friends
+                .OrderBy(u=> string.IsNullOrWhiteSpace(u.FirstName)? ' ' : u.FirstName.ToUpper()[0])
+                .ToList();
+
+            // in case some friend id do not correspond to existing users.
+            return sortedFriends.Where(friend=> friend != null); 
+
+
+        }
+        public async Task<IEnumerable<User>> GetCommonFriendsAsync(string userId, string friendId) {
+
+            if (string.IsNullOrWhiteSpace(userId) || string.IsNullOrWhiteSpace(friendId)) {
+                    throw new ArgumentNullException("User or Friend ID cannot be empty or whitespace."); 
+            } 
+            var user = await _userRepository.GetUserByIdAsync(userId); 
+            var friend = await _userRepository.GetUserByIdAsync(friendId); 
+            if (user == null || friend == null ) {
+                throw new NotFoundException ($"User With ID not found."); 
+            }
+
+            var userFriends = user.Friends ?? new List<string>(); 
+            var friendFriends = friend.Friends ?? new List<string>();
+
+
+            var commonFriendsIds = userFriends.Intersect(friendFriends);
+
+            var commonFriends = new List<User>(); 
+
+            foreach (var commonFriendId in commonFriendsIds) {
+
+                var commonFriend = await _userRepository.GetUserByIdAsync(commonFriendId); 
+
+                if (commonFriend != null) {
+                    commonFriends.Add(commonFriend);
+                }
+            }
+
+            var sortedCommonFriends = commonFriends
+                .OrderBy(u=> string.IsNullOrWhiteSpace(u.FirstName)? ' ' : u.FirstName.ToUpper()[0])
+                .ToList();
+
+            return sortedCommonFriends;
+
+        }
+
+        
         public async Task UnfriendAsync(string userId, string friendId)
         {
             var user = await _userRepository.GetUserByIdAsync(userId);
@@ -250,8 +312,6 @@ namespace NotificationService.Services
 
             return "Null";
         }
-
-
 
         public async Task<List<User>> SearchUsersByFirstNameOrLastNameAsync(SearchRequest searchRequest)
         {

@@ -141,5 +141,5 @@ const searchUsersByFirstNameOrLastName = async (searchRequest:SearchRequest) => 
      fetchUsers,
      fetchUsersByIds,
      unfriend,
-     searchUsersByFirstNameOrLastName
+     searchUsersByFirstNameOrLastName,
     }

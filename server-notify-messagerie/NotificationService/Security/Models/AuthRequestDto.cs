@@ -2,6 +2,6 @@
 
 public class AuthRequestDto
 {
-    public string EmailOrPhoneNumber { get; set; }
-    public string Password { get; set; }
+    public string? EmailOrPhoneNumber { get; set; }
+    public string? Password { get; set; }
 }

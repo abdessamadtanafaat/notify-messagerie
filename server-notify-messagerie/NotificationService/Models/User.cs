@@ -1,6 +1,8 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using MongoDB.Bson;
 using MongoDB.Bson.Serialization.Attributes;
+using System.Text.Json.Serialization;
+
 
 namespace NotificationService.Models;
 
@@ -13,8 +15,13 @@ public class User
         public string? LastName { get; set; }
         public string? Username { get; set; }
         public string? Email { get; set; }
+        [JsonIgnore] // ignore it when serializ the objec to JSON . 
         public string? Password { get; set; }
         public string? PhoneNumber { get; set; }
+        public string? City { get; set; }
+        public string? Work { get; set; }
+        public string? Education { get; set; }
+
         public string? TokenEmail { get; set; }
         public DateTime? TokenCreatedAt {get; set;}
         public bool IsEmailVerified { get; set; }
@@ -35,6 +42,7 @@ public class User
         public String? AvatarUrl { get; set;}
         public String? About {get; set;}
         public   List<String>? Friends {get; set;}
+        public List<String>? CommonFriends{get; set;}
         public   List<String>? FriendRequestsReceived {get; set;}
         public  List<String>? FriendRequestsSent {get; set;}
 

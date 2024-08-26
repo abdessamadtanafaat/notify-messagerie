@@ -112,5 +112,20 @@ namespace NotificationService.Controllers
             string message = await _userService.AnswerInvitationAsync(answerInvitationRequest.UserId, answerInvitationRequest.FriendId,answerInvitationRequest.AnswerInvitation ); 
             return Ok(message); 
         }
+
+        // Accepte or refuse the invitation received . 
+        [HttpGet("getFriends/{userId}")] 
+        //[Authorize]
+        public async Task<IEnumerable<User>> GetFriends(string userId) {
+            var friends = await _userService.GetFriendsAsync(userId); 
+            return  friends ; 
+        }
+
+        [HttpGet("getCommonFriends")] 
+        //[Authorize]
+        public async Task<IEnumerable<User>> GetCommonFriends(string userId, string friendId) {
+            var Commonfriends = await _userService.GetCommonFriendsAsync(userId,friendId); 
+            return  Commonfriends ; 
+        }
     }
 }

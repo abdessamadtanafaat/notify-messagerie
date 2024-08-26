@@ -13,4 +13,17 @@ public class RecordingNotification
 
     [JsonPropertyName("receiverId")]
     public string ReceiverId { get; set; }
+
+        // Constructor with validation
+    public RecordingNotification(
+        string discussionId,
+        string senderId,
+        string receiverId)
+    {
+        Type = "recording"; // Setting default value for Type
+        DiscussionId = discussionId ?? throw new ArgumentNullException(nameof(discussionId));
+        SenderId = senderId ?? throw new ArgumentNullException(nameof(senderId));
+        ReceiverId = receiverId ?? throw new ArgumentNullException(nameof(receiverId));
+    }
+    
 }

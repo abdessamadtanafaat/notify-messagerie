@@ -30,6 +30,10 @@
       GET_DISCUSSION: '/Discussions/Discussion', // GET THE DISCUSSION OF THE USERAUTH AND SELECTED USER IN THE BAR CHAT
       UPLOAD_AUDIO: '/Discussions/uploadAudio',
       UPLOAD_FILE: '/Discussions/uploadFile',
+
+
+      //====================== FRIENDS SECTION ============================= 
+      GET_FRIENDS: 'User/getFriends',
 //====================WEB SOCKET  =============P=====
 
       WEBSOCKET_URL: 'ws://localhost:5000/ws' 

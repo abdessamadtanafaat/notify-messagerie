@@ -8,21 +8,21 @@ public class Message
     public string? Id { get; set; }
 
     [JsonPropertyName("discussionId")]
-    public string DiscussionId { get; set; }
+    public string? DiscussionId { get; set; }
 
     [JsonPropertyName("senderId")]
-    public string SenderId { get; set; }
+    public string? SenderId { get; set; }
 
     [JsonPropertyName("receiverId")]
-    public string ReceiverId { get; set; }
+    public string? ReceiverId { get; set; }
 
     [JsonPropertyName("firstName")]
-    public string FirstName { get; set; }  //of the sender
+    public string? FirstName { get; set; }  //of the sender
     [JsonPropertyName("lastName")]
-    public string LastName { get; set; } // of the sender
+    public string? LastName { get; set; } // of the sender
 
     [JsonPropertyName("content")]
-    public string Content { get; set; }
+    public string? Content { get; set; }
 
     [JsonPropertyName("timestamp")]
     public DateTime Timestamp { get; set; }
@@ -34,10 +34,9 @@ public class Message
     [JsonPropertyName("readTime")]
     public DateTime ReadTime { get; set; }
 
-        [JsonPropertyName("type")]
-    public string Type { get; set; }
+    [JsonPropertyName("type")]
+    public string? Type { get; set; }
 
-    // [JsonPropertyName("audioFilePath")]
-    // public string AudioFilePath { get; set; }
+
 
 }
