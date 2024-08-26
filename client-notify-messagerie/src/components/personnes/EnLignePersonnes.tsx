@@ -24,7 +24,7 @@ const EnLignePersonnes: React.FC<EnLignePersonnesProps> = ({ onUserClick, theme 
                         </p>
                         <ul className="list-none flex flex-col space-y-2">
                             {friends
-                                .filter(friend => friend.active)
+                                // .filter(friend => friend.active)
                                 .map(friend => (
                                     <li key={friend.id}
                                         className="flex items-center space-x-3 p-1 rounded-lg cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors duration-200 ease-in-out"

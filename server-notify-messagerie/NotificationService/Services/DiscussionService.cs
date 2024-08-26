@@ -76,34 +76,48 @@ public class DiscussionService : IDiscussionService{
     }
     
 
-    public async Task<IEnumerable<DiscussionDto>> GetDiscussionsWithMessages(string userId)
+public async Task<IEnumerable<DiscussionDto>> GetDiscussionsWithMessages(string userId, DateTime? cursor, int limit)
 {
-    if (string.IsNullOrWhiteSpace(userId))
-    {
-        throw new ArgumentException("User ID cannot be null or empty", nameof(userId));
-    }
+    // Debug: Print input parameters
+    Console.WriteLine($"Debug: UserID: {userId}");
+    Console.WriteLine($"Debug: Cursor: {cursor}");
+    Console.WriteLine($"Debug: Limit: {limit}");
 
-    var discussions = await _discussionRepository.GetDiscussionsForUser(userId);
+    var discussions = await _discussionRepository.GetDiscussionsForUser(userId, cursor, limit);
+    Console.WriteLine($"Debug: Discussions fetched: {discussions.Count()}");
+
     var discussionDtos = new List<DiscussionDto>();
 
     foreach (var discussion in discussions)
     {
-        // Assuming `Participants` list includes the userId, fetch the other participant
-        var receiverId = discussion.Participants.FirstOrDefault(id => id != userId);
-        var receiver = await _userRepository.GetUserByIdAsync(receiverId);
+        Console.WriteLine($"Debug: Processing Discussion ID: {discussion.Id}");
+        Console.WriteLine($"Debug: Participants: {string.Join(", ", discussion.Participants)}");
 
+        var receiverId = discussion.Participants.FirstOrDefault(id => id != userId);
+        Console.WriteLine($"Debug: Receiver ID: {receiverId}");
+
+        var receiver = await _userRepository.GetUserByIdAsync(receiverId);
         if (receiver == null)
         {
-            // Handle case where user is not found
+            Console.WriteLine($"Debug: Receiver with ID {receiverId} not found.");
             continue;
         }
-        var messages = await _messageRepository.GetMessagesForDiscussion(discussion.Id,null, 10);
+
+        var messages = await _messageRepository.GetMessagesForDiscussion(discussion.Id, null, 10);
+        Console.WriteLine($"Debug: Messages fetched for Discussion ID {discussion.Id}: {messages.Count()}");
+
         var lastMessage = messages.OrderByDescending(m => m.Timestamp).FirstOrDefault();
+        if (lastMessage != null)
+        {
+            Console.WriteLine($"Debug: Last Message ID: {lastMessage.Id}");
+            Console.WriteLine($"Debug: Last Message Content: {lastMessage.Content}");
+            Console.WriteLine($"Debug: Last Message Timestamp: {lastMessage.Timestamp}");
+        }
+        else
+        {
+            Console.WriteLine($"Debug: No messages found for Discussion ID {discussion.Id}");
+        }
 
-
-
-
-            //lastMessage.ReadTime = DateTime() ; 
         discussionDtos.Add(new DiscussionDto
         {
             Id = discussion.Id,
@@ -118,8 +132,11 @@ public class DiscussionService : IDiscussionService{
             },
             LastMessage = lastMessage
         });
+
+        Console.WriteLine($"Debug: DiscussionDto added for Discussion ID: {discussion.Id}");
     }
 
+    Console.WriteLine($"Debug: Total DiscussionDto count: {discussionDtos.Count}");
     return discussionDtos;
 }
 

@@ -16,7 +16,8 @@ namespace NotificationService.Services
         Task<List<User>> GetUsersByIdsAsync(List<string> ids);
         Task UnfriendAsync(string userId, string friendId); 
         Task<List<User>> SearchUsersByFirstNameOrLastNameAsync(SearchRequest searchRequest); 
-
+        Task AddFriendAsync(string userId, string friendId); 
+        Task<string> AnswerInvitationAsync(string userId, string friendId, AnswerInvitationRequest.InvitationResponse answerInvitation); 
 
 
     }

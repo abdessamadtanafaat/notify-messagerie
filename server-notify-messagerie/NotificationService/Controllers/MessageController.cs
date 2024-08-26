@@ -37,8 +37,8 @@ public class MessageController : ControllerBase
     }
 
     [HttpGet("messages/{userId}")]
-    public async Task<IActionResult> GetDiscussions(string userId){
-        var discussions = await _discussionService.GetDiscussionsWithMessages(userId);
+    public async Task<IActionResult> GetDiscussions(string userId, DateTime? cursor, int limit = 10){
+        var discussions = await _discussionService.GetDiscussionsWithMessages(userId,cursor,limit);
         return Ok(discussions); 
     }
 

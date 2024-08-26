@@ -98,5 +98,19 @@ namespace NotificationService.Controllers
             return Ok(users);
         }
 
+        [HttpPost("addFriend")]
+        //[Authorize]
+        public async Task<IActionResult> AddFriendAsync(FriendRequest friendRequest) {
+            await _userService.AddFriendAsync(friendRequest.UserId, friendRequest.FriendId); 
+            return Ok(new {Message = "Invitation sent successfully."}); 
+        }
+
+        // Accepte or refuse the invitation received . 
+        [HttpPost("answerInvitation")] 
+        //[Authorize]
+        public async Task<IActionResult> AnswerInvitation(AnswerInvitationRequest answerInvitationRequest) {
+            string message = await _userService.AnswerInvitationAsync(answerInvitationRequest.UserId, answerInvitationRequest.FriendId,answerInvitationRequest.AnswerInvitation ); 
+            return Ok(message); 
+        }
     }
 }
