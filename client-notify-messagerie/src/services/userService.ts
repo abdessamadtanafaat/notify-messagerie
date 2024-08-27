@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import axios from 'axios'
 import { ErrorResponse } from '../interfaces/ErrorResponse'
 import axiosInstance from '../api/axiosInstance'
@@ -52,7 +53,6 @@ const getUserInfo = async (id: string): Promise<User> => {
     }
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any 
   // with cloudinary . 
   export async function uploadFile(file: File, userId: string | null): Promise<any> {
 

@@ -34,6 +34,7 @@
 
       //====================== FRIENDS SECTION ============================= 
       GET_FRIENDS: 'User/getFriends',
+      GET_COMMON_FRIENDS: 'User/getCommonFriends',
 //====================WEB SOCKET  =============P=====
 
       WEBSOCKET_URL: 'ws://localhost:5000/ws' 

@@ -123,7 +123,7 @@ namespace NotificationService.Controllers
 
         [HttpGet("getCommonFriends")] 
         //[Authorize]
-        public async Task<IEnumerable<User>> GetCommonFriends(string userId, string friendId) {
+        public async Task<IEnumerable<User>> GetCommonFriends([FromQuery] string userId, [FromQuery]string friendId) {
             var Commonfriends = await _userService.GetCommonFriendsAsync(userId,friendId); 
             return  Commonfriends ; 
         }
