@@ -199,9 +199,11 @@ namespace NotificationService.Services
         public async Task UnfriendAsync(string userId, string friendId)
         {
             var user = await _userRepository.GetUserByIdAsync(userId);
-            if (user == null)
+            var friend = await _userRepository.GetUserByIdAsync(friendId);
+
+            if (user == null || friend == null)
             {
-                throw new NotFoundException($"User with ID '{userId}' not found.");
+                throw new NotFoundException($"User Or Friend not found.");
             }
 
             if (user.Friends == null)
@@ -209,12 +211,11 @@ namespace NotificationService.Services
                 user.Friends = new List<string>();
             }
 
-            if (!user.Friends.Contains(friendId))
+            if (user.Friends.Contains(friendId))
             {
-                user.Friends.Add(friendId);
+                user.Friends.Remove(friendId);
             }
             await _userRepository.UpdateUserAsync(userId, user);
-
         }
 
         public async Task AddFriendAsync(string userId, string friendId)

@@ -99,7 +99,6 @@ const DiscussionList: React.FC = () => {
     const { sendSeenNotification } = useWebSocket(user, handleNewMessage)
 
     const searchUsers = async (userId: string, searchReq: string) => {
-
         try {
             if (user) {
                 const searchRequest = { userId, searchReq }
@@ -114,6 +113,11 @@ const DiscussionList: React.FC = () => {
         }
 
     }
+
+    const handleClearSearch = () => {
+        setSearchInDiscussion('')
+    }
+
     const handleChange = async (field: 'searchInDiscussion', value: string) => {
         if (field === 'searchInDiscussion') {
             setSearchInDiscussion(value)
@@ -127,9 +131,6 @@ const DiscussionList: React.FC = () => {
                 setUsersSearch([]) // Clear the results if input is empty
             }
         }
-    }
-    const handleClearSearch = () => {
-        setSearchInDiscussion('')
     }
     useEffect(() => {
         fetchDiscussions()
@@ -161,7 +162,7 @@ const DiscussionList: React.FC = () => {
                                         placeholder='Search'
                                         value={searchInDiscussion}
                                         onChange={(e) => handleChange('searchInDiscussion', e.target.value)}
-                                        autoFocus={true}
+                                       // autoFocus={true}
                                         className='w-full h-7 px-2 text-sm border-b-2 bg-gray-200 border-gray-600 rounded-2xl placeholder:font-light placeholder:text-gray-500 dark:bg-gray-700 focus:border-blue-400 focus:outline-none'
                                     />
                                     <SearchIcon
