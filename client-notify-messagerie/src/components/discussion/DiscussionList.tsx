@@ -1,5 +1,5 @@
 /* eslint-disable react-hooks/exhaustive-deps */
-import React, { useEffect, useState } from 'react'
+import React, { useCallback, useEffect, useState } from 'react'
 import { User } from '../../interfaces'
 import { CheckCheck, ChevronLeft, SearchIcon } from 'lucide-react'
 import { useAuth } from '../../contexte/AuthContext'
@@ -13,6 +13,7 @@ import DiscussionListSkeleton from './DiscussionListSkeleton'
 import userService from '../../services/userService'
 import { useWebSocket } from '../../hooks/webSocketHook'
 import { useNotification } from '../../contexte/NotificationContext'
+import { debounce } from '../../utils/debounce'
 
 const DiscussionList: React.FC = () => {
 
@@ -118,20 +119,30 @@ const DiscussionList: React.FC = () => {
         setSearchInDiscussion('')
     }
 
-    const handleChange = async (field: 'searchInDiscussion', value: string) => {
+    // Debounced searchUsers function
+    const debouncedSearchUsers = useCallback(
+        debounce(async (userId: string, searchReq: string) => {
+            if (searchReq.trim()) {
+                // Call your search function
+                await searchUsers(userId, searchReq)
+                //setUsersSearch(results) // Update search results
+            } else {
+                setUsersSearch([]) // Clear results if input is empty
+            }
+        }, 300), []
+    )
+
+    // Handle search input change
+    const handleChange = (field: 'searchInDiscussion', value: string) => {
         if (field === 'searchInDiscussion') {
             setSearchInDiscussion(value)
-
-            if (user && value.trim()) {
-                searchUsers(user.id, value.trim())
-            }
             if (user) {
-                searchUsers(user.id, searchInDiscussion)
-            } else {
-                setUsersSearch([]) // Clear the results if input is empty
+                debouncedSearchUsers(user.id, value)
             }
         }
     }
+
+    
     useEffect(() => {
         fetchDiscussions()
     }, [user])
@@ -162,7 +173,6 @@ const DiscussionList: React.FC = () => {
                                         placeholder='Search'
                                         value={searchInDiscussion}
                                         onChange={(e) => handleChange('searchInDiscussion', e.target.value)}
-                                       // autoFocus={true}
                                         className='w-full h-7 px-2 text-sm border-b-2 bg-gray-200 border-gray-600 rounded-2xl placeholder:font-light placeholder:text-gray-500 dark:bg-gray-700 focus:border-blue-400 focus:outline-none'
                                     />
                                     <SearchIcon

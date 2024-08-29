@@ -135,7 +135,7 @@ namespace NotificationService.Services
             await _userRepository.DeleteUserAsync(id);
         }
        
-        public async Task<IEnumerable<User>> GetFriendsAsync(string userId)
+        public async Task<IEnumerable<User>> GetFriendsAsync(string userId, int pageNumber=1, int pageSize=6)
         {
             if (string.IsNullOrWhiteSpace(userId)) {
                     throw new ArgumentNullException("User ID cannot be empty or whitespace."); 
@@ -147,8 +147,30 @@ namespace NotificationService.Services
             if (user.Friends == null){
                 return Enumerable.Empty<User>();
             }
-            var friendTasks = user.Friends.Select(friendId => _userRepository.GetUserByIdAsync(friendId)).ToArray(); 
+            var friendsIds = user.Friends; 
+            var totalFriends = friendsIds.Count; 
+
+            if (pageNumber < 1)
+            {
+                pageNumber = 1; 
+            } 
+            if (pageSize < 1) {
+                pageSize = 1; 
+            }
+            var skip = (pageNumber - 1 ) * pageSize;
+
+            if (skip >= totalFriends) {
+                return Enumerable.Empty<User>(); 
+            }
+
+            var friendTasks = friendsIds
+                                .Skip(skip)
+                                .Take(pageSize)
+                                .Select(friendId => _userRepository.GetUserByIdAsync(friendId)).ToArray();
             var friends = await Task.WhenAll(friendTasks); 
+
+            // var friendTasks = user.Friends.Select(friendId => _userRepository.GetUserByIdAsync(friendId)).ToArray(); 
+            // var friends = await Task.WhenAll(friendTasks); 
 
                         var sortedFriends = friends
                 .OrderBy(u=> string.IsNullOrWhiteSpace(u.FirstName)? ' ' : u.FirstName.ToUpper()[0])
@@ -156,8 +178,6 @@ namespace NotificationService.Services
 
             // in case some friend id do not correspond to existing users.
             return sortedFriends.Where(friend=> friend != null); 
-
-
         }
         public async Task<IEnumerable<User>> GetCommonFriendsAsync(string userId, string friendId) {
 

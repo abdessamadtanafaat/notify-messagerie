@@ -3,9 +3,9 @@ import axiosInstance from '../api/axiosInstance'
 import API_ENDPOINTS from '../api/endpoints'
 import { ErrorResponse, User } from '../interfaces'
 
-const fetchFriends  = async (userId: string) => {
+const fetchFriends  = async (userId: string, pageNumber: number, pageSize:number): Promise<User[]> => {
     try {
-      const response = await axiosInstance.get(`${API_ENDPOINTS.GET_FRIENDS}/${userId}`)
+      const response = await axiosInstance.get(`${API_ENDPOINTS.GET_FRIENDS}/${userId}`,{params: {pageNumber, pageSize}})
       console.log(response)
       console.log(response.data)
       return response.data

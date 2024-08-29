@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import React, { useCallback, useEffect, useRef, useState } from 'react'
 import { User } from '../../interfaces'
 import { CircleEllipsis, FileIcon, ImageIcon, Loader, LockKeyholeIcon, Phone, SendIcon, Smile, Video } from 'lucide-react'
@@ -110,7 +111,6 @@ const DiscussionSidebar: React.FC<DiscussionSidebarProps> = ({ receiver, idDiscu
         }
     }
     return (
-
         <>
             {loading ? (
                 <DiscussionSidebarSkeleton />

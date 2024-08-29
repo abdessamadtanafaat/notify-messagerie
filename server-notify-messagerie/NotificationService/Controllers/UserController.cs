@@ -116,8 +116,8 @@ namespace NotificationService.Controllers
         // Accepte or refuse the invitation received . 
         [HttpGet("getFriends/{userId}")] 
         //[Authorize]
-        public async Task<IEnumerable<User>> GetFriends(string userId) {
-            var friends = await _userService.GetFriendsAsync(userId); 
+        public async Task<IEnumerable<User>> GetFriends(string userId, [FromQuery] int pageNumber=1, [FromQuery] int pageSize=6) {
+            var friends = await _userService.GetFriendsAsync(userId,pageNumber,pageSize); 
             return  friends ; 
         }
 
