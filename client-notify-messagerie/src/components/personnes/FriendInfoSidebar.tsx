@@ -83,7 +83,7 @@ const FriendInfoSidebar: React.FC<FriendInfoSidebarProps> = ({ user }) => {
                         <button
                             onClick={()=> setOpenPopUp(true)}
                             className={`text-xs text-white rounded-lg px-3 py-2
-                                         ${isFriend ? 'bg-red-600' : ''} `}
+                                         ${isFriend ? 'bg-red-600' :''} `}
                         >
                             {isFriend ? 'UnFriend': ''} 
                         </button>

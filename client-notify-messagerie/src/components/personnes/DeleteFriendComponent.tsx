@@ -24,6 +24,7 @@ const DeleteFriendComponent: React.FC<DeleteFriendComponentProps> = ({ openPopUp
 }
 
   return (
+
     <PopUp
       openPopUp={openPopUp}
       closePopUp={closePopUp}

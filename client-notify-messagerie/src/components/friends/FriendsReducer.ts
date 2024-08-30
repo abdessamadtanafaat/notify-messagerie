@@ -46,8 +46,20 @@ const friendsReducer = (state: FriendsState, action: Action): FriendsState => {
   switch (action.type) {
     case 'SET_LOADING':
       return { ...state, loading: action.payload }
-    case 'SET_FRIENDS':
-      return { ...state, friends: [...state.friends, ...action.payload] } // Append new friends
+    //case 'SET_FRIENDS':
+    //  return { ...state, friends: [...state.friends, ...action.payload] } // Append new friends
+
+      case 'SET_FRIENDS': {
+        const newFriends = action.payload
+        const updatedFriends = [...state.friends, ...newFriends].reduce((uniqueFriends, friend) => {
+          if (!uniqueFriends.find(f => f.id === friend.id)) {
+            uniqueFriends.push(friend)
+          }
+          return uniqueFriends
+        }, [] as User[])
+        return { ...state, friends: updatedFriends }
+      }
+
     case 'SET_COMMON_FRIENDS_COUNT':
       return { ...state, commonFriendsCount: action.payload }
     case 'SET_SELECTED_FRIEND':
@@ -67,13 +79,17 @@ const friendsReducer = (state: FriendsState, action: Action): FriendsState => {
       const updatedFriends = state.friends.filter(
         (friend) => friend.id !== action.payload
       )
-      return { ...state, friends: updatedFriends }
+      const updatedSearchUsers = state.usersSearch.filter(
+        (user) => user.id !== action.payload
+    )
+      return { ...state, friends: updatedFriends, usersSearch: updatedSearchUsers }
     }
     case 'SET_PAGE':
       return { ...state, page: action.payload }
     case 'SET_HAS_MORE':
       return { ...state, hasMore: action.payload }
 
+      
     default:
       return state
   }

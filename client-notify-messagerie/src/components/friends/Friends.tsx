@@ -21,11 +21,10 @@ const Friends: React.FC = () => {
     const { loading, friends, commonFriendsCount, selectedFriend, openPopUp, menuOpen, searchInDiscussion, usersSearch } = state
 
     const menuRef = useRef<HTMLUListElement>(null)
-    const containerRef  = useRef<HTMLDivElement>(null)
 
     const { loadMoreFriends } = useFetchFriends(user?.id, dispatch, state)
 
-    useFetchFriends(user?.id, dispatch, state)
+    //useFetchFriends(user?.id, dispatch, state)
     useOutsideClick(menuRef, () => dispatch({ type: 'TOGGLE_MENU', payload: null }))
     const { searchUsers } = useSearchUsers({ user, dispatch })
     const { deleteFriend } = useDeleteFriend({ user, dispatch, selectedFriend })
@@ -68,29 +67,14 @@ const Friends: React.FC = () => {
         }
     }
 
-    const handleScroll = (e: React.UIEvent<HTMLDivElement, UIEvent>) => {
-        const container = e.currentTarget
-        const scrollTop = container.scrollTop
-        const scrollHeight = container.scrollHeight
-        const clientHeight = container.clientHeight
-
-        // Check if the user has scrolled to within 100px of the bottom
-        const scrollThreshold = 100
-        if (scrollHeight - scrollTop - clientHeight < scrollThreshold) {
-            loadMoreFriends() // Call loadMoreFriends to fetch more data
-        }
-    }
     
     if (!user) return null
     return (
-        <div className="flex h-screen pl-16  overflow-y-auto"
-        onScroll={handleScroll}
-        ref={containerRef}
- >
+        <div className="flex h-screen pl-16">
             {loading && state.page === 1 ? (
                 <FriendsSkeleton />
             ) : (
-                <div className="flex-grow rounded-2xl pl-5 pr-5 pt-4 w-5 bg-white dark:bg-gray-800 overflow-y-auto">
+                <div className="flex-grow rounded-2xl pl-5 pr-5 pt-4 w-5 bg-white dark:bg-gray-800">
                     <div className="flex items-center justify-between mb-6">
                         <h1 className="hidden md:block font-bold text-sm md:text-xl text-start dark:text-white mb-6">
                             Friends
@@ -119,7 +103,6 @@ const Friends: React.FC = () => {
                     {searchInDiscussion ? (
 
                         usersSearch?.length > 0 ? (
-
                             <FriendsList
                                 users={usersSearch}
                                 commonFriendsCount={commonFriendsCount}
@@ -127,6 +110,8 @@ const Friends: React.FC = () => {
                                 dispatch={dispatch}
                                 menuRef={menuRef}
                                 menuOpen={menuOpen}
+                                loadMoreFriends={loadMoreFriends}
+
                             />
 
                         ) : (
@@ -142,9 +127,9 @@ const Friends: React.FC = () => {
                                 dispatch={dispatch}
                                 menuRef={menuRef}
                                 menuOpen={menuOpen}
+                                loadMoreFriends={loadMoreFriends}
+
                             />
-                            <div ref={containerRef} style={{ height: '1px' }} />
-                            {loading && <p>Loading more friends...</p>}
                         </>
                             
                     )}

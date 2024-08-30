@@ -6,8 +6,8 @@ interface PopUpProps {
   title: string;
   message: string;
   onConfirm: () => void;
-  confirmButtonText?: string;
-  cancelButtonText?: string;
+  //confirmButtonText?: string;
+  //cancelButtonText?: string;
 }
 
 const PopUp: React.FC<PopUpProps> = ({
@@ -16,10 +16,9 @@ const PopUp: React.FC<PopUpProps> = ({
   title,
   message,
   onConfirm,
-  confirmButtonText = 'Yes, I\'m sure',
-  cancelButtonText = 'No, go back'
+  //confirmButtonText = 'Yes, I\'m sure',
+  //cancelButtonText = 'No, go back',
 }) => {
-
   const handleClosePopUp = (e: React.MouseEvent<HTMLDivElement>) => {
     if (e.currentTarget.id === 'modalContainer') {
       closePopUp()
@@ -32,25 +31,29 @@ const PopUp: React.FC<PopUpProps> = ({
     <div
       id='modalContainer'
       onClick={handleClosePopUp}
-      className='fixed inset-0 bg-black flex justify-center items-center bg-opacity-20 backdrop-blur-sm z-50'
+      className={`fixed inset-0 flex justify-end transition-transform ease-in-out duration-300 z-50 ${
+        openPopUp ? 'translate-x-0' : 'translate-x-full'
+      }`}
     >
-      <div className="rounded-lg bg-white p-8 shadow-2xl">
-        <h2 className="text-lg font-bold">{title}</h2>
-        <p className="mt-2 text-sm text-gray-500">{message}</p>
-        <div className="mt-4 flex gap-2">
+      <div
+        className={`relative w-full max-w-md bg-white rounded-lg shadow-lg p-6 transform transition-transform ease-in-out duration-300 ${
+          openPopUp ? 'translate-x-0' : 'translate-x-full'
+        }`}
+      >
+               <h2 className='text-xl font-semibold text-gray-800'>{title}</h2>
+        <p className='mt-3 text-gray-600'>{message}</p>
+        <div className='mt-6 flex justify-end space-x-3'>
           <button
-            type="button"
-            className="rounded bg-red-300 px-4 py-2 text-sm font-medium text-black-600 dark:text-white"
             onClick={onConfirm}
+            className='px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition duration-150'
           >
-            {confirmButtonText}
+            Confirm
           </button>
           <button
-            type="button"
-            className="rounded bg-gray-200 px-4 py-2 text-sm font-medium dark:text-gray-600 text-black"
             onClick={closePopUp}
+            className='px-4 py-2 bg-gray-300 text-gray-700 rounded-lg hover:bg-gray-400 transition duration-150'
           >
-            {cancelButtonText}
+            Cancel
           </button>
         </div>
       </div>

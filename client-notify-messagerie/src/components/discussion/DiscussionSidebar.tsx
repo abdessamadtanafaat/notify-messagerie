@@ -92,15 +92,6 @@ const DiscussionSidebar: React.FC<DiscussionSidebarProps> = ({ receiver, idDiscu
         }
     }
 
-    // useEffect(() => {
-    //     const scrollToBottomInput = () => {
-    //         if (messagesEndRef.current) {
-    //             messagesEndRef.current.scrollTop = messagesEndRef.current.scrollHeight
-    //         }
-    //     }
-    //     scrollToBottomInput()
-    // }, [messages]) 
-
     useEffect(() => {
         fetchMessages()
     }, [idDiscussion, user, receiver.id, onMessageSent])
