@@ -1,4 +1,3 @@
-import React from 'react'
 import Skeleton from 'react-loading-skeleton' // Make sure to install this package or use a similar one.
 
 const DiscussionSidebarSkeleton = () => {

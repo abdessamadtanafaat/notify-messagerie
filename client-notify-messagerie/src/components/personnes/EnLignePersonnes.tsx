@@ -2,6 +2,7 @@ import React from 'react'
 import { getAvatarUrl } from '../../utils/userUtils'
 import { User } from '../../interfaces'
 import { PersonnesHandler } from './PersonnesHandler'
+import DiscussionListSkeleton from '../discussion/DiscussionListSkeleton'
 
 interface EnLignePersonnesProps {
     onUserClick: (user: User) => void
@@ -11,10 +12,14 @@ interface EnLignePersonnesProps {
 const EnLignePersonnes: React.FC<EnLignePersonnesProps> = ({ onUserClick, theme }) => {
 
     return (
+    <>
         <PersonnesHandler
-            render={({ friends }) => (
-                <div className={'fixed top-4 left-20 md:w-80 lg:w-48 flex-shrink-0 rounded-2xl bg-white dark:bg-gray-800 h-screen shadow-xl px-4 md:px-8 overflow-y-auto'}>
-
+            render={({ friends, loading }) => (
+            <div className="flex h-screen pl-16 w-80">
+                {loading ? (
+                    <DiscussionListSkeleton />
+                ) : (
+                    <div className="flex-grow rounded-2xl pl-5 pr-5 pt-4 w-5 bg-white dark:bg-gray-800 overflow-y-auto">
                     <div className="space-y-4 md:space-y-3 mt-5">
                         <h1 className="hidden md:block font-bold text-sm md:text-xl text-start dark:text-white">
                             People
@@ -22,7 +27,7 @@ const EnLignePersonnes: React.FC<EnLignePersonnesProps> = ({ onUserClick, theme 
                         <p className='mb-2 text-xs text-gray-600 dark:text-gray-300 '>
                             Active contacts ({friends.filter(user => user.active).length})
                         </p>
-                        <ul className="list-none flex flex-col space-y-2">
+                        <ul className="list-none flex flex-col space-y-2 pb-4">
                             {friends
                                 // .filter(friend => friend.active)
                                 .map(friend => (
@@ -47,9 +52,11 @@ const EnLignePersonnes: React.FC<EnLignePersonnesProps> = ({ onUserClick, theme 
                                 ))}
                         </ul>
                     </div>
-                </div>
-            )}
-        />
-    )
-}
+                     </div>
+        )}
+        </div>
+    )}
+    />
+        </>
+    )}
 export default EnLignePersonnes

@@ -22,6 +22,9 @@ export interface CommonUserData {
     avatarUrl: string;
     about: string; 
     friends: [];
+    city: string; 
+    work: string; 
+    education: string;
   }
   
   // User interface (local database)

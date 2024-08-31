@@ -79,6 +79,23 @@ const Friends: React.FC = () => {
                         <h1 className="hidden md:block font-bold text-sm md:text-xl text-start dark:text-white mb-6">
                             Friends
                         </h1>
+{/* <span
+  className="whitespace-nowrap rounded-full border border-purple-500 px-2.5 py-0.5 text-sm text-purple-700"
+>
+  Live
+</span> */}
+            <div className="flex items-center space-x-2">
+              {/* Live span aligned to the left */}
+              <span className="whitespace-nowrap rounded-full bg-blue-100 px-2.5 py-0.5 text-sm text-blue-700">
+                Fiends
+              </span>
+              <span className="whitespace-nowrap rounded-full bg-blue-100 px-2.5 py-0.5 text-sm text-blue-700">
+              Friends Request
+              </span>
+              <span className="whitespace-nowrap rounded-full bg-blue-100 px-2.5 py-0.5 text-sm text-blue-700">
+              Invitations
+              </span>
+            </div>
                         <div className="flex items-center space-x-2">
                             {searchInDiscussion && (
                                 <ChevronLeft
@@ -128,7 +145,6 @@ const Friends: React.FC = () => {
                                 menuRef={menuRef}
                                 menuOpen={menuOpen}
                                 loadMoreFriends={loadMoreFriends}
-
                             />
                         </>
                             

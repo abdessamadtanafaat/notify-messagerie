@@ -14,6 +14,7 @@ import userService from '../../services/userService'
 import { useWebSocket } from '../../hooks/webSocketHook'
 import { useNotification } from '../../contexte/NotificationContext'
 import { debounce } from '../../utils/debounce'
+import WelcomeMessage from '../common/WelcomeMessage'
 
 const DiscussionList: React.FC = () => {
 
@@ -142,7 +143,7 @@ const DiscussionList: React.FC = () => {
         }
     }
 
-    
+
     useEffect(() => {
         fetchDiscussions()
     }, [user])
@@ -181,8 +182,6 @@ const DiscussionList: React.FC = () => {
 
                                 </div>
                             </div>
-
-
                             {searchInDiscussion ? (
 
                                 usersSearch?.length > 0 ? (
@@ -219,94 +218,91 @@ const DiscussionList: React.FC = () => {
                                 ) : (
                                     <p className="text-gray-500 dark:text-gray-400 text-sm text-center">No users found.</p>
                                 )
-                            ): (
+                            ) : (
+                                <ul className="list-none flex flex-col space-y-2">
+                                    {discussions.map((discussion) => {
 
-                                    <ul className="list-none flex flex-col space-y-2">
-                                        {discussions.map((discussion) => {
+                                        const {
+                                            id,
+                                            lastMessage,
+                                            receiver
+                                        } = discussion
 
-                                            const {
-                                                id,
-                                                lastMessage,
-                                                receiver
-                                            } = discussion
+                                        const isMyMessage = lastMessage.senderId === user?.id
 
-                                            const isMyMessage = lastMessage.senderId === user?.id
+                                        const isAudioMessage = lastMessage.type === 'audio'
+                                        const isFileMessage = lastMessage.type === 'file'
 
-                                            const isAudioMessage = lastMessage.type === 'audio'
-                                            const isFileMessage = lastMessage.type === 'file'
+                                        let messageText = lastMessage.content
 
-                                            let messageText = lastMessage.content
-
-                                            if (isAudioMessage || isFileMessage) {
-                                                messageText = isMyMessage
-                                                    ? (isAudioMessage ? 'You sent a voice message.' : 'You sent a file.')
-                                                    : (isAudioMessage ? 'Sent you a voice message.' : 'Sent you a file.')
-                                            }
+                                        if (isAudioMessage || isFileMessage) {
+                                            messageText = isMyMessage
+                                                ? (isAudioMessage ? 'You sent a voice message.' : 'You sent a file.')
+                                                : (isAudioMessage ? 'Sent you a voice message.' : 'Sent you a file.')
+                                        }
 
 
-                                            return (
-                                                <li
-                                                    key={id}
-                                                    className="flex flex-col space-y-1 p-1 rounded-lg cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors duration-200 ease-in-out"
-                                                    onClick={() => handleUserClick(receiver, id)}
-                                                >
-                                                    <div className="flex items-center space-x-3">
-                                                        <div className="relative flex-shrink-0">
-                                                            <img
-                                                                // src={receiver.avatarUrl}
-                                                                src={getAvatarUrl(theme, receiver ?? {})}
-                                                                alt={`Avatar ${receiver.firstName}`}
-                                                                className="w-6 h-6 rounded-full object-cover transition-opacity duration-300 ease-in-out hover:opacity-80"
-                                                            />
-                                                            <div
-                                                                className={` absolute bottom-0 right-0 w-2 h-2 rounded-full border-2 border-white dark:border-gray-800 ${discussion.receiver.active ? 'bg-green-500' : 'bg-red-500'}  `}
-                                                                style={{ transform: 'translate(25%, 25%)' }}
-                                                            />
-                                                        </div>
-                                                        <div className="flex flex-col justify-center">
-                                                            <p className="font-semibold truncate text-xs text-dark dark:text-white">
-                                                                {receiver.firstName} {receiver.lastName}
+                                        return (
+                                            <li
+                                                key={id}
+                                                className="flex flex-col space-y-1 p-1 rounded-lg cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors duration-200 ease-in-out"
+                                                onClick={() => handleUserClick(receiver, id)}
+                                            >
+                                                <div className="flex items-center space-x-3">
+                                                    <div className="relative flex-shrink-0">
+                                                        <img
+                                                            // src={receiver.avatarUrl}
+                                                            src={getAvatarUrl(theme, receiver ?? {})}
+                                                            alt={`Avatar ${receiver.firstName}`}
+                                                            className="w-6 h-6 rounded-full object-cover transition-opacity duration-300 ease-in-out hover:opacity-80"
+                                                        />
+                                                        <div
+                                                            className={` absolute bottom-0 right-0 w-2 h-2 rounded-full border-2 border-white dark:border-gray-800 ${discussion.receiver.active ? 'bg-green-500' : 'bg-red-500'}  `}
+                                                            style={{ transform: 'translate(25%, 25%)' }}
+                                                        />
+                                                    </div>
+                                                    <div className="flex flex-col justify-center">
+                                                        <p className="font-semibold truncate text-xs text-dark dark:text-white">
+                                                            {receiver.firstName} {receiver.lastName}
+                                                        </p>
+                                                        <div className="flex items-center space-x-2 text-xs text-black dark:text-white">
+                                                            <p className={` truncate ${!lastMessage.read && !isMyMessage ? 'font-bold' : 'font-normal'} `}>
+                                                                {messageText}
                                                             </p>
-                                                            <div className="flex items-center space-x-2 text-xs text-black dark:text-white">
-                                                                <p className={` truncate ${!lastMessage.read && !isMyMessage ? 'font-bold' : 'font-normal'} `}>
-                                                                    {messageText}
-                                                                </p>
-                                                                <p className='truncate text-[12px]'>
-                                                                    {getTimeDifference(lastMessage.timestamp)} {/* Format timestamp */}
-                                                                </p>
-                                                                {!lastMessage.read && !isMyMessage && (
-                                                                    <div className="relative">
-                                                                        <div className="absolute -top-1 -right-2 w-2 h-2 rounded-full bg-blue-500" />
-                                                                    </div>
-                                                                )}
-                                                                {lastMessage.read && isMyMessage && (
-                                                                    <CheckCheck className='w-3 h-3' />
-                                                                )}
+                                                            <p className='truncate text-[12px]'>
+                                                                {getTimeDifference(lastMessage.timestamp)} {/* Format timestamp */}
+                                                            </p>
+                                                            {!lastMessage.read && !isMyMessage && (
+                                                                <div className="relative">
+                                                                    <div className="absolute -top-1 -right-2 w-2 h-2 rounded-full bg-blue-500" />
+                                                                </div>
+                                                            )}
+                                                            {lastMessage.read && isMyMessage && (
+                                                                <CheckCheck className='w-3 h-3' />
+                                                            )}
 
-                                                            </div>
                                                         </div>
                                                     </div>
-                                                </li>
-                                            )
-                                        })}
-                                    </ul>
+                                                </div>
+                                            </li>
+                                        )
+                                    })}
+                                </ul>
 
-                                )}
+                            )}
                         </div>
                     </div>
                     {selectedUser && (
                         <div className="flex-grow rounded-2xl bg-white dark:bg-gray-800 h-full shadow-xl ml-4 lg:ml-6">
-
                             <DiscussionSidebar
                                 receiver={selectedUser}
                                 idDiscussion={idDiscussion}
                                 messages={messages}
                                 onMessageSent={handleNewMessage}
-
                             />
                         </div>
-
                     )}
+                    {!selectedUser && <WelcomeMessage/>}
                 </div>
 
             )}

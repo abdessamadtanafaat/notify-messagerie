@@ -2,12 +2,12 @@ import { useState } from 'react'
 import { useThemeContext } from '../../contexte/ThemeContext'
 import { User } from '../../interfaces'
 import EnLignePersonnes from './EnLignePersonnes'
-import FriendInfoSidebar from './FriendInfoSidebar'
 import DiscussionSidebar from '../discussion/DiscussionSidebar'
 import { useAuth } from '../../contexte/AuthContext'
 import messageService from '../../services/messageService'
-import { Message } from 'postcss'
 import { useWebSocket } from '../../hooks/webSocketHook'
+import WelcomeMessage from '../common/WelcomeMessage'
+import { Message } from '../../interfaces/Discussion'
 
 
 export default function Personnes() {
@@ -52,11 +52,10 @@ export default function Personnes() {
             />
             {selectedUser && (
                 <>
-
-                    <FriendInfoSidebar
+                    {/* <FriendInfoSidebar
                         user={selectedUser}
-                    />
-                    <div className="fixed top-4 left-1/2 transform -translate-x-1/2 rounded-2xl bg-white dark:bg-gray-800 h-screen shadow-xl ">
+                    /> */}
+                    <div className="flex-grow rounded-2xl bg-white dark:bg-gray-800 h-screen shadow-xl ml-4 lg:ml-6">
                         <DiscussionSidebar
                             receiver={selectedUser}
                             idDiscussion={idDiscussion}
@@ -65,6 +64,7 @@ export default function Personnes() {
                     </div>
                 </>
             )}
+{!selectedUser && <WelcomeMessage/>}
         </div>
     )
 }

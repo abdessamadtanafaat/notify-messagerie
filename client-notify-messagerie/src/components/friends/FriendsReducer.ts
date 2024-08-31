@@ -22,6 +22,7 @@ export type Action =
   | { type: 'SET_COMMON_FRIENDS_COUNT'; payload: Map<string, number> }
   | { type: 'SET_SELECTED_FRIEND'; payload: User | null }
   | { type: 'TOGGLE_POPUP'; payload: boolean }
+  | { type: 'TOGGLE_MESSAGE'; payload: boolean }
   | { type: 'TOGGLE_MENU'; payload: string | null }
   | { type: 'SET_SEARCH_DISCUSSION'; payload: string }
   | { type: 'SET_USERS_SEARCH'; payload: User[] }
@@ -66,6 +67,8 @@ const friendsReducer = (state: FriendsState, action: Action): FriendsState => {
       return { ...state, selectedFriend: action.payload }
     case 'TOGGLE_POPUP':
       return { ...state, openPopUp: action.payload }
+      case 'TOGGLE_MESSAGE':
+        return { ...state, openPopUp: action.payload }
     case 'TOGGLE_MENU':
       return {
         ...state,

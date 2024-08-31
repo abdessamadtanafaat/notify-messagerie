@@ -45,7 +45,7 @@ const FriendsList: React.FC<UserListProps> = ({ users, commonFriendsCount, toggl
 
     return (
 <div
-  className="grid grid-cols-1 gap-2 lg:grid-cols-2 lg:gap-4 border border-white rounded-md"
+  className="grid grid-cols-1 gap-2 lg:grid-cols-2 pb-9 lg:gap-4 border border-white rounded-md"
   ref={observerRef}
     style={{ height: '75%', overflowY: 'auto' }}
 >
@@ -57,7 +57,7 @@ const FriendsList: React.FC<UserListProps> = ({ users, commonFriendsCount, toggl
             <img
                 src={getAvatarUrl(theme, user ?? {})}
                 alt={user.firstName}
-                className="w-16 h-16 mr-2 rounded-sm"
+                className="w-10 h-10 mr-2 rounded-sm"
             />
             <div className="flex-grow flex flex-col">
                 <span className="font-medium text-gray-800 dark:text-gray-200 text-xs">
@@ -89,8 +89,8 @@ const FriendsList: React.FC<UserListProps> = ({ users, commonFriendsCount, toggl
                     >
                         <li className="relative transition-transform transform hover:scale-95 group">
                             <a
-                                href="#"
                                 className="flex items-center gap-1 px-2 py-1 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-600 w-full text-xs"
+                                onClick={() => dispatch({ type: 'TOGGLE_MESSAGE', payload: true })}
                             >
                                 <MessageCircle className="h-2.5 w-2.5 text-gray-500 dark:text-gray-300 group-hover:text-blue-500 dark:group-hover:text-blue-400 transition-colors duration-200" />
                                 <span className="text-xs">Message</span>
