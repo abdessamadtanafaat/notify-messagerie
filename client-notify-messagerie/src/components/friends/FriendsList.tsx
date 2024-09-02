@@ -1,13 +1,13 @@
 import React, { useCallback, useEffect, useRef } from 'react'
-import { User } from '../../interfaces'
 import { DeleteIcon, Menu, MessageCircle, StarIcon } from 'lucide-react'
 import { Action } from './FriendsReducer'
 import { getAvatarUrl } from '../../utils/userUtils'
 import { useThemeContext } from '../../contexte/ThemeContext'
+import { MyFriends } from '../../interfaces/MyFriends'
 
 
 interface UserListProps {
-    users: User[]
+    users: MyFriends[]
     commonFriendsCount: Map<string, number>
     toggleMenu: (id: string) => void
     dispatch: React.Dispatch<Action>
@@ -49,39 +49,36 @@ const FriendsList: React.FC<UserListProps> = ({ users, commonFriendsCount, toggl
   ref={observerRef}
     style={{ height: '75%', overflowY: 'auto' }}
 >
-    {users.map((user, index) => (
+    {users.map((friend, index) => (
         <div
             key={index}
             className="flex items-center p-2 bg-gray-100 rounded-md dark:bg-gray-600"
         >
             <img
-                src={getAvatarUrl(theme, user ?? {})}
-                alt={user.firstName}
+                src={getAvatarUrl(theme, friend.user ?? {})}
+                alt={friend.user.firstName}
                 className="w-10 h-10 mr-2 rounded-sm"
             />
             <div className="flex-grow flex flex-col">
                 <span className="font-medium text-gray-800 dark:text-gray-200 text-xs">
-                    {user.firstName} {user.lastName}
+                    {friend.user.firstName} {friend.user.lastName}
                 </span>
                 <span className="text-xs text-gray-500 dark:text-gray-300">
-                    {commonFriendsCount.has(user.id)
-                        ? commonFriendsCount.get(user.id)! > 0
-                            ? `${commonFriendsCount.get(user.id)} mutual friends`
-                            : ''
-                        : 'Loading...'}
+                    {friend.nbMutualFriends ?  `${friend.nbMutualFriends} mutual friends`
+                            : ''}
                 </span>
             </div>
             <div className="relative flex">
                 <button
                     onClick={() => {
-                        toggleMenu(user.id)
-                        dispatch({ type: 'SET_SELECTED_FRIEND', payload: user })
+                        toggleMenu(friend.id)
+                        dispatch({ type: 'SET_SELECTED_FRIEND', payload: friend })
                     }}
                     className="relative text-gray-500 dark:text-gray-300 focus:outline-none"
                 >
                     <Menu className="h-2.5 w-2.5" /> {/* Smaller icon size */}
                 </button>
-                {menuOpen === user.id && (
+                {menuOpen === friend.id && (
                     <ul
                         ref={menuRef}
                         className="absolute z-50 cursor-pointer right-0 mt-1 w-20 bg-white border border-gray-300 dark:bg-gray-700 dark:border-gray-500 rounded-md shadow-md transition-opacity duration-200 opacity-100"

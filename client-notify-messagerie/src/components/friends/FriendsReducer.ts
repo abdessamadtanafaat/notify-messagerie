@@ -1,9 +1,10 @@
 // src/components/FriendsReducer.ts
 import { User } from '../../interfaces'
+import { MyFriends } from '../../interfaces/MyFriends'
 
 export type FriendsState = {
   loading: boolean;
-  friends: User[];
+  friends: MyFriends[];
   commonFriendsCount: Map<string, number>;
   selectedFriend: User | null;
   openPopUp: boolean;
@@ -18,14 +19,14 @@ export type FriendsState = {
 // Use `export type` for type-only exports
 export type Action =
   | { type: 'SET_LOADING'; payload: boolean }
-  | { type: 'SET_FRIENDS'; payload: User[] }
+  | { type: 'SET_FRIENDS'; payload: MyFriends[] }
   | { type: 'SET_COMMON_FRIENDS_COUNT'; payload: Map<string, number> }
   | { type: 'SET_SELECTED_FRIEND'; payload: User | null }
   | { type: 'TOGGLE_POPUP'; payload: boolean }
   | { type: 'TOGGLE_MESSAGE'; payload: boolean }
   | { type: 'TOGGLE_MENU'; payload: string | null }
   | { type: 'SET_SEARCH_DISCUSSION'; payload: string }
-  | { type: 'SET_USERS_SEARCH'; payload: User[] }
+  | { type: 'SET_USERS_SEARCH'; payload: MyFriends[] }
   | { type: 'REMOVE_FRIEND'; payload: string }
   | { type: 'SET_PAGE'; payload: number }
   | { type: 'SET_HAS_MORE'; payload: boolean };
@@ -53,11 +54,11 @@ const friendsReducer = (state: FriendsState, action: Action): FriendsState => {
       case 'SET_FRIENDS': {
         const newFriends = action.payload
         const updatedFriends = [...state.friends, ...newFriends].reduce((uniqueFriends, friend) => {
-          if (!uniqueFriends.find(f => f.id === friend.id)) {
+          if (!uniqueFriends.find(f => f.user.id === friend.user.id)) {
             uniqueFriends.push(friend)
           }
           return uniqueFriends
-        }, [] as User[])
+        }, [] as MyFriends[])
         return { ...state, friends: updatedFriends }
       }
 

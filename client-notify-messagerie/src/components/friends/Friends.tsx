@@ -20,6 +20,7 @@ const Friends: React.FC = () => {
     const [state, dispatch] = useReducer(friendsReducer, initialState)
     const { loading, friends, commonFriendsCount, selectedFriend, openPopUp, menuOpen, searchInDiscussion, usersSearch } = state
 
+    console.log(friends)
     const menuRef = useRef<HTMLUListElement>(null)
 
     const { loadMoreFriends } = useFetchFriends(user?.id, dispatch, state)

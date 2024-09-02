@@ -2,8 +2,9 @@ import axios from 'axios'
 import axiosInstance from '../api/axiosInstance'
 import API_ENDPOINTS from '../api/endpoints'
 import { ErrorResponse, User } from '../interfaces'
+import { MyFriends } from '../interfaces/MyFriends'
 
-const fetchFriends  = async (userId: string, pageNumber: number, pageSize:number): Promise<User[]> => {
+const fetchFriends  = async (userId: string, pageNumber: number, pageSize:number): Promise<MyFriends[]> => {
     try {
       const response = await axiosInstance.get(`${API_ENDPOINTS.GET_FRIENDS}/${userId}`,{params: {pageNumber, pageSize}})
       console.log(response)
@@ -24,7 +25,7 @@ const fetchFriends  = async (userId: string, pageNumber: number, pageSize:number
     try {
         const response = await axiosInstance.get(`${API_ENDPOINTS.GET_COMMON_FRIENDS}?userId=${userId}&friendId=${friendId}`)
         //console.log(response)
-        console.log(response.data)
+        //console.log(response.data)
         return response.data
     }catch(error) {
         if (axios.isAxiosError(error) && error.response) {

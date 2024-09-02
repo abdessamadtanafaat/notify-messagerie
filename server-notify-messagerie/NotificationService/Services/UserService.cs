@@ -12,11 +12,12 @@ namespace NotificationService.Services
     {
         private readonly IUserRepository _userRepository;
         private readonly IUserValidators _userValidators;
-
-        public UserService(IUserRepository userRepository, IUserValidators userValidators)
+        private readonly IFriendRepository _friendRepository;
+        public UserService(IUserRepository userRepository, IUserValidators userValidators, IFriendRepository friendRepository)
         {
             _userRepository = userRepository;
             _userValidators = userValidators;
+            _friendRepository = friendRepository;
         }
 
         public Task<IEnumerable<User>> GetAllUsersAsync()
@@ -134,88 +135,55 @@ namespace NotificationService.Services
 
             await _userRepository.DeleteUserAsync(id);
         }
-       
-        public async Task<IEnumerable<User>> GetFriendsAsync(string userId, int pageNumber=1, int pageSize=6)
+        public async Task<IEnumerable<MyFriends>> GetFriendsAsync(string userId, int pageNumber, int pageSize)
         {
             if (string.IsNullOrWhiteSpace(userId)) {
-                    throw new ArgumentNullException("User ID cannot be empty or whitespace."); 
+                throw new ArgumentNullException("User ID cannot be empty or whitespace."); 
             } 
             var user = await _userRepository.GetUserByIdAsync(userId); 
             if (user == null) {
                 throw new NotFoundException ($"User With ID '{userId}' not found."); 
             }
-            if (user.Friends == null){
-                return Enumerable.Empty<User>();
-            }
-            var friendsIds = user.Friends; 
-            var totalFriends = friendsIds.Count; 
-
-            if (pageNumber < 1)
-            {
-                pageNumber = 1; 
-            } 
-            if (pageSize < 1) {
-                pageSize = 1; 
-            }
-            var skip = (pageNumber - 1 ) * pageSize;
-
-            if (skip >= totalFriends) {
-                return Enumerable.Empty<User>(); 
-            }
-
-            var friendTasks = friendsIds
-                                .Skip(skip)
-                                .Take(pageSize)
-                                .Select(friendId => _userRepository.GetUserByIdAsync(friendId)).ToArray();
-            var friends = await Task.WhenAll(friendTasks); 
-
-            // var friendTasks = user.Friends.Select(friendId => _userRepository.GetUserByIdAsync(friendId)).ToArray(); 
-            // var friends = await Task.WhenAll(friendTasks); 
-
-                        var sortedFriends = friends
-                .OrderBy(u=> string.IsNullOrWhiteSpace(u.FirstName)? ' ' : u.FirstName.ToUpper()[0])
-                .ToList();
-
-            // in case some friend id do not correspond to existing users.
-            return sortedFriends.Where(friend=> friend != null); 
-        }
-        public async Task<IEnumerable<User>> GetCommonFriendsAsync(string userId, string friendId) {
-
-            if (string.IsNullOrWhiteSpace(userId) || string.IsNullOrWhiteSpace(friendId)) {
-                    throw new ArgumentNullException("User or Friend ID cannot be empty or whitespace."); 
-            } 
-            var user = await _userRepository.GetUserByIdAsync(userId); 
-            var friend = await _userRepository.GetUserByIdAsync(friendId); 
-            if (user == null || friend == null ) {
-                throw new NotFoundException ($"User With ID not found."); 
-            }
-
-            var userFriends = user.Friends ?? new List<string>(); 
-            var friendFriends = friend.Friends ?? new List<string>();
 
 
-            var commonFriendsIds = userFriends.Intersect(friendFriends);
+    // Fetch the friends from the repository
+    var friendDocuments = await _friendRepository.GetFriendsAsync(userId, pageNumber, pageSize);
 
-            var commonFriends = new List<User>(); 
 
-            foreach (var commonFriendId in commonFriendsIds) {
+    // Extract friend IDs
+    var friendIds = friendDocuments.Select(f => f.FriendId).ToList();
 
-                var commonFriend = await _userRepository.GetUserByIdAsync(commonFriendId); 
+    // Retrieve user details for friend IDs
+    var friendUsers = await _userRepository.GetUsersByIdsAsync(friendIds);
 
-                if (commonFriend != null) {
-                    commonFriends.Add(commonFriend);
-                }
-            }
+    // Combine friend details and other information into MyFriends objects
+    var myFriendsList = friendDocuments.Select(friendDoc =>
+    {
+        var friendUser = friendUsers.FirstOrDefault(u => u.Id == friendDoc.FriendId);
 
-            var sortedCommonFriends = commonFriends
-                .OrderBy(u=> string.IsNullOrWhiteSpace(u.FirstName)? ' ' : u.FirstName.ToUpper()[0])
-                .ToList();
+        return new MyFriends
+        {
+            User = friendUser,
+            CreatedAt = friendDoc.CreatedAt,
+            NbMutualFriends = friendDoc.NbMutualFriends,
+            MutualFriends = friendDoc.MutualFriends
+        };
+    }).ToList();
 
-            return sortedCommonFriends;
+    return myFriendsList;
+}
 
-        }
+        public async Task<IEnumerable<User>> GetMutualFriendsAsync(string userId, string friendId) {
 
+        var mutualFriendIds = await _friendRepository.GetMutualFriendsAsync(userId, friendId);
         
+        // Fetch user details for the mutual friend IDs
+        var mutualFriends = await _userRepository.GetUsersByIdsAsync(mutualFriendIds);
+        
+        return mutualFriends;
+
+        }
+   
         public async Task UnfriendAsync(string userId, string friendId)
         {
             var user = await _userRepository.GetUserByIdAsync(userId);
@@ -334,7 +302,7 @@ namespace NotificationService.Services
             return "Null";
         }
 
-        public async Task<List<User>> SearchUsersByFirstNameOrLastNameAsync(SearchRequest searchRequest)
+        public async Task<List<MyFriends>> SearchUsersByFirstNameOrLastNameAsync(SearchRequest searchRequest)
         {
             if (string.IsNullOrWhiteSpace(searchRequest.UserId))
             {
@@ -354,12 +322,43 @@ namespace NotificationService.Services
 
             if (friendIds == null || !friendIds.Any())
             {
-                return new List<User>();
+                return new List<MyFriends>();
             }
 
             var friendIdsArray = friendIds.ToArray();
-            var matchingFriends = await _userRepository.GetFriendsBySearchRequestAsync(friendIdsArray, searchRequest.SearchReq);
-            return matchingFriends;
+            var matchingUsers = await _userRepository.GetFriendsBySearchRequestAsync(friendIdsArray, searchRequest.SearchReq);
+
+    var myFriendsList = new List<MyFriends>();
+
+
+
+    // Get friend documents for matching users
+    var friendDocuments = await _friendRepository.GetFriendsAsync(searchRequest.UserId, 1, int.MaxValue); // Retrieve all friend documents for the user
+
+    foreach (var user in matchingUsers)
+    {
+        var friendDoc = friendDocuments.FirstOrDefault(f => f.FriendId == user.Id.ToString());
+
+        if (friendDoc != null)
+        {
+            var mutualFriendsIds = await _friendRepository.GetMutualFriendsAsync(searchRequest.UserId, user.Id.ToString());
+            var nbMutualFriends = mutualFriendsIds.Count;
+
+            var myFriend = new MyFriends
+            {
+                User = user,
+                CreatedAt = friendDoc.CreatedAt,
+                NbMutualFriends = nbMutualFriends,
+                MutualFriends = mutualFriendsIds
+            };
+
+            myFriendsList.Add(myFriend);
         }
+    }
+
+    return myFriendsList;
+   
+        }
+    
     }
 }

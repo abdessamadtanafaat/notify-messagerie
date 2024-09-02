@@ -93,9 +93,9 @@ namespace NotificationService.Controllers
 
         [HttpPost("search")]
         //[Authorize]
-        public async Task<IActionResult> Search([FromBody] SearchRequest searchRequest ) {
+        public async Task<IEnumerable<MyFriends>> Search([FromBody] SearchRequest searchRequest ) {
             var users = await _userService.SearchUsersByFirstNameOrLastNameAsync(searchRequest);
-            return Ok(users);
+            return users;
         }
 
         [HttpPost("addFriend")]
@@ -116,7 +116,7 @@ namespace NotificationService.Controllers
         // Accepte or refuse the invitation received . 
         [HttpGet("getFriends/{userId}")] 
         //[Authorize]
-        public async Task<IEnumerable<User>> GetFriends(string userId, [FromQuery] int pageNumber=1, [FromQuery] int pageSize=6) {
+        public async Task<IEnumerable<MyFriends>> GetFriends(string userId, [FromQuery] int pageNumber, [FromQuery] int pageSize) {
             var friends = await _userService.GetFriendsAsync(userId,pageNumber,pageSize); 
             return  friends ; 
         }
@@ -124,7 +124,7 @@ namespace NotificationService.Controllers
         [HttpGet("getCommonFriends")] 
         //[Authorize]
         public async Task<IEnumerable<User>> GetCommonFriends([FromQuery] string userId, [FromQuery]string friendId) {
-            var Commonfriends = await _userService.GetCommonFriendsAsync(userId,friendId); 
+            var Commonfriends = await _userService.GetMutualFriendsAsync(userId,friendId); 
             return  Commonfriends ; 
         }
     }
