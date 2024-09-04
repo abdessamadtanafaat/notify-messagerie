@@ -13,6 +13,7 @@ public class Friends
     public List<String>? MutualFriends{get; set;}
 
 
+        public Friends() { }
         public Friends(
         string userId,
         string friendId,

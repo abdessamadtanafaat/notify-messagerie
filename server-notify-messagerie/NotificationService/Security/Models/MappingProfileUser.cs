@@ -26,8 +26,10 @@ public class MappingProfile : Profile
             .ForMember(dest => dest.NbInvitations, opt => opt.MapFrom(src => src.NbInvitations))
             .ForMember(dest => dest.Work, opt => opt.MapFrom(src => src.Work))
             .ForMember(dest => dest.Education, opt => opt.MapFrom(src => src.Education))
-            .ForMember(dest => dest.City, opt => opt.MapFrom(src => src.City));
-
+            .ForMember(dest => dest.City, opt => opt.MapFrom(src => src.City))
+            .ForMember(dest => dest.Friends, opt => opt.MapFrom(src => src.Friends))
+            .ForMember(dest => dest.FriendRequestsSent, opt => opt.MapFrom(src => src.FriendRequestsSent))
+            .ForMember(dest => dest.FriendRequestsReceived, opt => opt.MapFrom(src => src.FriendRequestsReceived)); 
 
 
 

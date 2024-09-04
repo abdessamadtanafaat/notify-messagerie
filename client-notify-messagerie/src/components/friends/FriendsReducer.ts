@@ -1,6 +1,6 @@
 // src/components/FriendsReducer.ts
 import { User } from '../../interfaces'
-import { MyFriends,InvitationsFriends } from '../../interfaces/MyFriends'
+import { MyFriends, InvitationsFriends } from '../../interfaces/MyFriends'
 
 export type FriendsState = {
   loading: boolean;
@@ -11,7 +11,7 @@ export type FriendsState = {
   menuOpen: string | null;
   searchReq: string;
   usersSearch: MyFriends[];
-  invitations: InvitationsFriends[]; 
+  invitations: InvitationsFriends[];
   removeFriend: string;
   page: number;
   hasMore: boolean;
@@ -32,8 +32,9 @@ export type Action =
   | { type: 'REMOVE_FRIEND'; payload: string }
   | { type: 'SET_PAGE'; payload: number }
   | { type: 'SET_HAS_MORE'; payload: boolean }
-  | {type: 'ADD_MORE_USERS'; payload: MyFriends[] }
-  | {type: 'ADD_MORE_INVITATIONS'; payload: InvitationsFriends[] }; 
+  | { type: 'ADD_MORE_USERS'; payload: MyFriends[] }
+  | { type: 'ADD_MORE_INVITATIONS'; payload: InvitationsFriends[] }
+  | { type: 'REMOVE_INVITATIONS'; payload: string };
 
 const initialState: FriendsState = {
   loading: true,
@@ -54,16 +55,19 @@ const friendsReducer = (state: FriendsState, action: Action): FriendsState => {
   switch (action.type) {
     case 'SET_LOADING':
       return { ...state, loading: action.payload }
-      case 'SET_FRIENDS': {
-        const newFriends = action.payload
-        const updatedFriends = [...state.friends, ...newFriends].reduce((uniqueFriends, friend) => {
-          if (!uniqueFriends.find(f => f.user.id === friend.user.id)) {
+    case 'SET_FRIENDS': {
+      const newFriends = action.payload
+      const updatedFriends = [...state.friends, ...newFriends].reduce(
+        (uniqueFriends, friend) => {
+          if (!uniqueFriends.find((f) => f.user.id === friend.user.id)) {
             uniqueFriends.push(friend)
           }
           return uniqueFriends
-        }, [] as MyFriends[])
-        return { ...state, friends: updatedFriends }
-      }
+        },
+        [] as MyFriends[]
+      )
+      return { ...state, friends: updatedFriends }
+    }
 
     case 'SET_COMMON_FRIENDS_COUNT':
       return { ...state, commonFriendsCount: action.payload }
@@ -71,8 +75,8 @@ const friendsReducer = (state: FriendsState, action: Action): FriendsState => {
       return { ...state, selectedFriend: action.payload }
     case 'TOGGLE_POPUP':
       return { ...state, openPopUp: action.payload }
-      case 'TOGGLE_MESSAGE':
-        return { ...state, openPopUp: action.payload }
+    case 'TOGGLE_MESSAGE':
+      return { ...state, openPopUp: action.payload }
     case 'TOGGLE_MENU':
       return {
         ...state,
@@ -80,34 +84,49 @@ const friendsReducer = (state: FriendsState, action: Action): FriendsState => {
       }
     case 'SET_SEARCH_FRIENDS':
       return { ...state, searchReq: action.payload }
-      case 'SET_USERS_SEARCH':
-        return { ...state, usersSearch: action.payload, loading: false, page: 1 }
+    case 'SET_USERS_SEARCH':
+      return { ...state, usersSearch: action.payload, loading: false, page: 1 }
 
-        case 'SET_INVITATIONS':
-          return { ...state, invitations: action.payload, loading: false, page: 1 }
+    case 'SET_INVITATIONS':
+      return { ...state, invitations: action.payload, loading: false, page: 1 }
 
     case 'ADD_MORE_USERS':
-        return { ...state, usersSearch: [...state.usersSearch, ...action.payload], loading: false }
-
-
-        case 'ADD_MORE_INVITATIONS':
-          return { ...state, invitations: [...state.invitations, ...action.payload], loading: false }
-
+      return {
+        ...state,
+        usersSearch: [...state.usersSearch, ...action.payload],
+        loading: false,
+      }
+    case 'ADD_MORE_INVITATIONS':
+      return {
+        ...state,
+        invitations: [...state.invitations, ...action.payload],
+        loading: false,
+      }
     case 'REMOVE_FRIEND': {
       const updatedFriends = state.friends.filter(
         (friend) => friend.user.id !== action.payload
       )
       const updatedSearchUsers = state.usersSearch.filter(
         (user) => user.user.id !== action.payload
-    )
-      return { ...state, friends: updatedFriends, usersSearch: updatedSearchUsers }
+      )
+      return {
+        ...state,
+        friends: updatedFriends,
+        usersSearch: updatedSearchUsers,
+      }
     }
     case 'SET_PAGE':
       return { ...state, page: action.payload }
     case 'SET_HAS_MORE':
       return { ...state, hasMore: action.payload }
+    case 'REMOVE_INVITATIONS':
+      return {
+        ...state,
+        invitations: state.invitations.filter(
+          (invitation) => invitation.user.id !== action.payload
+        ),
+      }
 
-      
     default:
       return state
   }

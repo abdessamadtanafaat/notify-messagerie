@@ -22,4 +22,13 @@ export interface InvitationsFriends {
     status: string;
 }
 
-  
+export interface AnswerInvitationRequest {
+    userId: string;
+    friendId: string;
+    answerInvitationChoice: InvitationResponse;
+}
+
+export enum InvitationResponse {
+    Accepted = 0,
+    Rejected = 1,
+}

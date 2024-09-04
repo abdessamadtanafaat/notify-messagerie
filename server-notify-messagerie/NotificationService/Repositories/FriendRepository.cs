@@ -1,6 +1,7 @@
 using MongoDB.Driver;
 using NotificationService;
 using NotificationService.Exceptions;
+using NotificationService.Models;
 
 public class FriendReporsitory : IFriendRepository {
 
@@ -77,4 +78,18 @@ public class FriendReporsitory : IFriendRepository {
         return (int)count;
     }
 
+    public async Task AddFriendshipAsync (Friends friendship)
+    {
+        try {
+
+        await _friend.InsertOneAsync(friendship); 
+        }
+
+            catch (Exception ex)
+    {
+        // Handle exceptions here, e.g., log the error
+        throw new Exception("Error adding friendship to the collection", ex);
+    }
+    
+    }
 }

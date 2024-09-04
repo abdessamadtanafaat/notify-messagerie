@@ -37,7 +37,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     } catch (err) {
       console.error('Error fetching user data:',err)
     }
-
   }
   useEffect(() => {
     // Check localStorage for user data on initialization

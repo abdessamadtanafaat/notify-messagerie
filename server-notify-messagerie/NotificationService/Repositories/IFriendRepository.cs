@@ -1,3 +1,5 @@
+using NotificationService.Models;
+
 public interface IFriendRepository {
 
     Task<List<Friends>> GetFriendsAsync(string userId, int pageNumber = 1, int pageSize = 6); 
@@ -6,5 +8,9 @@ public interface IFriendRepository {
     Task<Friends> GetFriendshipAsync(string userId, string friendId); 
     Task RemoveFriendshipAsync(string userId, string friendId); 
     Task<int> GetTotalFriendsCountAsync(string userId); 
+
+    Task AddFriendshipAsync (Friends friendship); 
+
+
     
 }

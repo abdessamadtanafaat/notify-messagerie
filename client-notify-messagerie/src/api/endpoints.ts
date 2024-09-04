@@ -36,6 +36,7 @@
       GET_FRIENDS: 'User/friends',
       GET_INVITATIONS: 'User/invitationsFriends',
       GET_COMMON_FRIENDS: 'User/commonFriends',
+      INSWER_INVITATION: 'User/answerInvitation',
 //====================WEB SOCKET  =============P=====
 
       WEBSOCKET_URL: 'ws://localhost:5000/ws' 

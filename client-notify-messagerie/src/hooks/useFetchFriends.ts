@@ -45,5 +45,5 @@ export const useFetchFriends = (
             dispatch({type: 'SET_PAGE', payload: page + 1})
         }
     }
-    return { loadMoreFriends}
+    return { fetchFriends, loadMoreFriends}
 }

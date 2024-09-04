@@ -213,6 +213,7 @@ namespace NotificationService.Services
                 user.Friends.Remove(friendId);
             }
 
+            user.NbFriends--; 
                 
             await _friendRepository.RemoveFriendshipAsync(userId, friendId); 
             await _userRepository.UpdateUserAsync(userId, user);
@@ -254,7 +255,7 @@ namespace NotificationService.Services
             await _userRepository.UpdateUserAsync(friendId, friend);
         }
 
-        public async Task<string> AnswerInvitationAsync(string userId, string friendId, AnswerInvitationRequest.InvitationResponse answerInvitation)
+        public async Task<MyFriends> AnswerInvitationAsync(string userId, string friendId, AnswerInvitationRequest.InvitationResponse answerInvitation)
         {
             var user = await _userRepository.GetUserByIdAsync(userId);
 
@@ -267,8 +268,6 @@ namespace NotificationService.Services
             {
                 throw new NotFoundException($"User with ID '{friendId}' Not found");
             }
-
-
             if (user.Friends == null)
             {
                 user.Friends = new List<string>();
@@ -293,9 +292,53 @@ namespace NotificationService.Services
                         user.FriendRequestsReceived.Remove(friendId);
                         user.Friends.Add(friendId);
                         friend.Friends.Add(userId);
+                        user.NbInvitations--; 
+                        user.NbFriends++;  
+                        // Update users in the User collection
                         await _userRepository.UpdateUserAsync(userId, user);
                         await _userRepository.UpdateUserAsync(friendId, friend);
-                        return "You accepted the Invitation.";
+
+                        // Get mutual friends 
+                        var mutualFriends =  await _friendRepository.GetMutualFriendsAsync(userId, friendId); 
+                        var mutualFriendsCount = mutualFriends.Count; 
+
+                    var userFriendShip = new Friends
+                         {
+                    UserId = userId,
+                    FriendId = friendId,
+                    CreatedAt = DateTime.UtcNow,
+                    NbMutualFriends = mutualFriendsCount,
+                    MutualFriends = mutualFriends
+                         }; 
+                        // complete here the acceptation . 
+                        
+                var friendFriendship = new Friends
+                {
+                    UserId = friendId,
+                    FriendId = userId,
+                    CreatedAt = DateTime.UtcNow,
+                    NbMutualFriends = mutualFriendsCount,
+                    MutualFriends = mutualFriends
+                };
+                                // Add friendships to the Friends collection
+                await _friendRepository.AddFriendshipAsync(userFriendShip);
+                await _friendRepository.AddFriendshipAsync(friendFriendship);
+
+
+                                // Remove invitation after acceptance
+                await _invitationsRepository.RemoveInvitationAsync(friendId, userId);
+
+                // Create and return MyFriends object for the accepted friend
+                var myFriend = new MyFriends
+                {
+                    User = friend,
+                    CreatedAt = DateTime.UtcNow,
+                    NbMutualFriends = mutualFriendsCount,
+                    MutualFriends = mutualFriends
+                };
+
+                return myFriend;
+
                     }
                     break;
 
@@ -304,14 +347,19 @@ namespace NotificationService.Services
                     {
                         user.FriendRequestsReceived.Remove(friendId);
                         await _userRepository.UpdateUserAsync(userId, user);
+                        user.NbInvitations--; 
                         await _userRepository.UpdateUserAsync(friendId, friend);
-                        return "You rejected the Invitation.";
+
+                // Remove invitation after rejection
+                await _invitationsRepository.RemoveInvitationAsync(friendId, userId);
+                return new MyFriends(); // Return an empty MyFriends object
+                        //return "You rejected the Invitation.";
                     }
                     break;
             }
 
 
-            return "Null";
+            return null ;
         }
 
         public async Task<List<MyFriends>> SearchUsersByFirstNameOrLastNameAsync(SearchRequest searchRequest, int pageNumber, int pageSize)

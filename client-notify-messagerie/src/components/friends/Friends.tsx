@@ -29,15 +29,17 @@ const Friends: React.FC = () => {
     const userId = user?.id ?? ''
 
 
-    const { loadMoreFriends } = useFetchFriends(userId, dispatch, state)
+    const { fetchFriends, loadMoreFriends } = useFetchFriends(userId, dispatch, state)
     const { deleteFriend } = useDeleteFriend({ user, dispatch, selectedFriend })
     const { searchUsers, loadMoreUsers } = useSearchUsers(dispatch)
-
+    const { refreshUserData } = useAuth()
 
     useOutsideClick(menuRef, () => dispatch({ type: 'TOGGLE_MENU', payload: null }))
 
     const handleTabClick = (tab: 'friends' | 'requests' | 'invitations') => {
         setActiveTab(tab)
+        fetchFriends()
+        refreshUserData()
         console.log(tab)
         console.log(user?.nbFriends)
     }
@@ -92,98 +94,114 @@ const Friends: React.FC = () => {
     if (!user) return null
     return (
         <div className="flex h-screen pl-16">
-            {loading && state.page === 1 ? (
-                <FriendsSkeleton />
-            ) : (
-                <div className="flex-grow rounded-2xl pl-5 pr-5 pt-4 w-5 bg-white dark:bg-gray-800">
+
+            
+                <div className="flex-grow  rounded-2xl pl-5 pr-5 pt-4 w-5 bg-white dark:bg-gray-800">
                     <div className="flex items-center justify-between mb-6">
                         <h1 className="hidden md:block font-bold text-sm md:text-xl text-start dark:text-white mb-6">
                             Friends
                         </h1>
-
-                        <div className="flex items-center space-x-3">
+                        <div className="flex fixed ml-52 items-center space-x-4">
                             {/* Live span aligned to the left */}
                             <span className={`whitespace-nowrap rounded-full px-2.5 py-0.5 text-sm ${activeTab === 'friends' ? 'bg-blue-500 text-white' : 'bg-blue-100 text-blue-700'} cursor-pointer transition-colors duration-300`}
 
                                 onClick={() => handleTabClick('friends')}
                             >
-                                Friends {user.nbFriends}
+                                Friends {user.nbFriends > 0 ? user.nbFriends : ''}
                             </span>
                             <span
                                 className={`whitespace-nowrap rounded-full px-2.5 py-0.5 text-sm ${activeTab === 'requests' ? 'bg-blue-500 text-white' : 'bg-blue-100 text-blue-700'} cursor-pointer transition-colors duration-300`}
                                 onClick={() => handleTabClick('requests')}
                             >
-                                Friends Request {user.nbFriendRequests}
+                                Friends Request {user.nbFriendRequests > 0 ? user.nbFriendRequests : ''}
                             </span>
                             <span
                                 className={`whitespace-nowrap rounded-full px-2.5 py-0.5 text-sm ${activeTab === 'invitations' ? 'bg-blue-500 text-white' : 'bg-blue-100 text-blue-700'} cursor-pointer transition-colors duration-300`} onClick={() => handleTabClick('invitations')}
                             >
-                                Invitations {user.nbInvitations}
+                                Invitations {user.nbInvitations > 0 ? user.nbInvitations : ''}
                             </span>
                         </div>
-                        <div className="flex items-center space-x-2">
-                            {searchReq && (
-                                <ChevronLeft
-                                    className='w-4 h-4 text-blue-600 cursor-pointer dark:text-gray-400 dark:hover:text-white'
-                                    onClick={() => handleClearSearch()}
-                                />
-                            )}
-                            <div className="relative flex-shrink-0 ml-4">
-                                <input
-                                    type='text'
-                                    name='searchReq'
-                                    placeholder='Search'
-                                    value={searchReq}
-                                    onChange={(e) => handleSearchChange(e.target.value)}
-                                    className='w-full h-7 px-2 text-sm border-b-2 bg-gray-200 border-gray-600 rounded-2xl placeholder:font-light placeholder:text-gray-500 dark:bg-gray-700 focus:border-blue-400 focus:outline-none'
-                                />
-                                <SearchIcon className='w-3 h-3 text-blue-600 absolute right-2 top-1/2 transform -translate-y-1/2 dark:text-gray-400 dark:hover:text-white' />
-                            </div>
-                        </div>
-                    </div>
-                    {activeTab === 'friends' && (
-                        <>
-                            {searchReq ? (
-                                usersSearch?.length > 0 ? (
-                                    <FriendsList
-                                        users={usersSearch}
-                                        commonFriendsCount={commonFriendsCount}
-                                        toggleMenu={toggleMenu}
-                                        dispatch={dispatch}
-                                        menuRef={menuRef}
-                                        menuOpen={menuOpen}
-                                        loadMoreUsers={handleLoadMoreUsers}
-                                    />
-                                ) : (
-                                    <FriendsSkeleton />
-                                )
-                            ) : (
-                                <>
-                                    <FriendsList
-                                        users={friends}
-                                        commonFriendsCount={commonFriendsCount}
-                                        toggleMenu={toggleMenu}
-                                        dispatch={dispatch}
-                                        menuRef={menuRef}
-                                        menuOpen={menuOpen}
-                                        loadMoreFriends={loadMoreFriends}
-                                    />
-                                </>
+                        {activeTab === 'friends' && (
 
-                            )}
-                        </>
+                            <div className="flex items-center space-x-2">
+                                {searchReq && (
+                                    <ChevronLeft
+                                        className='w-4 h-4 text-blue-600 cursor-pointer dark:text-gray-400 dark:hover:text-white'
+                                        onClick={() => handleClearSearch()}
+                                    />
+                                )}
+                                <div className="relative flex-shrink-0 ml-4">
+                                    <input
+                                        type='text'
+                                        name='searchReq'
+                                        placeholder='Search'
+                                        value={searchReq}
+                                        onChange={(e) => handleSearchChange(e.target.value)}
+                                        className='w-full h-7 px-2 text-sm border-b-2 bg-gray-200 border-gray-600 rounded-2xl placeholder:font-light placeholder:text-gray-500 dark:bg-gray-700 focus:border-blue-400 focus:outline-none'
+                                    />
+                                    <SearchIcon className='w-3 h-3 text-blue-600 absolute right-2 top-1/2 transform -translate-y-1/2 dark:text-gray-400 dark:hover:text-white' />
+                                </div>
+                            </div>
+                        )}
+                        </div>
+                        
+
+                    {loading ? (
+                        <FriendsSkeleton /> // faire un  skleton just pour inside
+                    ) : (
+                        activeTab === 'friends' && (
+                            <>
+                                {searchReq ? (
+                                    usersSearch?.length > 0 ? (
+                                        <FriendsList
+                                            users={usersSearch}
+                                            commonFriendsCount={commonFriendsCount}
+                                            toggleMenu={toggleMenu}
+                                            dispatch={dispatch}
+                                            menuRef={menuRef}
+                                            menuOpen={menuOpen}
+                                            loadMoreUsers={handleLoadMoreUsers}
+                                        />
+                                    ) : (
+                                        <FriendsSkeleton />
+                                    )
+                                ) : (
+                                    <>
+                                        <FriendsList
+                                            users={friends}
+                                            commonFriendsCount={commonFriendsCount}
+                                            toggleMenu={toggleMenu}
+                                            dispatch={dispatch}
+                                            menuRef={menuRef}
+                                            menuOpen={menuOpen}
+                                            loadMoreFriends={loadMoreFriends}
+                                        />
+                                    </>
+
+                                )}
+                            </>
+                        )
                     )}
-                    {activeTab === 'requests' && (
-                        <FriendsRequests />
+                    {loading ? (
+                        <FriendsSkeleton />
+                    ) : (
+                        activeTab === 'requests' && (
+                            <FriendsRequests />
+                        )
+
                     )}
-                    {activeTab === 'invitations' && (
-                        <Invitations
-                        userId ={userId}
-                        />
+                    {loading ? (
+                        <FriendsSkeleton />
+                    ) : (
+                        activeTab === 'invitations' && (
+                            <Invitations
+                                userId={userId}
+                            />
+                        )
                     )}
 
                 </div>
-            )}
+            
             {openPopUp && selectedFriend && (
                 <DeleteFriendComponent
                     openPopUp={openPopUp}

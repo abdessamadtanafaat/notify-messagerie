@@ -4,6 +4,7 @@ import { toast } from 'react-toastify'
 import { User } from '../interfaces'
 import { Action } from '../components/friends/FriendsReducer'
 import userService from '../services/userService'
+import { useAuth } from '../contexte/AuthContext'
 
 interface UseDeleteFriendParams {
   user: User | null; // Replace `any` with the appropriate user type if available
@@ -12,7 +13,9 @@ interface UseDeleteFriendParams {
 }
 
 const useDeleteFriend = ({ user, dispatch, selectedFriend }: UseDeleteFriendParams) => {
-  const deleteFriend = useCallback(
+
+    const { refreshUserData } = useAuth()
+    const deleteFriend = useCallback(
     async (userId: string, friendId: string) => {
       if (selectedFriend) {
         try {
@@ -20,8 +23,7 @@ const useDeleteFriend = ({ user, dispatch, selectedFriend }: UseDeleteFriendPara
             const unfriendRequest = { userId, friendId }
             await userService.unfriend(unfriendRequest)
             
-            // Uncomment and use this if needed:
-             toast.success(`Successfully unfriended ${friendId} ${friendId}`)
+             //toast.success(`Successfully unfriended ${friendId} ${friendId}`)
 
             // Perform necessary actions after unfriending
             dispatch({ type: 'REMOVE_FRIEND', payload: friendId })
@@ -29,11 +31,12 @@ const useDeleteFriend = ({ user, dispatch, selectedFriend }: UseDeleteFriendPara
         } catch (err) {
           toast.error('Could not unfriend')
         } finally {
+          refreshUserData()
           dispatch({ type: 'TOGGLE_POPUP', payload: false })
         }
       }
     },
-    [user, dispatch, selectedFriend]
+    [selectedFriend, user, dispatch, refreshUserData]
   )
 
   return { deleteFriend }

@@ -1,8 +1,7 @@
 public class AnswerInvitationRequest {
     public string UserId {get; set;}
     public string FriendId {get; set;}
-    public InvitationResponse AnswerInvitation {get; set;}
-
+    public InvitationResponse AnswerInvitationChoice {get; set;}
     public enum InvitationResponse {
         Accepted, 
         rejected

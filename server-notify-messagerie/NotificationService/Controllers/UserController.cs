@@ -108,9 +108,12 @@ namespace NotificationService.Controllers
         // Accepte or refuse the invitation received . 
         [HttpPost("answerInvitation")] 
         //[Authorize]
-        public async Task<IActionResult> AnswerInvitation(AnswerInvitationRequest answerInvitationRequest) {
-            string message = await _userService.AnswerInvitationAsync(answerInvitationRequest.UserId, answerInvitationRequest.FriendId,answerInvitationRequest.AnswerInvitation ); 
-            return Ok(message); 
+        public async Task<MyFriends> AnswerInvitation([FromBody]AnswerInvitationRequest answerInvitationRequest) {
+
+            var MyInvitation = await _userService.AnswerInvitationAsync(answerInvitationRequest.UserId,
+             answerInvitationRequest.FriendId,
+             answerInvitationRequest.AnswerInvitationChoice ); 
+            return MyInvitation; 
         }
 
         // Accepte or refuse the invitation received . 

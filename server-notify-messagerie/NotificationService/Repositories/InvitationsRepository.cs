@@ -23,4 +23,25 @@ public class InvitationsRepository : IInvitationsRepository
         .Limit(pageSize)
         .ToListAsync();
     }
+    public async Task RemoveInvitationAsync (string friendId,  string userId) 
+    {
+        try {
+
+        var filter = Builders<Invitations>.Filter.Eq(inv=> inv.ReceiverId, userId) & 
+                     Builders<Invitations>.Filter.Eq(inv => inv.SenderId, friendId); 
+        var result = await _invitation.DeleteOneAsync(filter); 
+
+        if (result.DeletedCount == 0)
+        {
+            throw new Exception("Invitation not found or could not be deleted.");
+        }
+    }
+    catch (Exception ex)
+    {
+        // Handle exceptions here, e.g., log the error
+        throw new Exception("Error removing invitation from the collection", ex);
+    }
+
+        }
+
 }
