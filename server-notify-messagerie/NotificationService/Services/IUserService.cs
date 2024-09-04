@@ -15,10 +15,11 @@ namespace NotificationService.Services
         Task UpdateProfileAsync(string id, UpdateProfileReq updateProfileReq);
         Task<List<User>> GetUsersByIdsAsync(List<string> ids);
         Task UnfriendAsync(string userId, string friendId); 
-        Task<List<MyFriends>> SearchUsersByFirstNameOrLastNameAsync(SearchRequest searchRequest); 
+        Task<List<MyFriends>> SearchUsersByFirstNameOrLastNameAsync(SearchRequest searchRequest, int pageNumber=1, int pageSize=6); 
         Task AddFriendAsync(string userId, string friendId); 
         Task<string> AnswerInvitationAsync(string userId, string friendId, AnswerInvitationRequest.InvitationResponse answerInvitation); 
-Task<IEnumerable<MyFriends>> GetFriendsAsync(string userId, int pageNumber=1, int pageSize=6); 
+        Task<IEnumerable<MyFriends>> GetFriendsAsync(string userId, int pageNumber=1, int pageSize=6); 
+        Task<IEnumerable<MyInvitations>> GetInvitationsFriends(string userId, int pageNumber=1, int pageSize=6); 
         Task<IEnumerable<User>> GetMutualFriendsAsync(string userId, string friendId); 
 
     }

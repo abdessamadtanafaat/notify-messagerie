@@ -143,6 +143,7 @@ namespace NotificationService
             services.AddTransient<IMessageRepostory, MessageRepository>(); 
             services.AddTransient<IDiscussionRepository, DiscussionRepository>(); 
             services.AddTransient<IFriendRepository, FriendReporsitory>();
+            services.AddTransient<IInvitationsRepository, InvitationsRepository>();
 
 
             // Register UserValidator as a singleton or scoped service, depending on your needs

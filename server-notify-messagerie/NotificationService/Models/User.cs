@@ -53,6 +53,9 @@ public class User
         public List<String>? CommonFriends{get; set;}
         public   List<String>? FriendRequestsReceived {get; set;}
         public  List<String>? FriendRequestsSent {get; set;}
+        public int? NbFriends {get; set;}
+        public int? NbInvitations {get; set;}
+        public int? NbFriendRequests {get; set;}
 
 
     

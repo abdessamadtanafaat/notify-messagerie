@@ -30,7 +30,17 @@ public class AuthResponseDto
     public DateTime? PhoneNumberExpiredAt { get; set; }
     public String? AvatarUrl { get; set; }
     public String? About {get; set;}
-
     public String[]? Friends{get; set;}
+
+            public   List<String>? FriendRequestsReceived {get; set;}
+        public  List<String>? FriendRequestsSent {get; set;}
+        public int? NbFriends {get; set;}
+        public int? NbInvitations {get; set;}
+        public int? NbFriendRequests {get; set;}
+
+                public string? City { get; set; }
+        public string? Work { get; set; }
+        public string? Education { get; set; }
+        
 
 }

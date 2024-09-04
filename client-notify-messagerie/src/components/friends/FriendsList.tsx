@@ -13,11 +13,11 @@ interface UserListProps {
     dispatch: React.Dispatch<Action>
     menuRef: React.RefObject<HTMLUListElement>
     menuOpen: string | null
-    loadMoreFriends: ()=> void
-
+    loadMoreFriends?: ()=> void
+    loadMoreUsers?: ()=>void
 }
 
-const FriendsList: React.FC<UserListProps> = ({ users, commonFriendsCount, toggleMenu, dispatch, menuRef, menuOpen,loadMoreFriends }) => {
+const FriendsList: React.FC<UserListProps> = ({ users, toggleMenu, dispatch, menuRef, menuOpen,loadMoreFriends,loadMoreUsers }) => {
 
     const observerRef = useRef<HTMLDivElement>(null) 
     const { theme } = useThemeContext()
@@ -26,10 +26,16 @@ const FriendsList: React.FC<UserListProps> = ({ users, commonFriendsCount, toggl
         if(element){
             const { scrollTop, scrollHeight, clientHeight } = element 
             if (scrollHeight - scrollTop <= clientHeight + 50) {
-                loadMoreFriends()
+
+                if (loadMoreUsers) {
+                    loadMoreUsers()
+                } else if (loadMoreFriends){
+
+                    loadMoreFriends()
+                }
         }
     }
-    },[loadMoreFriends])
+    },[loadMoreFriends, loadMoreUsers])
 
     useEffect(()=>{
         const element = observerRef.current
@@ -45,7 +51,7 @@ const FriendsList: React.FC<UserListProps> = ({ users, commonFriendsCount, toggl
 
     return (
 <div
-  className="grid grid-cols-1 gap-2 lg:grid-cols-2 pb-9 lg:gap-4 border border-white rounded-md"
+  className="grid grid-cols-1 gap-2 lg:grid-cols-2 pb-9 lg:gap-4 border-white rounded-md"
   ref={observerRef}
     style={{ height: '75%', overflowY: 'auto' }}
 >
@@ -71,17 +77,17 @@ const FriendsList: React.FC<UserListProps> = ({ users, commonFriendsCount, toggl
             <div className="relative flex">
                 <button
                     onClick={() => {
-                        toggleMenu(friend.id)
-                        dispatch({ type: 'SET_SELECTED_FRIEND', payload: friend })
+                        toggleMenu(friend.user.id)
+                        dispatch({ type: 'SET_SELECTED_FRIEND', payload: friend.user })
                     }}
                     className="relative text-gray-500 dark:text-gray-300 focus:outline-none"
                 >
                     <Menu className="h-2.5 w-2.5" /> {/* Smaller icon size */}
                 </button>
-                {menuOpen === friend.id && (
+                {menuOpen === friend.user.id && (
                     <ul
                         ref={menuRef}
-                        className="absolute z-50 cursor-pointer right-0 mt-1 w-20 bg-white border border-gray-300 dark:bg-gray-700 dark:border-gray-500 rounded-md shadow-md transition-opacity duration-200 opacity-100"
+                        className="absolute z-50 cursor-pointer right-0 mt-1 w-20 bg-white border-gray-300 dark:bg-gray-700 dark:border-gray-500 rounded-md shadow-md transition-opacity duration-200 opacity-100"
                         style={{ top: '100%' }} // Moves the menu below the button
                     >
                         <li className="relative transition-transform transform hover:scale-95 group">

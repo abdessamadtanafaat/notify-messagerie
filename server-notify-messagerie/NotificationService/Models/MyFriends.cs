@@ -16,5 +16,6 @@ public class MyFriends
         MutualFriends = mutualFriends;
         NbMutualFriends = nbMutualFriends;
     }
+    
 
 }

@@ -93,8 +93,8 @@ namespace NotificationService.Controllers
 
         [HttpPost("search")]
         //[Authorize]
-        public async Task<IEnumerable<MyFriends>> Search([FromBody] SearchRequest searchRequest ) {
-            var users = await _userService.SearchUsersByFirstNameOrLastNameAsync(searchRequest);
+        public async Task<IEnumerable<MyFriends>> Search([FromBody] SearchRequest searchRequest, [FromQuery] int pageNumber, [FromQuery] int pageSize) {
+            var users = await _userService.SearchUsersByFirstNameOrLastNameAsync(searchRequest,pageNumber,pageSize);
             return users;
         }
 
@@ -114,18 +114,26 @@ namespace NotificationService.Controllers
         }
 
         // Accepte or refuse the invitation received . 
-        [HttpGet("getFriends/{userId}")] 
+        [HttpGet("friends/{userId}")] 
         //[Authorize]
         public async Task<IEnumerable<MyFriends>> GetFriends(string userId, [FromQuery] int pageNumber, [FromQuery] int pageSize) {
             var friends = await _userService.GetFriendsAsync(userId,pageNumber,pageSize); 
             return  friends ; 
         }
 
-        [HttpGet("getCommonFriends")] 
+        [HttpGet("commonFriends")] 
         //[Authorize]
         public async Task<IEnumerable<User>> GetCommonFriends([FromQuery] string userId, [FromQuery]string friendId) {
             var Commonfriends = await _userService.GetMutualFriendsAsync(userId,friendId); 
             return  Commonfriends ; 
         }
+
+
+        [HttpGet("invitationsFriends/{userId}")] 
+        //[Authorize]
+        public async Task<IEnumerable<MyInvitations>> GetInvitationsFriends(string userId, [FromQuery] int pageNumber, [FromQuery] int pageSize) {
+            var invitationsFriends = await _userService.GetInvitationsFriends(userId,pageNumber,pageSize); 
+            return  invitationsFriends ; 
+        }
     }
-}
+} 

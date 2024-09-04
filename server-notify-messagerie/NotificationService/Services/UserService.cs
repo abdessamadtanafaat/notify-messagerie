@@ -1,4 +1,5 @@
 ﻿using MongoDB.Bson;
+using MongoDB.Driver;
 using NotificationService.Exceptions;
 using NotificationService.Models;
 using NotificationService.Repositories;
@@ -13,12 +14,19 @@ namespace NotificationService.Services
         private readonly IUserRepository _userRepository;
         private readonly IUserValidators _userValidators;
         private readonly IFriendRepository _friendRepository;
-        public UserService(IUserRepository userRepository, IUserValidators userValidators, IFriendRepository friendRepository)
+        private readonly IInvitationsRepository _invitationsRepository; 
+        public UserService(IUserRepository userRepository,
+                           IUserValidators userValidators,
+                           IFriendRepository friendRepository,
+                           IInvitationsRepository invitationsRepository
+                           )
         {
             _userRepository = userRepository;
             _userValidators = userValidators;
             _friendRepository = friendRepository;
+            _invitationsRepository =  invitationsRepository; 
         }
+
 
         public Task<IEnumerable<User>> GetAllUsersAsync()
         {
@@ -170,6 +178,7 @@ namespace NotificationService.Services
         };
     }).ToList();
 
+
     return myFriendsList;
 }
 
@@ -203,6 +212,9 @@ namespace NotificationService.Services
             {
                 user.Friends.Remove(friendId);
             }
+
+                
+            await _friendRepository.RemoveFriendshipAsync(userId, friendId); 
             await _userRepository.UpdateUserAsync(userId, user);
         }
 
@@ -302,7 +314,7 @@ namespace NotificationService.Services
             return "Null";
         }
 
-        public async Task<List<MyFriends>> SearchUsersByFirstNameOrLastNameAsync(SearchRequest searchRequest)
+        public async Task<List<MyFriends>> SearchUsersByFirstNameOrLastNameAsync(SearchRequest searchRequest, int pageNumber, int pageSize)
         {
             if (string.IsNullOrWhiteSpace(searchRequest.UserId))
             {
@@ -326,7 +338,10 @@ namespace NotificationService.Services
             }
 
             var friendIdsArray = friendIds.ToArray();
-            var matchingUsers = await _userRepository.GetFriendsBySearchRequestAsync(friendIdsArray, searchRequest.SearchReq);
+            var matchingUsers = await _userRepository.GetFriendsBySearchRequestAsync(friendIdsArray.ToArray(),
+                                                                                     searchRequest.SearchReq,
+                                                                                    pageNumber,
+                                                                                    pageSize);
 
     var myFriendsList = new List<MyFriends>();
 
@@ -337,7 +352,8 @@ namespace NotificationService.Services
 
     foreach (var user in matchingUsers)
     {
-        var friendDoc = friendDocuments.FirstOrDefault(f => f.FriendId == user.Id.ToString());
+        
+        var friendDoc = await _friendRepository.GetFriendshipAsync(searchRequest.UserId, user.Id);
 
         if (friendDoc != null)
         {
@@ -360,5 +376,41 @@ namespace NotificationService.Services
    
         }
     
+        public async Task<IEnumerable<MyInvitations>> GetInvitationsFriends(string userId, int pageNumber=1, int pageSize=6) {
+
+                        if (string.IsNullOrWhiteSpace(userId)) {
+                throw new ArgumentNullException("User ID cannot be empty or whitespace."); 
+            } 
+            var user = await _userRepository.GetUserByIdAsync(userId); 
+            if (user == null) {
+                throw new NotFoundException ($"User With ID '{userId}' not found."); 
+            }
+
+
+    var invitationsDocuments = await _invitationsRepository.GetInvitationsAsync(userId, pageNumber, pageSize);
+
+
+    var invitationsSendersIds = invitationsDocuments.Select(f => f.SenderId).ToList();
+
+    var invitationsUsers = await _userRepository.GetUsersByIdsAsync(invitationsSendersIds);
+
+    var myInvitationsList = invitationsDocuments.Select(invitationDoc =>
+    {
+        var InvitationUser = invitationsUsers.FirstOrDefault(i => i.Id == invitationDoc.SenderId);
+
+        return new MyInvitations
+        {
+            User = InvitationUser,
+            SentAt = invitationDoc.SentAt,
+            MutualFriends = invitationDoc.MutualFriends,
+            Status = invitationDoc.Status,
+            NbMutualFriends = invitationDoc.NbMutualFriends,
+        };
+    }).ToList();
+
+    return myInvitationsList;
+
+        }
+
     }
 }

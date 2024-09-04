@@ -122,26 +122,18 @@ namespace NotificationService.Repositories
         }
 
 
-        public async Task<List<User>> GetFriendsBySearchRequestAsync(String[] friendIds, string searchRequest)
+        public async Task<List<User>> GetFriendsBySearchRequestAsync(String[] friendIds, string searchRequest,int pageNumber, int pageSize)
         {
-    // Create a filter for matching friend IDs
-    var friendIdsFilter = Builders<User>.Filter.In(u => u.Id, friendIds);
+                var filter = Builders<User>.Filter.In(u => u.Id, friendIds) &
+                 (Builders<User>.Filter.Regex(u => u.FirstName, new BsonRegularExpression(searchRequest, "i")) |
+                  Builders<User>.Filter.Regex(u => u.LastName, new BsonRegularExpression(searchRequest, "i")));
 
-    // Create a filter for matching the search request in first name or last name
-    var searchFilter = Builders<User>.Filter.Or(
-        Builders<User>.Filter.Regex(u => u.FirstName, new BsonRegularExpression(searchRequest, "i")),
-        Builders<User>.Filter.Regex(u => u.LastName, new BsonRegularExpression(searchRequest, "i"))
-    );
+    return await _users
+        .Find(filter)
+        .Skip((pageNumber - 1) * pageSize)
+        .Limit(pageSize)
+        .ToListAsync();
 
-    // Combine the filters with AND
-    var combinedFilter = Builders<User>.Filter.And(friendIdsFilter, searchFilter);
-
-    // Execute the query and return the results
-    var matchingFriends = await _users
-                                        .Find(combinedFilter)
-                                        .ToListAsync();
-
-    return matchingFriends;
         }
     }
 }

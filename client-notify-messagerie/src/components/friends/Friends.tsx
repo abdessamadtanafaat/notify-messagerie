@@ -1,4 +1,4 @@
-import React, { useRef, useReducer, useCallback } from 'react'
+import React, { useRef, useReducer, useCallback, useState } from 'react'
 import { useAuth } from '../../contexte/AuthContext'
 import { ChevronLeft, SearchIcon } from 'lucide-react'
 import FriendsSkeleton from './FriendsSkeleton'
@@ -10,6 +10,9 @@ import { useSearchUsers } from '../../hooks/useSearchUsers'
 import useDeleteFriend from '../../hooks/useDeleteFriend'
 import FriendsList from './FriendsList'
 import { debounce } from '../../utils/debounce'
+import FriendsRequests from './FriendsRequests'
+import Invitations from './Invitations'
+// import { useFetchInvitations } from '../../hooks/useFetchInvitations'
 
 
 
@@ -18,17 +21,26 @@ import { debounce } from '../../utils/debounce'
 const Friends: React.FC = () => {
     const { user } = useAuth()
     const [state, dispatch] = useReducer(friendsReducer, initialState)
-    const { loading, friends, commonFriendsCount, selectedFriend, openPopUp, menuOpen, searchInDiscussion, usersSearch } = state
+    const { loading, friends, commonFriendsCount, selectedFriend, openPopUp, menuOpen, searchReq, usersSearch } = state
 
-    console.log(friends)
+    const [activeTab, setActiveTab] = useState<'friends' | 'requests' | 'invitations'>('friends')
+
     const menuRef = useRef<HTMLUListElement>(null)
+    const userId = user?.id ?? ''
 
-    const { loadMoreFriends } = useFetchFriends(user?.id, dispatch, state)
 
-    //useFetchFriends(user?.id, dispatch, state)
-    useOutsideClick(menuRef, () => dispatch({ type: 'TOGGLE_MENU', payload: null }))
-    const { searchUsers } = useSearchUsers({ user, dispatch })
+    const { loadMoreFriends } = useFetchFriends(userId, dispatch, state)
     const { deleteFriend } = useDeleteFriend({ user, dispatch, selectedFriend })
+    const { searchUsers, loadMoreUsers } = useSearchUsers(dispatch)
+
+
+    useOutsideClick(menuRef, () => dispatch({ type: 'TOGGLE_MENU', payload: null }))
+
+    const handleTabClick = (tab: 'friends' | 'requests' | 'invitations') => {
+        setActiveTab(tab)
+        console.log(tab)
+        console.log(user?.nbFriends)
+    }
     // Create a debounced version of the search function
     const debouncedSearch = useCallback(
         debounce((value: string) => {
@@ -41,18 +53,26 @@ const Friends: React.FC = () => {
         [searchUsers, user]
     )
 
+
+    const handleLoadMoreUsers = useCallback(() => {
+        if (userId) {
+            loadMoreUsers(userId, searchReq)
+        }
+    }, [userId, searchReq, loadMoreUsers])
+
     // Handle search input change and debounce
     const handleSearchChange = useCallback(
         (value: string) => {
             console.log('Handle search change:', value) // Debugging line
-            dispatch({ type: 'SET_SEARCH_DISCUSSION', payload: value })
+            dispatch({ type: 'SET_SEARCH_FRIENDS', payload: value })
+
             debouncedSearch(value)
         },
         [debouncedSearch, dispatch]
     )
 
     const handleClearSearch = useCallback(() => {
-        dispatch({ type: 'SET_SEARCH_DISCUSSION', payload: '' })
+        dispatch({ type: 'SET_SEARCH_FRIENDS', payload: '' })
     }, [dispatch])
 
     const toggleMenu = useCallback(
@@ -68,7 +88,7 @@ const Friends: React.FC = () => {
         }
     }
 
-    
+
     if (!user) return null
     return (
         <div className="flex h-screen pl-16">
@@ -80,25 +100,29 @@ const Friends: React.FC = () => {
                         <h1 className="hidden md:block font-bold text-sm md:text-xl text-start dark:text-white mb-6">
                             Friends
                         </h1>
-{/* <span
-  className="whitespace-nowrap rounded-full border border-purple-500 px-2.5 py-0.5 text-sm text-purple-700"
->
-  Live
-</span> */}
-            <div className="flex items-center space-x-2">
-              {/* Live span aligned to the left */}
-              <span className="whitespace-nowrap rounded-full bg-blue-100 px-2.5 py-0.5 text-sm text-blue-700">
-                Fiends
-              </span>
-              <span className="whitespace-nowrap rounded-full bg-blue-100 px-2.5 py-0.5 text-sm text-blue-700">
-              Friends Request
-              </span>
-              <span className="whitespace-nowrap rounded-full bg-blue-100 px-2.5 py-0.5 text-sm text-blue-700">
-              Invitations
-              </span>
-            </div>
+
+                        <div className="flex items-center space-x-3">
+                            {/* Live span aligned to the left */}
+                            <span className={`whitespace-nowrap rounded-full px-2.5 py-0.5 text-sm ${activeTab === 'friends' ? 'bg-blue-500 text-white' : 'bg-blue-100 text-blue-700'} cursor-pointer transition-colors duration-300`}
+
+                                onClick={() => handleTabClick('friends')}
+                            >
+                                Friends {user.nbFriends}
+                            </span>
+                            <span
+                                className={`whitespace-nowrap rounded-full px-2.5 py-0.5 text-sm ${activeTab === 'requests' ? 'bg-blue-500 text-white' : 'bg-blue-100 text-blue-700'} cursor-pointer transition-colors duration-300`}
+                                onClick={() => handleTabClick('requests')}
+                            >
+                                Friends Request {user.nbFriendRequests}
+                            </span>
+                            <span
+                                className={`whitespace-nowrap rounded-full px-2.5 py-0.5 text-sm ${activeTab === 'invitations' ? 'bg-blue-500 text-white' : 'bg-blue-100 text-blue-700'} cursor-pointer transition-colors duration-300`} onClick={() => handleTabClick('invitations')}
+                            >
+                                Invitations {user.nbInvitations}
+                            </span>
+                        </div>
                         <div className="flex items-center space-x-2">
-                            {searchInDiscussion && (
+                            {searchReq && (
                                 <ChevronLeft
                                     className='w-4 h-4 text-blue-600 cursor-pointer dark:text-gray-400 dark:hover:text-white'
                                     onClick={() => handleClearSearch()}
@@ -107,9 +131,9 @@ const Friends: React.FC = () => {
                             <div className="relative flex-shrink-0 ml-4">
                                 <input
                                     type='text'
-                                    name='searchInDiscussion'
+                                    name='searchReq'
                                     placeholder='Search'
-                                    value={searchInDiscussion}
+                                    value={searchReq}
                                     onChange={(e) => handleSearchChange(e.target.value)}
                                     className='w-full h-7 px-2 text-sm border-b-2 bg-gray-200 border-gray-600 rounded-2xl placeholder:font-light placeholder:text-gray-500 dark:bg-gray-700 focus:border-blue-400 focus:outline-none'
                                 />
@@ -117,39 +141,47 @@ const Friends: React.FC = () => {
                             </div>
                         </div>
                     </div>
-
-                    {searchInDiscussion ? (
-
-                        usersSearch?.length > 0 ? (
-                            <FriendsList
-                                users={usersSearch}
-                                commonFriendsCount={commonFriendsCount}
-                                toggleMenu={toggleMenu}
-                                dispatch={dispatch}
-                                menuRef={menuRef}
-                                menuOpen={menuOpen}
-                                loadMoreFriends={loadMoreFriends}
-
-                            />
-
-                        ) : (
-                            <p className="text-gray-500 dark:text-gray-400 text-sm text-center">No users found.</p>
-                        )
-                    ) : (
-
+                    {activeTab === 'friends' && (
                         <>
-                            <FriendsList
-                                users={friends}
-                                commonFriendsCount={commonFriendsCount}
-                                toggleMenu={toggleMenu}
-                                dispatch={dispatch}
-                                menuRef={menuRef}
-                                menuOpen={menuOpen}
-                                loadMoreFriends={loadMoreFriends}
-                            />
+                            {searchReq ? (
+                                usersSearch?.length > 0 ? (
+                                    <FriendsList
+                                        users={usersSearch}
+                                        commonFriendsCount={commonFriendsCount}
+                                        toggleMenu={toggleMenu}
+                                        dispatch={dispatch}
+                                        menuRef={menuRef}
+                                        menuOpen={menuOpen}
+                                        loadMoreUsers={handleLoadMoreUsers}
+                                    />
+                                ) : (
+                                    <FriendsSkeleton />
+                                )
+                            ) : (
+                                <>
+                                    <FriendsList
+                                        users={friends}
+                                        commonFriendsCount={commonFriendsCount}
+                                        toggleMenu={toggleMenu}
+                                        dispatch={dispatch}
+                                        menuRef={menuRef}
+                                        menuOpen={menuOpen}
+                                        loadMoreFriends={loadMoreFriends}
+                                    />
+                                </>
+
+                            )}
                         </>
-                            
                     )}
+                    {activeTab === 'requests' && (
+                        <FriendsRequests />
+                    )}
+                    {activeTab === 'invitations' && (
+                        <Invitations
+                        userId ={userId}
+                        />
+                    )}
+
                 </div>
             )}
             {openPopUp && selectedFriend && (

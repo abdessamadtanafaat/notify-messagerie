@@ -20,7 +20,7 @@ namespace NotificationService.Repositories
         Task<User> GetuserByTokenPhoneNumber(int tokenPhoneNumber);
         Task<User> GetUserByPhoneNumberVerifiedAsync (string phoneNumber); 
         Task<List<User>> GetUsersByIdsAsync(List<string> ids);
-        Task<List<User>> GetFriendsBySearchRequestAsync(String[] friendIds, string searchRequest);
+        Task<List<User>> GetFriendsBySearchRequestAsync(String[] friendIds, string searchRequest,int pageNumber, int pageSize);
 
 
 

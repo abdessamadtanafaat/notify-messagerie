@@ -18,5 +18,8 @@ public class UserDto {
         public List<String>? Friends {get; set;}
         public   List<String>? FriendRequestsReceived {get; set;}
         public  List<String>? FriendRequestsSent {get; set;}
+                public int? NbFriends {get; set;}
+        public int? NbInvitations {get; set;}
+        public int? NbFriendRequests {get; set;}
 
 }

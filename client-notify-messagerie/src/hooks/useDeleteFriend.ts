@@ -19,7 +19,7 @@ const useDeleteFriend = ({ user, dispatch, selectedFriend }: UseDeleteFriendPara
           if (user) {
             const unfriendRequest = { userId, friendId }
             await userService.unfriend(unfriendRequest)
-
+            
             // Uncomment and use this if needed:
              toast.success(`Successfully unfriended ${friendId} ${friendId}`)
 

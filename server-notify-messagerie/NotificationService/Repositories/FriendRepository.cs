@@ -1,5 +1,6 @@
 using MongoDB.Driver;
 using NotificationService;
+using NotificationService.Exceptions;
 
 public class FriendReporsitory : IFriendRepository {
 
@@ -23,7 +24,7 @@ public class FriendReporsitory : IFriendRepository {
         .ToListAsync();
     }
 
-public async Task<List<string>> GetFriendsIdsAsync(string userId)
+    public async Task<List<string>> GetFriendsIdsAsync(string userId)
 {
     var friends = await _friend
         .Find(f => f.UserId == userId)
@@ -33,7 +34,7 @@ public async Task<List<string>> GetFriendsIdsAsync(string userId)
 }
 
 
-        public async Task<List<string>> GetMutualFriendsAsync(string userId1, string userId2)
+    public async Task<List<string>> GetMutualFriendsAsync(string userId1, string userId2)
     {
         // Get friend IDs for both users
         var friendsUser1 = await GetFriendsIdsAsync(userId1);
@@ -45,5 +46,35 @@ public async Task<List<string>> GetFriendsIdsAsync(string userId)
         return mutualFriends;
     }
 
+    public async Task<Friends> GetFriendshipAsync(string userId, string friendId)
+{
+    return await _friend
+        .Find(f => f.UserId == userId && f.FriendId == friendId)
+        .FirstOrDefaultAsync();
+}
+
+    public async Task RemoveFriendshipAsync(string userId, string friendId) {
+        var filter = Builders<Friends>.Filter.And (
+            Builders<Friends>.Filter.Eq(f=> f.UserId, userId), 
+            Builders<Friends>.Filter.Eq(f=> f.FriendId, friendId)
+        ); 
+
+        var result  = await _friend.DeleteOneAsync(filter);
+
+        if (result.DeletedCount == 0 ) {
+                        throw new NotFoundException("Friendship not found or already removed.");
+        }
+    }
+    public async Task<int> GetTotalFriendsCountAsync(string userId)
+    {
+        // Count the total number of friends where the userId is either in the UserId field or in the FriendId field
+        var filter = Builders<Friends>.Filter.Or(
+            Builders<Friends>.Filter.Eq(f => f.UserId, userId),
+            Builders<Friends>.Filter.Eq(f => f.FriendId, userId)
+        );
+
+        var count = await _friend.CountDocumentsAsync(filter);
+        return (int)count;
+    }
 
 }

@@ -1,38 +1,62 @@
-import React, { useCallback } from 'react'
+import { useState, useCallback } from 'react'
 import userService from '../services/userService'
 import { Action } from '../components/friends/FriendsReducer'
-import { User } from '../interfaces'
+
+export const useSearchUsers = (dispatch: React.Dispatch<Action>) => {
+    const [page, setPage] = useState(1)
+    const [loading, setLoading] = useState(false)
+    const [hasMoreUsers, setHasMoreUsers] = useState(true)
 
 
-interface UserSearchFriendParams{
-    user: User | null
-    dispatch: React.Dispatch<Action>
+    const searchUsers = useCallback(
+        async (userId: string, searchReq: string) => {
+            setLoading(true)
+            try {
+                const searchRequest = { userId, searchReq }
+
+                const result = await userService.searchUsersByFirstNameOrLastName(searchRequest, 1, 10)
+                dispatch({ type: 'SET_USERS_SEARCH', payload: result })
+                setPage(2) // Next page to load will be 2
+
+                if (result.length < 10) {
+                    setHasMoreUsers(false)
+                }
+
+            } catch (error) {
+                console.error(error)
+            } finally {
+                setLoading(false)
+            }
+        },
+        [dispatch]
+    )
+
+    const loadMoreUsers = useCallback(
+        async (userId: string,searchReq: string) => {
+            if (loading || !hasMoreUsers) return 
+            console.log('Searching with userId:', userId)
+            if (!loading) {
+                setLoading(true)
+                try {
+                    const searchRequest = { userId, searchReq }
+
+                    const result = await userService.searchUsersByFirstNameOrLastName(searchRequest, page, 10)
+                    dispatch({ type: 'ADD_MORE_USERS', payload: result }) // Appends to current search results
+                    setPage(prev => prev + 1)
+
+                    if (result.length < 10) {
+                        setHasMoreUsers(false)
+                    }
+
+                } catch (error) {
+                    console.error(error)
+                } finally {
+                    setLoading(false)
+                }
+            }
+        },
+        [loading, hasMoreUsers, page, dispatch]
+    )
+
+    return { searchUsers, loadMoreUsers, loading }
 }
-export const useSearchUsers=({user, dispatch}: UserSearchFriendParams) =>  {
-
-            const searchUsers  = useCallback (
-                    async (userId: string, searchReq: string)   =>{
-                        if (user) {
-                            try{
-                                const searchRequest = { userId, searchReq }
-                                const response = await userService.searchUsersByFirstNameOrLastName(searchRequest)
-                                dispatch({ type: 'SET_USERS_SEARCH', payload: response })
-                            }catch(error){
-                                console.error('Failed to fetch users.')
-                                dispatch({ type: 'SET_USERS_SEARCH', payload: [] })
-                            }
-                            finally {
-                                dispatch({ type: 'SET_LOADING', payload: false })
-                            }
-                        }
-                         else {
-                            dispatch({ type: 'SET_USERS_SEARCH', payload: [] })
-                        }
-                    },
-                    [user, dispatch]
-            )
-            return {searchUsers}
-    }
-    
-
-

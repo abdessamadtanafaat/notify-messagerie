@@ -7,7 +7,6 @@ import { MyFriends } from '../interfaces/MyFriends'
 
 
 
-
 export const useFetchFriends = (
     userId: string | undefined,
     dispatch: React.Dispatch<Action>,

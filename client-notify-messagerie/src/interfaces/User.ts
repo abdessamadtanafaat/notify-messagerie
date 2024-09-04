@@ -25,6 +25,9 @@ export interface CommonUserData {
     city: string; 
     work: string; 
     education: string;
+    nbFriends: number; 
+    nbInvitations: number; 
+    nbFriendRequests: number;
   }
   
   // User interface (local database)

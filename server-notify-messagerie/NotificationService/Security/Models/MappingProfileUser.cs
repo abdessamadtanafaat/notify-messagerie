@@ -20,7 +20,16 @@ public class MappingProfile : Profile
             .ForMember(dest => dest.TokenPhone, opt => opt.MapFrom(src => src.TokenPhone))
             .ForMember(dest => dest.PhoneNumberExpiredAt, opt => opt.MapFrom(src => src.PhoneNumberExpiredAt))
             .ForMember(dest => dest.AvatarUrl, opt => opt.MapFrom(src => src.AvatarUrl))
-            .ForMember(dest => dest.TokenEmail, opt => opt.MapFrom(src => src.TokenEmail));
-            
+            .ForMember(dest => dest.TokenEmail, opt => opt.MapFrom(src => src.TokenEmail))
+            .ForMember(dest => dest.NbFriends, opt => opt.MapFrom(src => src.NbFriends))
+            .ForMember(dest => dest.NbFriendRequests, opt => opt.MapFrom(src => src.NbFriendRequests))
+            .ForMember(dest => dest.NbInvitations, opt => opt.MapFrom(src => src.NbInvitations))
+            .ForMember(dest => dest.Work, opt => opt.MapFrom(src => src.Work))
+            .ForMember(dest => dest.Education, opt => opt.MapFrom(src => src.Education))
+            .ForMember(dest => dest.City, opt => opt.MapFrom(src => src.City));
+
+
+
+
     }
 }
