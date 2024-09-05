@@ -1,6 +1,6 @@
 // src/components/FriendsReducer.ts
 import { User } from '../../interfaces'
-import { MyFriends, InvitationsFriends } from '../../interfaces/MyFriends'
+import { MyFriends, InvitationsFriends, FriendsRequests } from '../../interfaces/MyFriends'
 
 export type FriendsState = {
   loading: boolean;
@@ -12,6 +12,7 @@ export type FriendsState = {
   searchReq: string;
   usersSearch: MyFriends[];
   invitations: InvitationsFriends[];
+  friendsRequests: FriendsRequests[]; 
   removeFriend: string;
   page: number;
   hasMore: boolean;
@@ -34,8 +35,10 @@ export type Action =
   | { type: 'SET_HAS_MORE'; payload: boolean }
   | { type: 'ADD_MORE_USERS'; payload: MyFriends[] }
   | { type: 'ADD_MORE_INVITATIONS'; payload: InvitationsFriends[] }
-  | { type: 'REMOVE_INVITATIONS'; payload: string };
-
+  | {type: 'ADD_MORE_FRIENDS_REQUESTS'; payload: FriendsRequests[]}
+  | { type: 'REMOVE_INVITATIONS'; payload: string }
+  | {type: 'REMOVE_FRIEND_REQUEST'; payload: string }
+  | {type: 'SET_FRIENDS_REQUESTS'; payload: FriendsRequests[]}
 const initialState: FriendsState = {
   loading: true,
   friends: [],
@@ -46,6 +49,7 @@ const initialState: FriendsState = {
   searchReq: '',
   usersSearch: [],
   invitations: [],
+  friendsRequests:[],
   removeFriend: '',
   page: 1,
   hasMore: true,
@@ -89,7 +93,8 @@ const friendsReducer = (state: FriendsState, action: Action): FriendsState => {
 
     case 'SET_INVITATIONS':
       return { ...state, invitations: action.payload, loading: false, page: 1 }
-
+    case 'SET_FRIENDS_REQUESTS': 
+      return {...state, friendsRequests: action.payload, loading: false, page: 1}
     case 'ADD_MORE_USERS':
       return {
         ...state,
@@ -102,6 +107,15 @@ const friendsReducer = (state: FriendsState, action: Action): FriendsState => {
         invitations: [...state.invitations, ...action.payload],
         loading: false,
       }
+
+    case 'ADD_MORE_FRIENDS_REQUESTS':
+        return {
+          ...state,
+          friendsRequests: [...state.friendsRequests, ...action.payload],
+          loading: false,
+        }
+
+      
     case 'REMOVE_FRIEND': {
       const updatedFriends = state.friends.filter(
         (friend) => friend.user.id !== action.payload
@@ -126,6 +140,14 @@ const friendsReducer = (state: FriendsState, action: Action): FriendsState => {
           (invitation) => invitation.user.id !== action.payload
         ),
       }
+      case 'REMOVE_FRIEND_REQUEST':
+        return {
+          ...state,
+          friendsRequests: state.invitations.filter(
+            (friendsRequest) => friendsRequest.user.id !== action.payload
+          ),
+        }
+        
 
     default:
       return state

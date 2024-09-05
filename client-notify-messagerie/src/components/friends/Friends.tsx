@@ -147,7 +147,7 @@ const Friends: React.FC = () => {
                         
 
                     {loading ? (
-                        <FriendsSkeleton /> // faire un  skleton just pour inside
+                        <FriendsSkeleton />
                     ) : (
                         activeTab === 'friends' && (
                             <>
@@ -186,7 +186,9 @@ const Friends: React.FC = () => {
                         <FriendsSkeleton />
                     ) : (
                         activeTab === 'requests' && (
-                            <FriendsRequests />
+                            <FriendsRequests
+                            userId={userId}
+                            />
                         )
 
                     )}

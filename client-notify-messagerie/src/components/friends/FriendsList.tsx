@@ -26,11 +26,9 @@ const FriendsList: React.FC<UserListProps> = ({ users, toggleMenu, dispatch, men
         if (element) {
             const { scrollTop, scrollHeight, clientHeight } = element
             if (scrollHeight - scrollTop <= clientHeight + 50) {
-
                 if (loadMoreUsers) {
                     loadMoreUsers()
                 } else if (loadMoreFriends) {
-
                     loadMoreFriends()
                 }
             }
@@ -51,9 +49,11 @@ const FriendsList: React.FC<UserListProps> = ({ users, toggleMenu, dispatch, men
 
     return (
         <div
-            className="grid grid-cols-1 gap-2 lg:grid-cols-2 pb-9 lg:gap-4 border-white rounded-md"
+            className="grid grid-cols-1 gap-2 lg:grid-cols-2 pb-9 lg:gap-4 border-white rounded-md overflow-y-hidden"
             ref={observerRef}
             style={{ height: '75%', overflowY: 'auto' }}
+            //style={{overflowY: 'auto' }}
+
         >
             {users.length === 0 ? (
                 <div className="flex justify-center items-center text-gray-500 dark:text-gray-300 h-full">
