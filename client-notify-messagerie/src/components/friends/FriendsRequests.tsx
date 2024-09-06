@@ -7,6 +7,7 @@ import friendService from '../../services/friendService'
 import { useAuth } from '../../contexte/AuthContext'
 import { CancelledFriendRequest } from '../../interfaces/MyFriends'
 import { useFetchFriendsRequest } from '../../hooks/useFetchFriendsRequest'
+import LoadingSpinner from '../common/LoadingPage'
 //import { useFetchFriends } from '../../hooks/useFetchFriends'
 interface FriendsRequestListProps {
     userId: string
@@ -18,10 +19,10 @@ const FriendsRequest: React.FC<FriendsRequestListProps> = ({ userId }) => {
     const { theme } = useThemeContext()
     const { refreshUserData } = useAuth()
     const [state, dispatch] = useReducer(friendsReducer, initialState)
-    const { friendsRequests } = state
+    const { loading, friendsRequests } = state
 
 
-    const { fetchFriendsRequests, loadMoreFriendsRequests, loading } = useFetchFriendsRequest(dispatch)
+    const { fetchFriendsRequests, loadMoreFriendsRequests } = useFetchFriendsRequest(dispatch)
     //const { fetchFriends } = useFetchFriends(userId, dispatch, state)
 
 
@@ -74,12 +75,20 @@ const FriendsRequest: React.FC<FriendsRequestListProps> = ({ userId }) => {
     }, [handleScroll])
 
     return (
-        <div
-            className="grid grid-cols-1 gap-2 lg:grid-cols-2 pb-9 lg:gap-4 border-white rounded-md"
-            ref={observerRef}
-            style={{ height: '75%', overflowY: 'auto' }}
+<div
+    className="relative grid grid-cols-1 gap-2 lg:grid-cols-2 pb-9 lg:gap-4 border-white rounded-md"
+    ref={observerRef}
+    style={{ height: '75%', overflowY: 'auto' }}
+>
+    {loading ? (
+        <div className="absolute inset-0 flex justify-center items-center"
+            style={{ top: '50%', left: '50%', transform: 'translate(-50%, -50%)', height: '100px', width: '100%' }}
         >
-            {friendsRequests.length === 0 ? (
+            <LoadingSpinner />
+        </div>
+            ) : 
+            
+            friendsRequests.length === 0 ? (
                 <div className="flex justify-center items-center text-gray-500 dark:text-gray-300 h-full">
                     No Friends Request Found
                 </div>

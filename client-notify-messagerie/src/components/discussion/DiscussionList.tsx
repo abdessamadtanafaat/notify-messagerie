@@ -15,6 +15,7 @@ import { useWebSocket } from '../../hooks/webSocketHook'
 import { useNotification } from '../../contexte/NotificationContext'
 import { debounce } from '../../utils/debounce'
 import WelcomeMessage from '../common/WelcomeMessage'
+import LoadingSpinner from '../common/LoadingPage'
 
 const DiscussionList: React.FC = () => {
 
@@ -148,10 +149,13 @@ const DiscussionList: React.FC = () => {
         fetchDiscussions()
     }, [user])
 
+
+            
     return (
         <>
             {loading ? (
-                <DiscussionListSkeleton />
+                // <DiscussionListSkeleton />
+                <LoadingSpinner />
             ) : (
                 <div className="flex h-screen pl-16">
                     <div className="flex-grow rounded-2xl pl-5 pr-5 pt-4 w-5 bg-white dark:bg-gray-800 overflow-y-auto">

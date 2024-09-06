@@ -8,7 +8,6 @@ import { MyFriends } from '../../interfaces/MyFriends'
 
 interface UserListProps {
     users: MyFriends[]
-    commonFriendsCount: Map<string, number>
     toggleMenu: (id: string) => void
     dispatch: React.Dispatch<Action>
     menuRef: React.RefObject<HTMLUListElement>
@@ -26,6 +25,7 @@ const FriendsList: React.FC<UserListProps> = ({ users, toggleMenu, dispatch, men
         if (element) {
             const { scrollTop, scrollHeight, clientHeight } = element
             if (scrollHeight - scrollTop <= clientHeight + 50) {
+                dispatch({type: 'SET_LOADING', payload: false})
                 if (loadMoreUsers) {
                     loadMoreUsers()
                 } else if (loadMoreFriends) {
@@ -33,7 +33,7 @@ const FriendsList: React.FC<UserListProps> = ({ users, toggleMenu, dispatch, men
                 }
             }
         }
-    }, [loadMoreFriends, loadMoreUsers])
+    }, [dispatch, loadMoreFriends, loadMoreUsers])
 
     useEffect(() => {
         const element = observerRef.current
@@ -53,7 +53,6 @@ const FriendsList: React.FC<UserListProps> = ({ users, toggleMenu, dispatch, men
             ref={observerRef}
             style={{ height: '75%', overflowY: 'auto' }}
             //style={{overflowY: 'auto' }}
-
         >
             {users.length === 0 ? (
                 <div className="flex justify-center items-center text-gray-500 dark:text-gray-300 h-full">

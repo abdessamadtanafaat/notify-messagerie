@@ -5,18 +5,14 @@ import { FriendsState } from '../components/friends/FriendsReducer' // Adjust th
 import { MyFriends } from '../interfaces/MyFriends'
 
 
-
-
 export const useFetchFriends = (
     userId: string | undefined,
     dispatch: React.Dispatch<Action>,
     state: FriendsState)=> {
 
     const {page, hasMore} = state
-
                 const fetchFriends = useCallback(async () => {
                     try {
-                        dispatch({type: 'SET_LOADING', payload: true})
                         if(userId) {
                             const response: MyFriends[] = await friendService.fetchFriends(userId, page, 10)
                             console.log(response)
@@ -27,17 +23,16 @@ export const useFetchFriends = (
                     }
                     }catch(err){
                         console.error(err)
-                    }finally {
-                        dispatch({type: 'SET_LOADING', payload: false})
                     }
                 },[userId, dispatch, page]) 
 
 
                 useEffect(() => {
                     if (hasMore) {
+                        dispatch({type: 'SET_LOADING', payload: false})
                         fetchFriends()
                     }
-                }, [fetchFriends, hasMore])
+                }, [dispatch, fetchFriends, hasMore])
 
 
     const loadMoreFriends = () => {

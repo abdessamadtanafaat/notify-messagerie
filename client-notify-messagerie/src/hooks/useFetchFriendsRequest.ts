@@ -4,13 +4,14 @@ import friendService from '../services/friendService'
 
 export const useFetchFriendsRequest = (dispatch: React.Dispatch<Action>) => {
     const [page, setPage] = useState(1)
-    const [loading, setLoading] = useState(false)
+    const [loading, setLoading] = useState(false) // loading for the pagination
     const [HasMoreFriendsRequests, setHasMoreFriendsRequests] = useState(true)
 
 
     const fetchFriendsRequests = useCallback(
         async (userId: string) => {
             setLoading(true)
+            dispatch({ type: 'SET_LOADING', payload: true }) // loading for load data
             try {
                 const result = await friendService.fetchFriendsRequests(userId,1, 10)
                 dispatch({ type: 'SET_FRIENDS_REQUESTS', payload: result })
@@ -23,7 +24,8 @@ export const useFetchFriendsRequest = (dispatch: React.Dispatch<Action>) => {
             } catch (error) {
                 console.error(error)
             } finally {
-                setLoading(false)
+                //setLoading(false)
+                dispatch({ type: 'SET_LOADING', payload: false })
             }
         },
         [dispatch]

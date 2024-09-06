@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useThemeContext } from '../../contexte/ThemeContext'
 import { User } from '../../interfaces'
 import EnLignePersonnes from './EnLignePersonnes'
@@ -8,6 +8,7 @@ import messageService from '../../services/messageService'
 import { useWebSocket } from '../../hooks/webSocketHook'
 import WelcomeMessage from '../common/WelcomeMessage'
 import { Message } from '../../interfaces/Discussion'
+import LoadingSpinner from '../common/LoadingPage'
 
 
 export default function Personnes() {
@@ -44,6 +45,24 @@ export default function Personnes() {
         }
     }
 
+        // Component local state
+        const [isLoadingPage, setIsLoadingPage] = useState<boolean>(true)
+
+        // Effects
+        useEffect(() => {
+            const timeout = setTimeout(() => {
+                setIsLoadingPage(false)
+            }, 150)
+            return () => clearTimeout(timeout) // Cleanup on unmount
+        },)
+        
+        // Render loading spinner until page is loaded
+        if (isLoadingPage) {
+            return (
+                <> <LoadingSpinner /> </>
+            )
+        }
+        
     return (
         <div className="flex">
             <EnLignePersonnes

@@ -11,8 +11,9 @@ export const useFetchInvitations = (dispatch: React.Dispatch<Action>) => {
     const fetchInvitations = useCallback(
         async (userId: string) => {
             setLoading(true)
-            try {
+            dispatch({ type: 'SET_LOADING', payload: true }) // loading for load data
 
+            try {
                 const result = await friendService.fetchInvitations(userId,1, 10)
                 dispatch({ type: 'SET_INVITATIONS', payload: result })
                 setPage(2) // Next page to load will be 2
@@ -25,6 +26,7 @@ export const useFetchInvitations = (dispatch: React.Dispatch<Action>) => {
                 console.error(error)
             } finally {
                 setLoading(false)
+                dispatch({ type: 'SET_LOADING', payload: false }) // loading for load data
             }
         },
         [dispatch]
