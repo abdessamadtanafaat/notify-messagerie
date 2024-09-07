@@ -56,8 +56,6 @@ const fetchFriends  = async (userId: string, pageNumber: number, pageSize:number
     }
   }
 
-
-  
   const fetchCommonFriends = async (userId: string, friendId: string): Promise<User[]> => {
     try {
         const response = await axiosInstance.get(`${API_ENDPOINTS.GET_COMMON_FRIENDS}?userId=${userId}&friendId=${friendId}`)
@@ -73,7 +71,7 @@ const fetchFriends  = async (userId: string, pageNumber: number, pageSize:number
         throw {error: 'An error occurred', statusCode: 500}
     }
   }
-}
+  }
 
 const inswerInvitation  = async (answerInvitationRequest: AnswerInvitationRequest) => {
   try {
@@ -91,7 +89,7 @@ const inswerInvitation  = async (answerInvitationRequest: AnswerInvitationReques
       throw { error: 'An unknown error occurred', statusCode: 500 }
     }
   }
-}
+  }
 
 
 const cancelFriendRequest  = async (cancelledFriendRequest: CancelledFriendRequest) => {

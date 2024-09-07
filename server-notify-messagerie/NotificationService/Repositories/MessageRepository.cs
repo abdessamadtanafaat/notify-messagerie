@@ -80,6 +80,31 @@ public async Task<IEnumerable<Message>> GetMessagesForDiscussion(string discussi
         return message;
     }
 
+public async Task DeleteMessages(string discussionId) {
+
+        if (string.IsNullOrWhiteSpace(discussionId))
+        {
+            throw new ArgumentException("Discussion ID cannot be null or empty", nameof(discussionId));
+        }
+
+                // Create the filter to find messages with the specified discussionId
+        var filter = Builders<Message>.Filter.Eq(m => m.DiscussionId, discussionId);
+
+        // Delete messages matching the filter
+        var result = await _message.DeleteManyAsync(filter);
+
+        // Optional: Check the result and handle errors or log information if needed
+        if (result.DeletedCount == 0)
+        {
+            // No messages were deleted; handle this case if needed
+            Console.WriteLine($"No messages found for discussion ID: {discussionId}");
+        }
+        else
+        {
+            Console.WriteLine($"{result.DeletedCount} messages deleted for discussion ID: {discussionId}");
+        }
+        
+}
     }
 
 

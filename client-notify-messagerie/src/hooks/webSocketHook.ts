@@ -25,7 +25,7 @@ export const useWebSocket = (user: User | null, onNewMessage?: (message: Message
         if (!user) return
     
         const wsService = WebSocketService.getInstance(API_ENDPOINTS.WEBSOCKET_URL, user.id)
-        console.log('Initializing WebSocketService:', wsService)
+        //console.log('Initializing WebSocketService:', wsService)
     
         wsService.connect()
     

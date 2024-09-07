@@ -1,51 +1,43 @@
 /* eslint-disable react-hooks/exhaustive-deps */
-import React, { useCallback, useEffect, useState } from 'react'
+import React, { useCallback, useEffect, useReducer, useRef, useState } from 'react'
 import { User } from '../../interfaces'
-import { CheckCheck, ChevronLeft, SearchIcon } from 'lucide-react'
+import { CheckCheck, ChevronLeft, CircleEllipsis, SearchIcon } from 'lucide-react'
 import { useAuth } from '../../contexte/AuthContext'
-import { Discussion, Message } from '../../interfaces/Discussion'
+import {Message } from '../../interfaces/Discussion'
 
 import messageService from '../../services/messageService'
 import DiscussionSidebar from './DiscussionSidebar'
 import { useThemeContext } from '../../contexte/ThemeContext'
 import { getAvatarUrl, getTimeDifference } from '../../utils/userUtils'
-import DiscussionListSkeleton from './DiscussionListSkeleton'
 import userService from '../../services/userService'
 import { useWebSocket } from '../../hooks/webSocketHook'
 import { useNotification } from '../../contexte/NotificationContext'
 import { debounce } from '../../utils/debounce'
 import WelcomeMessage from '../common/WelcomeMessage'
 import LoadingSpinner from '../common/LoadingPage'
+import { DiscussionReducer, initialState } from './DiscussionReducer'
+import DiscussionMenu from './DiscussionMenu'
+import { useFetchDiscussions } from '../../hooks/useFetchDiscussions'
 
 const DiscussionList: React.FC = () => {
 
     const [selectedUser, setSelectedUser] = useState<User | null>(null)
-    const [discussions, setDiscussions] = useState<Discussion[]>([])
     const [idDiscussion, setIdDiscussion] = useState<string>('')
     const [messages, setMessages] = useState<Message[]>([])
-    const [loading, setLoading] = useState<boolean>(true)
     const [searchInDiscussion, setSearchInDiscussion] = useState<string>('')
     const [usersSearch, setUsersSearch] = useState<User[]>([])
-
     const { setHasUnreadMessages } = useNotification()
 
+    const [state, dispatch] = useReducer(DiscussionReducer, initialState)
+    const { menuOpen,discussions,loading } = state
+
+    const { fetchDiscussions, loadMoreDiscussions } = useFetchDiscussions(dispatch)
 
     const { theme } = useThemeContext()
     const { user, refreshUserData } = useAuth()
+    const observerRef = useRef<HTMLDivElement>(null)
 
-    const fetchDiscussions = async () => {
-        try {
-            if (user) {
-                const discussionsData = await messageService.getDiscussions(user.id)
-                //console.log(discussionsData)
-                setDiscussions(discussionsData)
-            }
-        } catch (error) {
-            console.log('Failed to fetch discussions')
-        } finally {
-            setLoading(false)
-        }
-    }
+    const userId = user?.id 
 
     const handleUserClick = async (receiver: User, idDiscussion: string) => {
         setSelectedUser(receiver)
@@ -68,37 +60,47 @@ const DiscussionList: React.FC = () => {
             console.log('Failed to fetch messages')
         }
     }
-
     const handleNewMessage = (newMessage: Message) => {
 
         setHasUnreadMessages(true)
 
         const timestamp = newMessage.timestamp instanceof Date ? newMessage.timestamp : new Date(newMessage.timestamp)
-
-        setDiscussions(prevDiscussions => {
-            // Update the discussions with the new message
-            const updatedDiscussions = prevDiscussions.map(discussion => {
-                if (discussion.id === newMessage.discussionId) {
-                    return {
-                        ...discussion,
-                        lastMessage: newMessage,
-                        lastMessageTimestamp: timestamp.toISOString(),
-                        lastMessageContent: newMessage.content
-                    }
-                }
-                return discussion
-            })
-            return updatedDiscussions.sort((a, b) => {
-                if (a.id === newMessage.discussionId) return -1
-                if (b.id === newMessage.discussionId) return 1
-                return new Date(b.lastMessageTimestamp).getTime() - new Date(a.lastMessageTimestamp).getTime()
-            })
-
+        console.log(timestamp.toString())
+        dispatch({
+            type: 'UPDATE_DISCUSSION',
+            payload: {
+                newMessage,
+                timestamp: timestamp.toISOString()
+            }
         })
+
+
+        //dispatch({type: 'SET_DISCUSSIONS', payload: sortedDiscussions})
+
+        // const timestamp = newMessage.timestamp instanceof Date ? newMessage.timestamp : new Date(newMessage.timestamp)
+        // setDiscussions(prevDiscussions => {
+        //     // Update the discussions with the new message
+        //     const updatedDiscussions = prevDiscussions.map(discussion => {
+        //         if (discussion.id === newMessage.discussionId) {
+        //             return {
+        //                 ...discussion,
+        //                 lastMessage: newMessage,
+        //                 lastMessageTimestamp: timestamp.toISOString(),
+        //                 lastMessageContent: newMessage.content
+        //             }
+        //         }
+        //         return discussion
+        //     })
+        //     return updatedDiscussions.sort((a, b) => {
+        //         if (a.id === newMessage.discussionId) return -1
+        //         if (b.id === newMessage.discussionId) return 1
+        //         return new Date(b.lastMessageTimestamp).getTime() - new Date(a.lastMessageTimestamp).getTime()
+        //     })
+
+        // })
 
         setMessages(prevMessages => [...prevMessages, newMessage])
     }
-
     const { sendSeenNotification } = useWebSocket(user, handleNewMessage)
 
     const searchUsers = async (userId: string, searchReq: string) => {
@@ -116,11 +118,9 @@ const DiscussionList: React.FC = () => {
         }
 
     }
-
     const handleClearSearch = () => {
         setSearchInDiscussion('')
     }
-
     // Debounced searchUsers function
     const debouncedSearchUsers = useCallback(
         debounce(async (userId: string, searchReq: string) => {
@@ -146,11 +146,35 @@ const DiscussionList: React.FC = () => {
 
 
     useEffect(() => {
-        fetchDiscussions()
-    }, [user])
+        fetchDiscussions(userId ?? '')
+    }, [fetchDiscussions, userId])
 
 
-            
+    const handleScroll = useCallback(() => {
+        const element = observerRef.current
+        if (element) {
+            const { scrollTop, scrollHeight, clientHeight } = element
+            if (scrollHeight - scrollTop <= clientHeight + 50) {
+
+                if (loadMoreDiscussions) {
+                    loadMoreDiscussions(userId ?? '')
+                }
+            }
+        }
+    }, [loadMoreDiscussions, userId])
+    
+    useEffect(() => {
+        const element = observerRef.current
+        if (element) {
+            element.addEventListener('scroll', handleScroll)
+        }
+        return () => {
+            if (element) {
+                element.removeEventListener('scroll', handleScroll)
+            }
+        }
+    }, [handleScroll])
+
     return (
         <>
             {loading ? (
@@ -223,6 +247,10 @@ const DiscussionList: React.FC = () => {
                                     <p className="text-gray-500 dark:text-gray-400 text-sm text-center">No users found.</p>
                                 )
                             ) : (
+                                <div className='overflow-x-hidden'
+                                ref={observerRef}
+                                style={{ height: '75%', overflowY: 'auto' }}
+                                >
                                 <ul className="list-none flex flex-col space-y-2">
                                     {discussions.map((discussion) => {
 
@@ -244,13 +272,14 @@ const DiscussionList: React.FC = () => {
                                                 ? (isAudioMessage ? 'You sent a voice message.' : 'You sent a file.')
                                                 : (isAudioMessage ? 'Sent you a voice message.' : 'Sent you a file.')
                                         }
-
+                                        const isMenuOpen = menuOpen === id
 
                                         return (
                                             <li
                                                 key={id}
-                                                className="flex flex-col space-y-1 p-1 rounded-lg cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors duration-200 ease-in-out"
+                                                className="flex flex-col space-y-1 p-1 rounded-lg cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors duration-200 ease-in-out group"
                                                 onClick={() => handleUserClick(receiver, id)}
+                                                
                                             >
                                                 <div className="flex items-center space-x-3">
                                                     <div className="relative flex-shrink-0">
@@ -265,7 +294,7 @@ const DiscussionList: React.FC = () => {
                                                             style={{ transform: 'translate(25%, 25%)' }}
                                                         />
                                                     </div>
-                                                    <div className="flex flex-col justify-center">
+                                                    <div className="flex flex-col justify-center flex-grow">
                                                         <p className="font-semibold truncate text-xs text-dark dark:text-white">
                                                             {receiver.firstName} {receiver.lastName}
                                                         </p>
@@ -284,14 +313,24 @@ const DiscussionList: React.FC = () => {
                                                             {lastMessage.read && isMyMessage && (
                                                                 <CheckCheck className='w-3 h-3' />
                                                             )}
-
                                                         </div>
                                                     </div>
+                                                    <div className="ml-auto items-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                                                        <CircleEllipsis className="w-4 h-4 text-gray-500 dark:text-gray-300 cursor-pointer transition-colors duration-200"
+                                                            onClick={(e) => {
+                                                                e.stopPropagation()
+                                                                dispatch({ type: 'TOGGLE_MENU', payload: id })
+                                                            }} />
+                                                    </div>
                                                 </div>
+                                                {/* Popup Menu */}
+                                                <DiscussionMenu idDiscussion={id} isMenuOpen={isMenuOpen} dispatch={dispatch} />
                                             </li>
                                         )
                                     })}
                                 </ul>
+                                </div>
+
 
                             )}
                         </div>
@@ -306,7 +345,7 @@ const DiscussionList: React.FC = () => {
                             />
                         </div>
                     )}
-                    {!selectedUser && <WelcomeMessage/>}
+                    {!selectedUser && <WelcomeMessage />}
                 </div>
 
             )}

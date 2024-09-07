@@ -46,3 +46,4 @@ export interface CancelledFriendRequest {
     userId: string;
     friendId: string;
 }
+

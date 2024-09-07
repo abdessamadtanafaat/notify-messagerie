@@ -26,7 +26,6 @@ const Invitations: React.FC<InvitationsFriendsListProps> = ({ userId }) => {
     const { fetchInvitations, loadMoreInvitations } = useFetchInvitations(dispatch)
     const { fetchFriends } = useFetchFriends(userId, dispatch, state)
 
-
     const handleScroll = useCallback(() => {
         const element = observerRef.current
         if (element) {

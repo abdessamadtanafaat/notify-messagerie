@@ -54,7 +54,6 @@ const initialState: FriendsState = {
   page: 1,
   hasMore: true,
 }
-
 const friendsReducer = (state: FriendsState, action: Action): FriendsState => {
   switch (action.type) {
     case 'SET_LOADING':

@@ -21,10 +21,7 @@ const FriendsRequest: React.FC<FriendsRequestListProps> = ({ userId }) => {
     const [state, dispatch] = useReducer(friendsReducer, initialState)
     const { loading, friendsRequests } = state
 
-
     const { fetchFriendsRequests, loadMoreFriendsRequests } = useFetchFriendsRequest(dispatch)
-    //const { fetchFriends } = useFetchFriends(userId, dispatch, state)
-
 
     const handleScroll = useCallback(() => {
         const element = observerRef.current
@@ -38,7 +35,6 @@ const FriendsRequest: React.FC<FriendsRequestListProps> = ({ userId }) => {
             }
         }
     }, [loadMoreFriendsRequests, userId])
-
 
     const onCancel = async (friendId: string) => {
         try {

@@ -43,12 +43,14 @@ const DiscussionSidebar: React.FC<DiscussionSidebarProps> = ({ receiver, idDiscu
 
     const fetchMessages = useCallback(async (cursor?: Date | null) => {
         try {
-            if (user) {
+            if (user && receiver && idDiscussion ) {
+                //setMessages([]) //reset messages 
                 //const currentScrollTop = messagesEndRef.current ? messagesEndRef.current.scrollTop : 0
                 const discussionData = await messageService.getDiscussion(receiver.id, user.id, cursor ?? undefined)
                 const newMessages = discussionData.messages
 
                 setMessages(prevMessages => {
+
                     const existingMessageIds = new Set(prevMessages.map(msg => msg.id))
                     const filteredMessages = newMessages.filter(msg => !existingMessageIds.has(msg.id))
                     const updatedMessages = [...filteredMessages, ...prevMessages]
@@ -58,15 +60,13 @@ const DiscussionSidebar: React.FC<DiscussionSidebarProps> = ({ receiver, idDiscu
 
                 setCursor(newMessages.length > 0 ? new Date(newMessages[0].timestamp) : null)
                 setHasMore(newMessages.length > 0)
-
-
             }
         } catch (error) {
             console.log('Failed to fetch messages:', error)
         } finally {
             setLoading(false)
         }
-    }, [user, receiver])
+    }, [user, receiver, idDiscussion])
 
     const handleNewMessage = (message: Message) => {
         setMessages(prevMessages => {
@@ -92,10 +92,9 @@ const DiscussionSidebar: React.FC<DiscussionSidebarProps> = ({ receiver, idDiscu
         }
     }
 
-
     useEffect(() => {
         fetchMessages()
-    }, [idDiscussion, user, receiver.id, onMessageSent, fetchMessages])
+    }, [fetchMessages])
 
     const scrollToBottomInput = () => {
         if (messagesEndRef.current) {

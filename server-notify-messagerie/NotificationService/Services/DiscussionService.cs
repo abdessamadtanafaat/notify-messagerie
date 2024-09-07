@@ -46,15 +46,7 @@ public class DiscussionService : IDiscussionService{
         
     var discussionDto = new SingleDiscussion {
             Id = discussion.Id,
-            Users = new UserDto
-            {
-                Id = receiver.Id,
-                FirstName = receiver.FirstName,
-                LastName = receiver.LastName,
-                AvatarUrl = receiver.AvatarUrl,
-                Active = receiver.Active,
-                LastLogout = receiver.LastLogout,
-            },
+            Users = receiver,
             Messages = reversedMessages.Select(m=> new Message{
              Id = m.Id, 
             Content = m.Content,
@@ -76,67 +68,57 @@ public class DiscussionService : IDiscussionService{
     }
     
 
-public async Task<IEnumerable<DiscussionDto>> GetDiscussionsWithMessages(string userId, DateTime? cursor, int limit)
+public async Task<IEnumerable<DiscussionDto>> GetDiscussionsWithMessages(string userId, int pageNumber=1, int pageSize=6)
 {
-    // Debug: Print input parameters
-    Console.WriteLine($"Debug: UserID: {userId}");
-    Console.WriteLine($"Debug: Cursor: {cursor}");
-    Console.WriteLine($"Debug: Limit: {limit}");
 
-    var discussions = await _discussionRepository.GetDiscussionsForUser(userId, cursor, limit);
-    Console.WriteLine($"Debug: Discussions fetched: {discussions.Count()}");
+                        if (string.IsNullOrWhiteSpace(userId)) {
+                throw new ArgumentNullException("User ID cannot be empty or whitespace."); 
+            } 
+            var user = await _userRepository.GetUserByIdAsync(userId); 
+            if (user == null) {
+                throw new NotFoundException ($"User With ID '{userId}' not found."); 
+            }
+
+    var discussions = await _discussionRepository.GetDiscussionsForUser(userId, pageNumber, pageSize);
 
     var discussionDtos = new List<DiscussionDto>();
 
     foreach (var discussion in discussions)
     {
-        Console.WriteLine($"Debug: Processing Discussion ID: {discussion.Id}");
-        Console.WriteLine($"Debug: Participants: {string.Join(", ", discussion.Participants)}");
 
         var receiverId = discussion.Participants.FirstOrDefault(id => id != userId);
-        Console.WriteLine($"Debug: Receiver ID: {receiverId}");
 
         var receiver = await _userRepository.GetUserByIdAsync(receiverId);
         if (receiver == null)
         {
-            Console.WriteLine($"Debug: Receiver with ID {receiverId} not found.");
             continue;
         }
 
         var messages = await _messageRepository.GetMessagesForDiscussion(discussion.Id, null, 10);
-        Console.WriteLine($"Debug: Messages fetched for Discussion ID {discussion.Id}: {messages.Count()}");
 
         var lastMessage = messages.OrderByDescending(m => m.Timestamp).FirstOrDefault();
-        if (lastMessage != null)
-        {
-            Console.WriteLine($"Debug: Last Message ID: {lastMessage.Id}");
-            Console.WriteLine($"Debug: Last Message Content: {lastMessage.Content}");
-            Console.WriteLine($"Debug: Last Message Timestamp: {lastMessage.Timestamp}");
-        }
-        else
-        {
-            Console.WriteLine($"Debug: No messages found for Discussion ID {discussion.Id}");
-        }
+        // if (lastMessage != null)
+        // {
+        //     Console.WriteLine($"Debug: Last Message ID: {lastMessage.Id}");
+        //     Console.WriteLine($"Debug: Last Message Content: {lastMessage.Content}");
+        //     Console.WriteLine($"Debug: Last Message Timestamp: {lastMessage.Timestamp}");
+        // }
+        // else
+        // {
+        //     Console.WriteLine($"Debug: No messages found for Discussion ID {discussion.Id}");
+        // }
 
         discussionDtos.Add(new DiscussionDto
         {
             Id = discussion.Id,
-            Receiver = new UserDto
-            {
-                Id = receiver.Id,
-                FirstName = receiver.FirstName,
-                LastName = receiver.LastName,
-                AvatarUrl = receiver.AvatarUrl,
-                Active = receiver.Active,
-                LastLogout = receiver.LastLogout,
-            },
+            Receiver = receiver,
             LastMessage = lastMessage
         });
 
-        Console.WriteLine($"Debug: DiscussionDto added for Discussion ID: {discussion.Id}");
+        //Console.WriteLine($"Debug: DiscussionDto added for Discussion ID: {discussion.Id}");
     }
 
-    Console.WriteLine($"Debug: Total DiscussionDto count: {discussionDtos.Count}");
+    //Console.WriteLine($"Debug: Total DiscussionDto count: {discussionDtos.Count}");
     return discussionDtos;
 }
 
@@ -160,4 +142,54 @@ public async Task<IEnumerable<DiscussionDto>> GetDiscussionsWithMessages(string 
             existingDiscussion.LastMessageTimestamp = message.Timestamp; 
         await _discussionRepository.UpdateDiscussionAsync(idDiscussion, existingDiscussion); 
     }
+
+    public async Task DeleteDiscussionAsync(string discussionId)
+        {
+            // Check if id is a valid ObjectId
+            if (!ObjectId.TryParse(discussionId, out _))
+            {
+                throw new NotFoundException($"Discussion with ID '{discussionId}' not found.");
+            }
+            var existingDiscussion = await _discussionRepository.GetDiscussionByIdAsync(discussionId);
+            if (existingDiscussion == null)
+            {
+                throw new NotFoundException($"Discussion with ID '{discussionId}' not found.");
+            }
+
+            await _discussionRepository.DeleteDiscussionAsync(discussionId);
+            await _messageRepository.DeleteMessages(discussionId); 
+        }
+    public async Task DoWithDiscussion(string discussionId,  DoingWithDiscussion.DoingWithDiscussionOperation doingWithDiscussionChoice) {
+    
+    var existingDiscussion = await _discussionRepository.GetDiscussionByIdAsync(discussionId);
+ 
+    if (existingDiscussion == null)
+    {
+        throw new NotFoundException($"Discussion with ID '{discussionId}' not found.");
+    }
+
+    switch (doingWithDiscussionChoice) 
+    {
+        case DoingWithDiscussion.DoingWithDiscussionOperation.Blocked: 
+        existingDiscussion.IsBlocked = ! existingDiscussion.IsBlocked; 
+        break;
+
+                case DoingWithDiscussion.DoingWithDiscussionOperation.Archived:
+            existingDiscussion.IsArchived = !existingDiscussion.IsArchived;
+            break;
+
+        case DoingWithDiscussion.DoingWithDiscussionOperation.Pinned:
+            existingDiscussion.IsPinned = !existingDiscussion.IsPinned;
+            break;
+
+        default:
+            throw new ArgumentOutOfRangeException(nameof(doingWithDiscussionChoice), $"Not expected direction value: {doingWithDiscussionChoice}");
+
+    }
+
+    await _discussionRepository.UpdateDiscussionAsync(existingDiscussion.Id, existingDiscussion); 
+
+    }
+
+    
 }

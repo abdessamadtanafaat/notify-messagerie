@@ -75,14 +75,6 @@ namespace NotificationService.Controllers
             await _userService.UpdateProfileAsync(id, profileUpdateReq);
             return NoContent();
         }
-
-        [HttpDelete("{id}")]
-        [Authorize]
-        public async Task<IActionResult> DeleteUser(string id)
-        {
-            await _userService.DeleteUserAsync(id);
-            return NoContent();
-        }
         
         [HttpPost("unfriend")]
         //[Authorize]
@@ -110,10 +102,10 @@ namespace NotificationService.Controllers
         //[Authorize]
         public async Task<MyFriends> AnswerInvitation([FromBody]AnswerInvitationRequest answerInvitationRequest) {
 
-            var MyInvitation = await _userService.AnswerInvitationAsync(answerInvitationRequest.UserId,
+            var myInvitation = await _userService.AnswerInvitationAsync(answerInvitationRequest.UserId,
              answerInvitationRequest.FriendId,
              answerInvitationRequest.AnswerInvitationChoice ); 
-            return MyInvitation; 
+            return myInvitation; 
         }
 
         // Accepte or refuse the invitation received . 

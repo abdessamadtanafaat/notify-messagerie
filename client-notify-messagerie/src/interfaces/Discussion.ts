@@ -61,3 +61,15 @@ export interface SeenNotif {
     isSeen: boolean;
     seenDate?: Date;
 }
+
+export enum DoingWithDiscussionOperation {
+    Blocked = 0,
+    Archived = 1,
+    Pinned = 2
+}
+
+export interface DoingWithDiscussion {
+    discussionId: string;
+    doingWithDiscussionChoice: DoingWithDiscussionOperation;
+}
+

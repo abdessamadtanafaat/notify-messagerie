@@ -2,16 +2,17 @@ import axios from 'axios'
 import { ErrorResponse } from '../interfaces/ErrorResponse'
 import axiosInstance from '../api/axiosInstance'
 import API_ENDPOINTS from '../api/endpoints'
-import { Message } from '../interfaces/Discussion'
+import { Discussion, DoingWithDiscussion, Message } from '../interfaces/Discussion'
 import { toast } from 'react-toastify'
 
 
 
-  const getDiscussions  = async (userId: string) => {
+
+  const getDiscussions  = async (userId: string,pageNumber: number, pageSize:number): Promise<Discussion[]> => {
     try {
-      const response = await axiosInstance.get(`${API_ENDPOINTS.GET_MESSAGES}/${userId}`)
+      const response = await axiosInstance.get(`${API_ENDPOINTS.GET_MESSAGES}/${userId}`,{params: {pageNumber, pageSize}})
       //console.log(response)
-      //console.log(response.data)
+      console.log(response.data)
       return response.data
     } catch (error) {
       if (axios.isAxiosError(error) && error.response) {
@@ -44,6 +45,20 @@ import { toast } from 'react-toastify'
     }
   }
   
+  const deleteDiscussion = async (discussionId: string) => {
+    try {
+      const response = await axiosInstance.delete(`${API_ENDPOINTS.DELETE_DISCUSSION}/${discussionId}`)
+      return response.data
+    } catch (error) {
+      if (axios.isAxiosError(error) && error.response) {
+        const typedError = error.response.data as ErrorResponse
+        console.log(typedError)
+        throw typedError
+      } else {
+        throw { error: 'An unknown error occurred', statusCode: 500 }
+      }
+    }
+  }
 
   const sendMessage = async(message: Message): Promise<void> =>{
 
@@ -63,5 +78,21 @@ import { toast } from 'react-toastify'
     }
   }
 
-  export default {getDiscussions,sendMessage,getDiscussion}
+  const DoWithDiscussion = async (doingWithDiscussion: DoingWithDiscussion ) => {
+    try {
+      const response = await axiosInstance.put(`${API_ENDPOINTS.DO_WITH_DISCUSSION}`, doingWithDiscussion)
+      return response.data
+    } catch (error) {
+      if (axios.isAxiosError(error) && error.response) {
+        const typedError = error.response.data as ErrorResponse
+        console.log(typedError)
+        throw typedError
+      } else {
+        throw { error: 'An unknown error occurred', statusCode: 500 }
+      }
+    }
+  }
+
+
+  export default {getDiscussions,sendMessage,getDiscussion,deleteDiscussion,DoWithDiscussion} 
 

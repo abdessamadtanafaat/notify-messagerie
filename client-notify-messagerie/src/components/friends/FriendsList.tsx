@@ -20,6 +20,7 @@ const FriendsList: React.FC<UserListProps> = ({ users, toggleMenu, dispatch, men
 
     const observerRef = useRef<HTMLDivElement>(null)
     const { theme } = useThemeContext()
+    
     const handleScroll = useCallback(() => {
         const element = observerRef.current
         if (element) {

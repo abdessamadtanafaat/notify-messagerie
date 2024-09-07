@@ -30,8 +30,8 @@
       GET_DISCUSSION: '/Discussions/Discussion', // GET THE DISCUSSION OF THE USERAUTH AND SELECTED USER IN THE BAR CHAT
       UPLOAD_AUDIO: '/Discussions/uploadAudio',
       UPLOAD_FILE: '/Discussions/uploadFile',
-
-
+      DELETE_DISCUSSION: '/Discussions/discussion',
+      DO_WITH_DISCUSSION: 'Discussions/doingWithDiscussion',
       //====================== FRIENDS SECTION ============================= 
       GET_FRIENDS: 'User/friends',
       GET_INVITATIONS: 'User/invitationsFriends',
