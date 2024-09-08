@@ -186,6 +186,9 @@ const friendsReducer = (state: FriendsState, action: Action): FriendsState => {
     case 'SET_LOADING_MORE_SEARCH_USERS':
       return { ...state, loadingMoreSearchUsers: action.payload }
 
+      
+
+
     default:
       return state
   }

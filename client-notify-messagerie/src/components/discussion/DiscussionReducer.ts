@@ -8,6 +8,9 @@ export type DiscussionState = {
   loading: boolean;
   page: number;
   loadingMoreDiscussions: boolean,
+  loadingMoreSearchDiscussions: boolean,
+  discussionsSearch: Discussion[]
+
 };
 
 const initialState: DiscussionState = {
@@ -16,6 +19,8 @@ const initialState: DiscussionState = {
   loading: true,
   page: 1,
   loadingMoreDiscussions: false,
+  loadingMoreSearchDiscussions: false,
+  discussionsSearch: []
 }
 
 export type Action =
@@ -29,6 +34,11 @@ export type Action =
       payload: { newMessage: Message; timestamp: string };
     }
   | {type: 'LOAD_MORE_DISCUSSIONS'; payload: boolean} 
+  | { type: 'SET_DISCUSSIONS_SEARCH'; payload: Discussion[] }
+  | { type: 'SET_LOADING_MORE_SEARCH_DISCUSSIONS'; payload: boolean }
+  | { type: 'ADD_MORE_DISCUSSIONS'; payload: Discussion[] }
+
+
 export const DiscussionReducer = (
   state: DiscussionState = initialState,
   action: Action
@@ -94,6 +104,14 @@ export const DiscussionReducer = (
 
     case 'LOAD_MORE_DISCUSSIONS':
         return { ...state, loadingMoreDiscussions: action.payload }
+
+        case 'SET_LOADING_MORE_SEARCH_DISCUSSIONS':
+      return { ...state, loadingMoreSearchDiscussions: action.payload }
+
+      case 'SET_DISCUSSIONS_SEARCH':
+        return { ...state, discussionsSearch: action.payload, loading: false, page: 1 }
+
+
     default:
       return state
   }

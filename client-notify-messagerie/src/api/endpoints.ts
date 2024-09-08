@@ -32,6 +32,7 @@
       UPLOAD_FILE: '/Discussions/uploadFile',
       DELETE_DISCUSSION: '/Discussions/discussion',
       DO_WITH_DISCUSSION: 'Discussions/doingWithDiscussion',
+      SEARCH_DISCUSSIONS: 'Discussions/discussion/search',
       //====================== FRIENDS SECTION ============================= 
       GET_FRIENDS: 'User/friends',
       GET_INVITATIONS: 'User/invitationsFriends',

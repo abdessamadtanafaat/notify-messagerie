@@ -83,8 +83,45 @@ public class DiscussionRepository : IDiscussionRepository
         return await _discussions.Find(d => d.Id == id).FirstOrDefaultAsync();
     }
 
-            public async Task DeleteDiscussionAsync(string id)
-        {
-            await _discussions.DeleteOneAsync(u => u.Id == id);
-        }
+    public async Task DeleteDiscussionAsync(string id)
+    {
+        await _discussions.DeleteOneAsync(u => u.Id == id);
+    }
+
+    public async Task<IEnumerable<Discussion>> GetDiscussionsByParticipantIdAsync(string userId, int pageNumber = 1, int pageSize = 10)
+{
+    if (string.IsNullOrWhiteSpace(userId))
+    {
+        throw new ArgumentException("User ID cannot be null or empty", nameof(userId));
+    }
+
+    // Create a filter to find discussions where the userId is a participant (i.e., exists in the Participants array)
+    //var filter = Builders<Discussion>.Filter.AnyEq(d => d.Participants, userId);
+
+        // Create the filter to find discussions where the userId is the first item in the Participants array
+        var filter = Builders<Discussion>.Filter.And(
+            Builders<Discussion>.Filter.Eq("Participants.0", userId), // Check if userId is the first item in Participants
+            Builders<Discussion>.Filter.Eq(d => d.IsArchived, false)  // Ensure the discussion is not archived
+
+        );
+
+    // Create pagination options
+    var skip = (pageNumber - 1) * pageSize;
+    var limit = pageSize;
+
+    // Sort discussions by LastMessageTimestamp in descending order
+    var sort = Builders<Discussion>.Sort.Descending(d => d.LastMessageTimestamp);
+
+    // Fetch the discussions from the database with pagination and sorting
+    var discussions = await _discussions
+        .Find(filter)
+        .Sort(sort)
+        .Skip(skip)
+        .Limit(limit)
+        .ToListAsync();
+
+    return discussions;
+}
+
+
 }

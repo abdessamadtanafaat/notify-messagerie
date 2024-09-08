@@ -7,6 +7,7 @@ public interface IDiscussionRepository {
 Task<IEnumerable<Discussion>> GetDiscussionsForUser(string userId, int pageNumber, int pageSize);
 
 Task DeleteDiscussionAsync(string id);   
+Task<IEnumerable<Discussion>> GetDiscussionsByParticipantIdAsync(string userId, int pageNumber = 1, int pageSize = 10); 
 
 
 }

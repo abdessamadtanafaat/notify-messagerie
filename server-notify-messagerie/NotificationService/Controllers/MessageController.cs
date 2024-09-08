@@ -83,6 +83,13 @@ namespace NotificationService.Controllers
             return Ok(); 
         }
 
+        [HttpPost("discussion/search")]
+        //[Authorize]
+        public async Task<IEnumerable<DiscussionDto>>  Search([FromBody] SearchRequest searchRequest, [FromQuery] int pageNumber, [FromQuery] int pageSize) {
+            var discussions = await _discussionService.SearchUsersByFirstNameOrLastNameOrLastMessageAsync(searchRequest,pageNumber,pageSize);
+            return discussions;
+        }
+
 
     }
 

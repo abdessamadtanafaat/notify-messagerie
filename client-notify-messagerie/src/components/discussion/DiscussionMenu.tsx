@@ -1,5 +1,5 @@
 // DiscussionMenu.tsx
-import React, { useRef } from 'react'
+import React from 'react'
 import { ArchiveIcon, CircleMinus, DeleteIcon, Pin } from 'lucide-react'
 import { Action } from './DiscussionReducer'
 
@@ -13,7 +13,7 @@ interface DiscussionMenuProps {
 
 }
 
-const DiscussionMenu: React.FC<DiscussionMenuProps> = ({ idDiscussion, isMenuOpen,menuRef, dispatch }) => {
+const DiscussionMenu: React.FC<DiscussionMenuProps> = ({ idDiscussion, isMenuOpen,menuRef }) => {
 
 
     if (!isMenuOpen) return null 

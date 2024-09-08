@@ -7,5 +7,6 @@ Task DeleteDiscussionAsync(string discussionId);
 
 Task DoWithDiscussion(string discussionId,  DoingWithDiscussion.DoingWithDiscussionOperation doingWithDiscussionChoice); 
 
+Task<IEnumerable<DiscussionDto>> SearchUsersByFirstNameOrLastNameOrLastMessageAsync(SearchRequest searchRequest,int pageNumber,int pageSize); 
 
 }

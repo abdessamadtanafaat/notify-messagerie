@@ -4,6 +4,7 @@ import axiosInstance from '../api/axiosInstance'
 import API_ENDPOINTS from '../api/endpoints'
 import { Discussion, DoingWithDiscussion, Message } from '../interfaces/Discussion'
 import { toast } from 'react-toastify'
+import { SearchRequest } from '../interfaces'
 
 
 
@@ -93,6 +94,26 @@ import { toast } from 'react-toastify'
     }
   }
 
+  const searchUsersByFirstNameOrLastNameOrLastMessageAsync = async (searchRequest:SearchRequest,pageNumber: number, pageSize:number) => {
+    try {
+      const response = await axiosInstance.post(API_ENDPOINTS.SEARCH_DISCUSSIONS ,searchRequest,{params: {pageNumber, pageSize}})
+      return response.data
+    } catch (error) {
+      if (axios.isAxiosError(error) && error.response) {
+        const typedError = error.response.data as ErrorResponse
+        console.log(typedError)
+        throw typedError
+      } else {
+        throw { error: 'An unknown error occurred', statusCode: 500 }
+      }
+    }
+  }
 
-  export default {getDiscussions,sendMessage,getDiscussion,deleteDiscussion,DoWithDiscussion} 
+
+  export default {getDiscussions
+    ,sendMessage
+    ,getDiscussion
+    ,deleteDiscussion
+    ,DoWithDiscussion
+    ,searchUsersByFirstNameOrLastNameOrLastMessageAsync} 
 

@@ -3,13 +3,12 @@ import React, { useCallback, useEffect, useReducer, useRef, useState } from 'rea
 import { User } from '../../interfaces'
 import { CheckCheck, ChevronLeft, CircleEllipsis, SearchIcon } from 'lucide-react'
 import { useAuth } from '../../contexte/AuthContext'
-import {Message } from '../../interfaces/Discussion'
+import { Discussion, Message } from '../../interfaces/Discussion'
 
 import messageService from '../../services/messageService'
 import DiscussionSidebar from './DiscussionSidebar'
 import { useThemeContext } from '../../contexte/ThemeContext'
 import { getAvatarUrl, getTimeDifference } from '../../utils/userUtils'
-import userService from '../../services/userService'
 import { useWebSocket } from '../../hooks/webSocketHook'
 import { useNotification } from '../../contexte/NotificationContext'
 import { debounce } from '../../utils/debounce'
@@ -27,11 +26,11 @@ const DiscussionList: React.FC = () => {
     const [idDiscussion, setIdDiscussion] = useState<string>('')
     const [messages, setMessages] = useState<Message[]>([])
     const [searchInDiscussion, setSearchInDiscussion] = useState<string>('')
-    const [usersSearch, setUsersSearch] = useState<User[]>([])
+    const [usersSearch, setUsersSearch] = useState<Discussion[]>([])
     const { setHasUnreadMessages } = useNotification()
 
     const [state, dispatch] = useReducer(DiscussionReducer, initialState)
-    const { menuOpen,discussions,loading,loadingMoreDiscussions } = state
+    const { menuOpen, discussions, loading, loadingMoreDiscussions } = state
 
     const { fetchDiscussions, loadMoreDiscussions } = useFetchDiscussions(dispatch)
 
@@ -39,20 +38,19 @@ const DiscussionList: React.FC = () => {
     const { user, refreshUserData } = useAuth()
     const observerRef = useRef<HTMLDivElement>(null)
 
-    const userId = user?.id 
+    const userId = user?.id
 
 
     const menuRef = useRef<HTMLUListElement>(null)
-    useOutsideClick(menuRef, ()=> {dispatch({ type: 'TOGGLE_MENU', payload: null })})
+    useOutsideClick(menuRef, () => { dispatch({ type: 'TOGGLE_MENU', payload: null }) })
 
-    
+
     const handleUserClick = async (receiver: User, idDiscussion: string) => {
         setSelectedUser(receiver)
         setIdDiscussion(idDiscussion)
         try {
             if (user) {
                 const discussionData = await messageService.getDiscussion(receiver.id, user.id)
-                //console.log(discussionData.messages)
                 setMessages(discussionData.messages)
                 const lastMessage = messages[messages.length - 1]
                 setIdDiscussion(discussionData.id)
@@ -81,31 +79,6 @@ const DiscussionList: React.FC = () => {
             }
         })
 
-
-        //dispatch({type: 'SET_DISCUSSIONS', payload: sortedDiscussions})
-
-        // const timestamp = newMessage.timestamp instanceof Date ? newMessage.timestamp : new Date(newMessage.timestamp)
-        // setDiscussions(prevDiscussions => {
-        //     // Update the discussions with the new message
-        //     const updatedDiscussions = prevDiscussions.map(discussion => {
-        //         if (discussion.id === newMessage.discussionId) {
-        //             return {
-        //                 ...discussion,
-        //                 lastMessage: newMessage,
-        //                 lastMessageTimestamp: timestamp.toISOString(),
-        //                 lastMessageContent: newMessage.content
-        //             }
-        //         }
-        //         return discussion
-        //     })
-        //     return updatedDiscussions.sort((a, b) => {
-        //         if (a.id === newMessage.discussionId) return -1
-        //         if (b.id === newMessage.discussionId) return 1
-        //         return new Date(b.lastMessageTimestamp).getTime() - new Date(a.lastMessageTimestamp).getTime()
-        //     })
-
-        // })
-
         setMessages(prevMessages => [...prevMessages, newMessage])
     }
     const { sendSeenNotification } = useWebSocket(user, handleNewMessage)
@@ -114,14 +87,12 @@ const DiscussionList: React.FC = () => {
         try {
             if (user) {
                 const searchRequest = { userId, searchReq }
-                const response = await userService.searchUsersByFirstNameOrLastName(searchRequest)
+                const response = await messageService.searchUsersByFirstNameOrLastNameOrLastMessageAsync(searchRequest, 1, 10)
+                console.log(response)
                 setUsersSearch(response)
             }
         } catch (error) {
             console.log('Failed to fetch users.')
-        }
-        finally {
-            setLoading(false)
         }
 
     }
@@ -162,12 +133,12 @@ const DiscussionList: React.FC = () => {
         if (element) {
             const { scrollTop, scrollHeight, clientHeight } = element
             if (scrollHeight - scrollTop <= clientHeight + 50) {
-                    console.log(userId)
-                    loadMoreDiscussions(userId ?? '')
+                console.log(userId)
+                loadMoreDiscussions(userId ?? '')
             }
         }
     }, [loadMoreDiscussions, userId])
-    
+
     useEffect(() => {
         const element = observerRef.current
         if (element) {
@@ -183,7 +154,6 @@ const DiscussionList: React.FC = () => {
     return (
         <>
             {loading ? (
-                // <DiscussionListSkeleton />
                 <LoadingSpinner />
             ) : (
                 <div className="flex h-screen pl-16">
@@ -216,37 +186,99 @@ const DiscussionList: React.FC = () => {
                                 </div>
                             </div>
                             {searchInDiscussion ? (
-
                                 usersSearch?.length > 0 ? (
 
-                                    <ul className="list-none flex flex-col space-y-2">
-                                        {usersSearch.map((friend, index) => {
+                                    <div className="list-none flex flex-col space-y-2 "
+                                        ref={observerRef}
+                                        style={{ height: '70vh', overflowY: 'auto' }}
+                                    >
+                                        {usersSearch.map((discussion, index) => {
+
+                                            const {
+                                                id,
+                                                lastMessage,
+                                                receiver
+                                            } = discussion
+
+                                            const isMyMessage = lastMessage.senderId === user?.id
+
+                                            const isAudioMessage = lastMessage.type === 'audio'
+                                            const isFileMessage = lastMessage.type === 'file'
+
+                                            let messageText = lastMessage.content
+
+                                            if (isAudioMessage || isFileMessage) {
+                                                messageText = isMyMessage
+                                                    ? (isAudioMessage ? 'You sent a voice message.' : 'You sent a file.')
+                                                    : (isAudioMessage ? 'Sent you a voice message.' : 'Sent you a file.')
+                                            }
+
+                                            const isMenuOpen = menuOpen === id
                                             return (
                                                 <li
                                                     key={index}
-                                                    className="flex flex-col space-y-1 p-2 rounded-lg cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors duration-200 ease-in-out"
-                                                    onClick={() => handleUserClick(friend, friend.id)}
+                                                    className="flex flex-col space-y-1 p-1 rounded-lg cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors duration-200 ease-in-out group"
+                                                    onClick={() => handleUserClick(receiver, id)}
+
                                                 >
                                                     <div className="flex items-center space-x-3">
                                                         <div className="relative flex-shrink-0">
                                                             <img
                                                                 // src={receiver.avatarUrl}
-                                                                src={getAvatarUrl(theme, friend ?? {})}
-                                                                alt={`Avatar ${friend.firstName}`}
+                                                                src={getAvatarUrl(theme, receiver ?? {})}
+                                                                alt={`Avatar ${receiver.firstName}`}
                                                                 className="w-6 h-6 rounded-full object-cover transition-opacity duration-300 ease-in-out hover:opacity-80"
                                                             />
+                                                            <div
+                                                                className={` absolute bottom-0 right-0 w-2 h-2 rounded-full border-2 border-white dark:border-gray-800 ${discussion.receiver.active ? 'bg-green-500' : 'bg-red-500'}  `}
+                                                                style={{ transform: 'translate(25%, 25%)' }}
+                                                            />
                                                         </div>
-                                                        <div className="flex flex-col justify-center">
+                                                        <div className="flex flex-col justify-center flex-grow">
                                                             <p className="font-semibold truncate text-xs text-dark dark:text-white">
-                                                                {friend.firstName} {friend.lastName}
+                                                                {receiver.firstName} {receiver.lastName}
                                                             </p>
-
+                                                            <div className="flex items-center space-x-2 text-xs text-black dark:text-white">
+                                                                <p className={` truncate ${!lastMessage.read && !isMyMessage ? 'font-bold' : 'font-normal'} `}>
+                                                                    {messageText}
+                                                                </p>
+                                                                <p className='truncate text-[12px]'>
+                                                                    {getTimeDifference(lastMessage.timestamp)} {/* Format timestamp */}
+                                                                </p>
+                                                                {!lastMessage.read && !isMyMessage && (
+                                                                    <div className="relative">
+                                                                        <div className="absolute -top-1 -right-2 w-2 h-2 rounded-full bg-blue-500" />
+                                                                    </div>
+                                                                )}
+                                                                {lastMessage.read && isMyMessage && (
+                                                                    <CheckCheck className='w-3 h-3' />
+                                                                )}
+                                                            </div>
+                                                        </div>
+                                                        <div className="ml-auto items-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                                                            <CircleEllipsis className="w-4 h-4 text-gray-500 dark:text-gray-300 cursor-pointer transition-colors duration-200"
+                                                                onClick={(e) => {
+                                                                    e.stopPropagation()
+                                                                    dispatch({ type: 'TOGGLE_MENU', payload: id })
+                                                                }} />
                                                         </div>
                                                     </div>
+                                                    {/* Popup Menu */}
+                                                    <DiscussionMenu
+                                                        idDiscussion={id}
+                                                        isMenuOpen={isMenuOpen}
+                                                        dispatch={dispatch}
+                                                        menuRef={menuRef}
+
+                                                    />
                                                 </li>
                                             )
                                         })}
-                                    </ul>
+                                        {loadingMoreDiscussions && (
+                                            <LoadingMoreItemsSpinner />
+                                        )}
+
+                                    </div>
 
                                 ) : (
                                     <p className="text-gray-500 dark:text-gray-400 text-sm text-center">No users found.</p>
@@ -254,8 +286,8 @@ const DiscussionList: React.FC = () => {
                             ) : (
 
                                 <div className="list-none flex flex-col space-y-2 "
-                                ref={observerRef}
-                                style={{ height: '70vh', overflowY: 'auto'}}
+                                    ref={observerRef}
+                                    style={{ height: '70vh', overflowY: 'auto' }}
                                 >
                                     {discussions.map((discussion, index) => {
 
@@ -284,7 +316,7 @@ const DiscussionList: React.FC = () => {
                                                 key={index}
                                                 className="flex flex-col space-y-1 p-1 rounded-lg cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors duration-200 ease-in-out group"
                                                 onClick={() => handleUserClick(receiver, id)}
-                                                
+
                                             >
                                                 <div className="flex items-center space-x-3">
                                                     <div className="relative flex-shrink-0">
@@ -330,22 +362,25 @@ const DiscussionList: React.FC = () => {
                                                 </div>
                                                 {/* Popup Menu */}
                                                 <DiscussionMenu
-                                                idDiscussion={id}
-                                                isMenuOpen={isMenuOpen}
-                                                dispatch={dispatch}
-                                                menuRef={menuRef}
+                                                    idDiscussion={id}
+                                                    isMenuOpen={isMenuOpen}
+                                                    dispatch={dispatch}
+                                                    menuRef={menuRef}
 
                                                 />
                                             </li>
                                         )
                                     })}
                                     {loadingMoreDiscussions && (
-                                    <LoadingMoreItemsSpinner />
-                            )}
+                                        <LoadingMoreItemsSpinner />
+                                    )}
+
                                 </div>
                             )}
                         </div>
                     </div>
+
+                     
                     {selectedUser && (
                         <div className="flex-grow rounded-2xl bg-white dark:bg-gray-800 h-full shadow-xl ml-4 lg:ml-6">
                             <DiscussionSidebar

@@ -156,7 +156,5 @@ namespace NotificationService.Controllers
             return MyFriendRequest; 
         }
 
-
-
     }
 } 
