@@ -18,6 +18,8 @@ import LoadingSpinner from '../common/LoadingPage'
 import { DiscussionReducer, initialState } from './DiscussionReducer'
 import DiscussionMenu from './DiscussionMenu'
 import { useFetchDiscussions } from '../../hooks/useFetchDiscussions'
+import { useOutsideClick } from '../../hooks/useOutsideClick'
+import LoadingMoreItemsSpinner from '../common/LoadingMoreItemsSpinner'
 
 const DiscussionList: React.FC = () => {
 
@@ -29,7 +31,7 @@ const DiscussionList: React.FC = () => {
     const { setHasUnreadMessages } = useNotification()
 
     const [state, dispatch] = useReducer(DiscussionReducer, initialState)
-    const { menuOpen,discussions,loading } = state
+    const { menuOpen,discussions,loading,loadingMoreDiscussions } = state
 
     const { fetchDiscussions, loadMoreDiscussions } = useFetchDiscussions(dispatch)
 
@@ -39,6 +41,11 @@ const DiscussionList: React.FC = () => {
 
     const userId = user?.id 
 
+
+    const menuRef = useRef<HTMLUListElement>(null)
+    useOutsideClick(menuRef, ()=> {dispatch({ type: 'TOGGLE_MENU', payload: null })})
+
+    
     const handleUserClick = async (receiver: User, idDiscussion: string) => {
         setSelectedUser(receiver)
         setIdDiscussion(idDiscussion)
@@ -155,10 +162,8 @@ const DiscussionList: React.FC = () => {
         if (element) {
             const { scrollTop, scrollHeight, clientHeight } = element
             if (scrollHeight - scrollTop <= clientHeight + 50) {
-
-                if (loadMoreDiscussions) {
+                    console.log(userId)
                     loadMoreDiscussions(userId ?? '')
-                }
             }
         }
     }, [loadMoreDiscussions, userId])
@@ -182,7 +187,7 @@ const DiscussionList: React.FC = () => {
                 <LoadingSpinner />
             ) : (
                 <div className="flex h-screen pl-16">
-                    <div className="flex-grow rounded-2xl pl-5 pr-5 pt-4 w-5 bg-white dark:bg-gray-800 overflow-y-auto">
+                    <div className="flex-grow rounded-2xl pl-5 pr-5 pt-4 w-5 bg-white dark:bg-gray-800">
                         <div className="space-y-4 md:space-y-3 mt-5">
                             <h1 className="hidden md:block font-bold text-sm md:text-xl text-start dark:text-white">
                                 Discussion
@@ -247,12 +252,12 @@ const DiscussionList: React.FC = () => {
                                     <p className="text-gray-500 dark:text-gray-400 text-sm text-center">No users found.</p>
                                 )
                             ) : (
-                                <div className='overflow-x-hidden'
+
+                                <div className="list-none flex flex-col space-y-2 "
                                 ref={observerRef}
-                                style={{ height: '75%', overflowY: 'auto' }}
+                                style={{ height: '70vh', overflowY: 'auto'}}
                                 >
-                                <ul className="list-none flex flex-col space-y-2">
-                                    {discussions.map((discussion) => {
+                                    {discussions.map((discussion, index) => {
 
                                         const {
                                             id,
@@ -272,11 +277,11 @@ const DiscussionList: React.FC = () => {
                                                 ? (isAudioMessage ? 'You sent a voice message.' : 'You sent a file.')
                                                 : (isAudioMessage ? 'Sent you a voice message.' : 'Sent you a file.')
                                         }
-                                        const isMenuOpen = menuOpen === id
 
+                                        const isMenuOpen = menuOpen === id
                                         return (
                                             <li
-                                                key={id}
+                                                key={index}
                                                 className="flex flex-col space-y-1 p-1 rounded-lg cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors duration-200 ease-in-out group"
                                                 onClick={() => handleUserClick(receiver, id)}
                                                 
@@ -324,14 +329,20 @@ const DiscussionList: React.FC = () => {
                                                     </div>
                                                 </div>
                                                 {/* Popup Menu */}
-                                                <DiscussionMenu idDiscussion={id} isMenuOpen={isMenuOpen} dispatch={dispatch} />
+                                                <DiscussionMenu
+                                                idDiscussion={id}
+                                                isMenuOpen={isMenuOpen}
+                                                dispatch={dispatch}
+                                                menuRef={menuRef}
+
+                                                />
                                             </li>
                                         )
                                     })}
-                                </ul>
+                                    {loadingMoreDiscussions && (
+                                    <LoadingMoreItemsSpinner />
+                            )}
                                 </div>
-
-
                             )}
                         </div>
                     </div>

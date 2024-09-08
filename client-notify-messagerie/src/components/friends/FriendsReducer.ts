@@ -5,6 +5,7 @@ import { MyFriends, InvitationsFriends, FriendsRequests } from '../../interfaces
 export type FriendsState = {
   loading: boolean;
   friends: MyFriends[];
+  loadingMoreFriends: boolean;
   commonFriendsCount: Map<string, number>;
   selectedFriend: User | null;
   openPopUp: boolean;
@@ -12,7 +13,9 @@ export type FriendsState = {
   searchReq: string;
   usersSearch: MyFriends[];
   invitations: InvitationsFriends[];
-  friendsRequests: FriendsRequests[]; 
+  friendsRequests: FriendsRequests[];
+  loadingMoreInvitations: boolean,
+  loadingMoreFriendsRequests: boolean,
   removeFriend: string;
   page: number;
   hasMore: boolean;
@@ -39,9 +42,14 @@ export type Action =
   | { type: 'REMOVE_INVITATIONS'; payload: string }
   | {type: 'REMOVE_FRIEND_REQUEST'; payload: string }
   | {type: 'SET_FRIENDS_REQUESTS'; payload: FriendsRequests[]}
+  | { type: 'SET_LOADING_MORE_FRIENDS'; payload: boolean }
+  | { type: 'SET_LOADING_MORE_FRIENDS_REQUESTS'; payload: boolean }
+  | { type: 'SET_LOADING_MORE_INVITATIONS'; payload: boolean }
+
 const initialState: FriendsState = {
   loading: true,
   friends: [],
+  loadingMoreFriends: false,
   commonFriendsCount: new Map(),
   selectedFriend: null,
   openPopUp: false,
@@ -49,7 +57,9 @@ const initialState: FriendsState = {
   searchReq: '',
   usersSearch: [],
   invitations: [],
+  loadingMoreInvitations: false,
   friendsRequests:[],
+  loadingMoreFriendsRequests: false,
   removeFriend: '',
   page: 1,
   hasMore: true,
@@ -147,7 +157,12 @@ const friendsReducer = (state: FriendsState, action: Action): FriendsState => {
           ),
         }
         
-
+        case 'SET_LOADING_MORE_INVITATIONS':
+          return { ...state, loadingMoreInvitations: action.payload }
+          case 'SET_LOADING_MORE_FRIENDS_REQUESTS':
+            return { ...state, loadingMoreFriendsRequests: action.payload }
+            case 'SET_LOADING_MORE_FRIENDS':
+              return { ...state, loadingMoreFriends: action.payload }
     default:
       return state
   }

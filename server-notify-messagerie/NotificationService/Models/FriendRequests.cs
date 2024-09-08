@@ -21,7 +21,7 @@ public class FriendRequests
     public DateTime SentAt { get; set; }
 
     [BsonElement("MutualFriends")]
-    public string[] MutualFriends { get; set; }
+    public List<string> MutualFriends { get; set; }
 
     [BsonElement("NbMutualFriends")]
     public int NbMutualFriends { get; set; }
@@ -30,7 +30,7 @@ public class FriendRequests
     public FriendRequests() { }
 
     // Constructor to initialize properties
-    public FriendRequests(string id, string status, string receiverId, string senderId, DateTime sentAt, string[] mutualFriends, int nbMutualFriends)
+    public FriendRequests(string id, string status, string receiverId, string senderId, DateTime sentAt, List<string> mutualFriends, int nbMutualFriends)
     {
         Id = id;
         Status = status;

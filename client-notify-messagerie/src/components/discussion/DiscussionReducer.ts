@@ -7,6 +7,7 @@ export type DiscussionState = {
   discussions: Discussion[];
   loading: boolean;
   page: number;
+  loadingMoreDiscussions: boolean,
 };
 
 const initialState: DiscussionState = {
@@ -14,6 +15,7 @@ const initialState: DiscussionState = {
   discussions: [],
   loading: true,
   page: 1,
+  loadingMoreDiscussions: false,
 }
 
 export type Action =
@@ -25,8 +27,8 @@ export type Action =
   | {
       type: 'UPDATE_DISCUSSION';
       payload: { newMessage: Message; timestamp: string };
-    };
-
+    }
+  | {type: 'LOAD_MORE_DISCUSSIONS'; payload: boolean} 
 export const DiscussionReducer = (
   state: DiscussionState = initialState,
   action: Action
@@ -89,6 +91,9 @@ export const DiscussionReducer = (
         discussions: sortedDiscussions,
       }
     }
+
+    case 'LOAD_MORE_DISCUSSIONS':
+        return { ...state, loadingMoreDiscussions: action.payload }
     default:
       return state
   }

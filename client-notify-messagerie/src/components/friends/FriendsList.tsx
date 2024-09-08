@@ -1,9 +1,10 @@
-import React, { useCallback, useEffect, useRef } from 'react'
+import React, { useCallback, useEffect, useReducer, useRef } from 'react'
 import { DeleteIcon, Menu, MessageCircle, StarIcon } from 'lucide-react'
-import { Action } from './FriendsReducer'
+import { Action, friendsReducer, initialState } from './FriendsReducer'
 import { getAvatarUrl } from '../../utils/userUtils'
 import { useThemeContext } from '../../contexte/ThemeContext'
 import { MyFriends } from '../../interfaces/MyFriends'
+import LoadingMoreItemsSpinner from '../common/LoadingMoreItemsSpinner'
 
 
 interface UserListProps {
@@ -20,13 +21,15 @@ const FriendsList: React.FC<UserListProps> = ({ users, toggleMenu, dispatch, men
 
     const observerRef = useRef<HTMLDivElement>(null)
     const { theme } = useThemeContext()
-    
+    const [state] = useReducer(friendsReducer, initialState)
+
+
     const handleScroll = useCallback(() => {
         const element = observerRef.current
         if (element) {
             const { scrollTop, scrollHeight, clientHeight } = element
-            if (scrollHeight - scrollTop <= clientHeight + 50) {
-                dispatch({type: 'SET_LOADING', payload: false})
+            if (scrollHeight - scrollTop <= clientHeight + 50 ) {
+                //dispatch({type: 'SET_LOADING', payload: false})
                 if (loadMoreUsers) {
                     loadMoreUsers()
                 } else if (loadMoreFriends) {
@@ -126,9 +129,16 @@ const FriendsList: React.FC<UserListProps> = ({ users, toggleMenu, dispatch, men
                                     </li>
                                 </ul>
                             )}
-                        </div>
+                        </div>                        
                     </div>
+                    
                 )))}
+                      {state.loadingMoreFriends &&
+        <div className="flex justify-center items-center w-full h-full ml-56">
+        <LoadingMoreItemsSpinner />
+    </div>                      }
+
+
         </div>
 
     )

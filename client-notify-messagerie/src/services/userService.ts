@@ -123,7 +123,7 @@ const unfriend = async (unfriendRequest:UnfriendRequest) => {
 
 const searchUsersByFirstNameOrLastName = async (searchRequest:SearchRequest,pageNumber: number, pageSize:number) => {
   try {
-    const response = await axiosInstance.post(API_ENDPOINTS.SEARCH_USERS_DISCUSSION ,searchRequest,{params: {pageNumber, pageSize}})
+    const response = await axiosInstance.post(API_ENDPOINTS.SEARCH_FRIENDS ,searchRequest,{params: {pageNumber, pageSize}})
     return response.data
   } catch (error) {
     if (axios.isAxiosError(error) && error.response) {

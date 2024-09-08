@@ -14,17 +14,21 @@ namespace NotificationService.Services
         private readonly IUserRepository _userRepository;
         private readonly IUserValidators _userValidators;
         private readonly IFriendRepository _friendRepository;
-        private readonly IInvitationsRepository _invitationsRepository; 
+        private readonly IInvitationsRepository _invitationsRepository;
+        private readonly IFriendsRequestsRepository _friendsRequestsRepository;
+
         public UserService(IUserRepository userRepository,
                            IUserValidators userValidators,
                            IFriendRepository friendRepository,
-                           IInvitationsRepository invitationsRepository
+                           IInvitationsRepository invitationsRepository,
+                           IFriendsRequestsRepository friendsRequestsRepository
                            )
         {
             _userRepository = userRepository;
             _userValidators = userValidators;
             _friendRepository = friendRepository;
-            _invitationsRepository =  invitationsRepository; 
+            _invitationsRepository = invitationsRepository;
+            _friendsRequestsRepository = friendsRequestsRepository;
         }
 
 
@@ -145,54 +149,57 @@ namespace NotificationService.Services
         }
         public async Task<IEnumerable<MyFriends>> GetFriendsAsync(string userId, int pageNumber, int pageSize)
         {
-            if (string.IsNullOrWhiteSpace(userId)) {
-                throw new ArgumentNullException("User ID cannot be empty or whitespace."); 
-            } 
-            var user = await _userRepository.GetUserByIdAsync(userId); 
-            if (user == null) {
-                throw new NotFoundException ($"User With ID '{userId}' not found."); 
+            if (string.IsNullOrWhiteSpace(userId))
+            {
+                throw new ArgumentNullException("User ID cannot be empty or whitespace.");
+            }
+            var user = await _userRepository.GetUserByIdAsync(userId);
+            if (user == null)
+            {
+                throw new NotFoundException($"User With ID '{userId}' not found.");
             }
 
 
-    // Fetch the friends from the repository
-    var friendDocuments = await _friendRepository.GetFriendsAsync(userId, pageNumber, pageSize);
+            // Fetch the friends from the repository
+            var friendDocuments = await _friendRepository.GetFriendsAsync(userId, pageNumber, pageSize);
 
 
-    // Extract friend IDs
-    var friendIds = friendDocuments.Select(f => f.FriendId).ToList();
+            // Extract friend IDs
+            var friendIds = friendDocuments.Select(f => f.FriendId).ToList();
 
-    // Retrieve user details for friend IDs
-    var friendUsers = await _userRepository.GetUsersByIdsAsync(friendIds);
+            // Retrieve user details for friend IDs
+            var friendUsers = await _userRepository.GetUsersByIdsAsync(friendIds);
 
-    // Combine friend details and other information into MyFriends objects
-    var myFriendsList = friendDocuments.Select(friendDoc =>
-    {
-        var friendUser = friendUsers.FirstOrDefault(u => u.Id == friendDoc.FriendId);
+            // Combine friend details and other information into MyFriends objects
+            var myFriendsList = friendDocuments.Select(friendDoc =>
+            {
+                var friendUser = friendUsers.FirstOrDefault(u => u.Id == friendDoc.FriendId);
 
-        return new MyFriends
+                return new MyFriends
+                {
+                    User = friendUser,
+                    CreatedAt = friendDoc.CreatedAt,
+                    NbMutualFriends = friendDoc.NbMutualFriends,
+                    MutualFriends = friendDoc.MutualFriends
+                };
+            }).ToList();
+
+
+            return myFriendsList;
+        }
+
+        public async Task<IEnumerable<User>> GetMutualFriendsAsync(string userId, string friendId)
         {
-            User = friendUser,
-            CreatedAt = friendDoc.CreatedAt,
-            NbMutualFriends = friendDoc.NbMutualFriends,
-            MutualFriends = friendDoc.MutualFriends
-        };
-    }).ToList();
 
+            var mutualFriendIds = await _friendRepository.GetMutualFriendsAsync(userId, friendId);
 
-    return myFriendsList;
-}
+            // Fetch user details for the mutual friend IDs
+            var mutualFriends = await _userRepository.GetUsersByIdsAsync(mutualFriendIds);
 
-        public async Task<IEnumerable<User>> GetMutualFriendsAsync(string userId, string friendId) {
-
-        var mutualFriendIds = await _friendRepository.GetMutualFriendsAsync(userId, friendId);
-        
-        // Fetch user details for the mutual friend IDs
-        var mutualFriends = await _userRepository.GetUsersByIdsAsync(mutualFriendIds);
-        
-        return mutualFriends;
+            return mutualFriends;
 
         }
-   
+
         public async Task UnfriendAsync(string userId, string friendId)
         {
             var user = await _userRepository.GetUserByIdAsync(userId);
@@ -213,9 +220,9 @@ namespace NotificationService.Services
                 user.Friends.Remove(friendId);
             }
 
-            user.NbFriends--; 
-                
-            await _friendRepository.RemoveFriendshipAsync(userId, friendId); 
+            user.NbFriends--;
+
+            await _friendRepository.RemoveFriendshipAsync(userId, friendId);
             await _userRepository.UpdateUserAsync(userId, user);
         }
 
@@ -292,52 +299,52 @@ namespace NotificationService.Services
                         user.FriendRequestsReceived.Remove(friendId);
                         user.Friends.Add(friendId);
                         friend.Friends.Add(userId);
-                        user.NbInvitations--; 
-                        user.NbFriends++;  
+                        user.NbInvitations--;
+                        user.NbFriends++;
                         // Update users in the User collection
                         await _userRepository.UpdateUserAsync(userId, user);
                         await _userRepository.UpdateUserAsync(friendId, friend);
 
                         // Get mutual friends 
-                        var mutualFriends =  await _friendRepository.GetMutualFriendsAsync(userId, friendId); 
-                        var mutualFriendsCount = mutualFriends.Count; 
+                        var mutualFriends = await _friendRepository.GetMutualFriendsAsync(userId, friendId);
+                        var mutualFriendsCount = mutualFriends.Count;
 
-                    var userFriendShip = new Friends
-                         {
-                    UserId = userId,
-                    FriendId = friendId,
-                    CreatedAt = DateTime.UtcNow,
-                    NbMutualFriends = mutualFriendsCount,
-                    MutualFriends = mutualFriends
-                         }; 
+                        var userFriendShip = new Friends
+                        {
+                            UserId = userId,
+                            FriendId = friendId,
+                            CreatedAt = DateTime.UtcNow,
+                            NbMutualFriends = mutualFriendsCount,
+                            MutualFriends = mutualFriends
+                        };
                         // complete here the acceptation . 
-                        
-                var friendFriendship = new Friends
-                {
-                    UserId = friendId,
-                    FriendId = userId,
-                    CreatedAt = DateTime.UtcNow,
-                    NbMutualFriends = mutualFriendsCount,
-                    MutualFriends = mutualFriends
-                };
-                                // Add friendships to the Friends collection
-                await _friendRepository.AddFriendshipAsync(userFriendShip);
-                await _friendRepository.AddFriendshipAsync(friendFriendship);
+
+                        var friendFriendship = new Friends
+                        {
+                            UserId = friendId,
+                            FriendId = userId,
+                            CreatedAt = DateTime.UtcNow,
+                            NbMutualFriends = mutualFriendsCount,
+                            MutualFriends = mutualFriends
+                        };
+                        // Add friendships to the Friends collection
+                        await _friendRepository.AddFriendshipAsync(userFriendShip);
+                        await _friendRepository.AddFriendshipAsync(friendFriendship);
 
 
-                                // Remove invitation after acceptance
-                await _invitationsRepository.RemoveInvitationAsync(friendId, userId);
+                        // Remove invitation after acceptance
+                        await _invitationsRepository.RemoveInvitationAsync(friendId, userId);
 
-                // Create and return MyFriends object for the accepted friend
-                var myFriend = new MyFriends
-                {
-                    User = friend,
-                    CreatedAt = DateTime.UtcNow,
-                    NbMutualFriends = mutualFriendsCount,
-                    MutualFriends = mutualFriends
-                };
+                        // Create and return MyFriends object for the accepted friend
+                        var myFriend = new MyFriends
+                        {
+                            User = friend,
+                            CreatedAt = DateTime.UtcNow,
+                            NbMutualFriends = mutualFriendsCount,
+                            MutualFriends = mutualFriends
+                        };
 
-                return myFriend;
+                        return myFriend;
 
                     }
                     break;
@@ -347,19 +354,19 @@ namespace NotificationService.Services
                     {
                         user.FriendRequestsReceived.Remove(friendId);
                         await _userRepository.UpdateUserAsync(userId, user);
-                        user.NbInvitations--; 
+                        user.NbInvitations--;
                         await _userRepository.UpdateUserAsync(friendId, friend);
 
-                // Remove invitation after rejection
-                await _invitationsRepository.RemoveInvitationAsync(friendId, userId);
-                return new MyFriends(); // Return an empty MyFriends object
+                        // Remove invitation after rejection
+                        await _invitationsRepository.RemoveInvitationAsync(friendId, userId);
+                        return new MyFriends(); // Return an empty MyFriends object
                         //return "You rejected the Invitation.";
                     }
                     break;
             }
 
 
-            return null ;
+            return null;
         }
 
         public async Task<List<MyFriends>> SearchUsersByFirstNameOrLastNameAsync(SearchRequest searchRequest, int pageNumber, int pageSize)
@@ -391,72 +398,168 @@ namespace NotificationService.Services
                                                                                     pageNumber,
                                                                                     pageSize);
 
-    var myFriendsList = new List<MyFriends>();
+            var myFriendsList = new List<MyFriends>();
 
 
 
-    // Get friend documents for matching users
-    var friendDocuments = await _friendRepository.GetFriendsAsync(searchRequest.UserId, 1, int.MaxValue); // Retrieve all friend documents for the user
+            // Get friend documents for matching users
+            var friendDocuments = await _friendRepository.GetFriendsAsync(searchRequest.UserId, 1, int.MaxValue); // Retrieve all friend documents for the user
 
-    foreach (var user in matchingUsers)
-    {
-        
-        var friendDoc = await _friendRepository.GetFriendshipAsync(searchRequest.UserId, user.Id);
-
-        if (friendDoc != null)
-        {
-            var mutualFriendsIds = await _friendRepository.GetMutualFriendsAsync(searchRequest.UserId, user.Id.ToString());
-            var nbMutualFriends = mutualFriendsIds.Count;
-
-            var myFriend = new MyFriends
+            foreach (var user in matchingUsers)
             {
-                User = user,
-                CreatedAt = friendDoc.CreatedAt,
-                NbMutualFriends = nbMutualFriends,
-                MutualFriends = mutualFriendsIds
-            };
 
-            myFriendsList.Add(myFriend);
+                var friendDoc = await _friendRepository.GetFriendshipAsync(searchRequest.UserId, user.Id);
+
+                if (friendDoc != null)
+                {
+                    var mutualFriendsIds = await _friendRepository.GetMutualFriendsAsync(searchRequest.UserId, user.Id.ToString());
+                    var nbMutualFriends = mutualFriendsIds.Count;
+
+                    var myFriend = new MyFriends
+                    {
+                        User = user,
+                        CreatedAt = friendDoc.CreatedAt,
+                        NbMutualFriends = nbMutualFriends,
+                        MutualFriends = mutualFriendsIds
+                    };
+
+                    myFriendsList.Add(myFriend);
+                }
+            }
+
+            return myFriendsList;
+
         }
-    }
 
-    return myFriendsList;
-   
-        }
-    
-        public async Task<IEnumerable<MyInvitations>> GetInvitationsFriends(string userId, int pageNumber=1, int pageSize=6) {
+        public async Task<IEnumerable<MyInvitations>> GetInvitationsFriends(string userId, int pageNumber = 1, int pageSize = 6)
+        {
 
-                        if (string.IsNullOrWhiteSpace(userId)) {
-                throw new ArgumentNullException("User ID cannot be empty or whitespace."); 
-            } 
-            var user = await _userRepository.GetUserByIdAsync(userId); 
-            if (user == null) {
-                throw new NotFoundException ($"User With ID '{userId}' not found."); 
+            if (string.IsNullOrWhiteSpace(userId))
+            {
+                throw new ArgumentNullException("User ID cannot be empty or whitespace.");
+            }
+            var user = await _userRepository.GetUserByIdAsync(userId);
+            if (user == null)
+            {
+                throw new NotFoundException($"User With ID '{userId}' not found.");
             }
 
 
-    var invitationsDocuments = await _invitationsRepository.GetInvitationsAsync(userId, pageNumber, pageSize);
+            var invitationsDocuments = await _invitationsRepository.GetInvitationsAsync(userId, pageNumber, pageSize);
 
 
-    var invitationsSendersIds = invitationsDocuments.Select(f => f.SenderId).ToList();
+            var invitationsSendersIds = invitationsDocuments.Select(f => f.SenderId).ToList();
 
-    var invitationsUsers = await _userRepository.GetUsersByIdsAsync(invitationsSendersIds);
+            var invitationsUsers = await _userRepository.GetUsersByIdsAsync(invitationsSendersIds);
 
-    var myInvitationsList = invitationsDocuments.Select(invitationDoc =>
-    {
-        var InvitationUser = invitationsUsers.FirstOrDefault(i => i.Id == invitationDoc.SenderId);
+            var myInvitationsList = invitationsDocuments.Select(invitationDoc =>
+            {
+                var InvitationUser = invitationsUsers.FirstOrDefault(i => i.Id == invitationDoc.SenderId);
 
-        return new MyInvitations
+                return new MyInvitations
+                {
+                    User = InvitationUser,
+                    SentAt = invitationDoc.SentAt,
+                    MutualFriends = invitationDoc.MutualFriends,
+                    Status = invitationDoc.Status,
+                    NbMutualFriends = invitationDoc.NbMutualFriends,
+                };
+            }).ToList();
+
+            return myInvitationsList;
+
+        }
+
+        public async Task<IEnumerable<MyFriendsRequests>> GetFriendsRequests(string userId, int pageNumber = 1, int pageSize = 6)
         {
-            User = InvitationUser,
-            SentAt = invitationDoc.SentAt,
-            MutualFriends = invitationDoc.MutualFriends,
-            Status = invitationDoc.Status,
-            NbMutualFriends = invitationDoc.NbMutualFriends,
-        };
-    }).ToList();
+            if (string.IsNullOrWhiteSpace(userId))
+            {
+                throw new ArgumentNullException("User ID cannot be empty or whitespace.");
+            }
+            var user = await _userRepository.GetUserByIdAsync(userId);
+            if (user == null)
+            {
+                throw new NotFoundException($"User With ID '{userId}' not found.");
+            }
 
-    return myInvitationsList;
+
+            var friendsRequestsDocuments = await _friendsRequestsRepository.GetfriendsRequestsAsync(userId, pageNumber, pageSize);
+
+            var friendsRequestsReceiversIds = friendsRequestsDocuments.Select(f => f.ReceiverId).ToList();
+
+            var friendsRequestsUsers = await _userRepository.GetUsersByIdsAsync(friendsRequestsReceiversIds);
+
+            var myfriendsRequestsList = friendsRequestsDocuments.Select(friendsRequestDoc =>
+            {
+                var friendsRequestUser = friendsRequestsUsers.FirstOrDefault(i => i.Id == friendsRequestDoc.ReceiverId);
+
+                return new MyFriendsRequests
+                {
+                    User = friendsRequestUser,
+                    SentAt = friendsRequestDoc.SentAt,
+                    MutualFriends = friendsRequestDoc.MutualFriends,
+                    Status = friendsRequestDoc.Status,
+                    NbMutualFriends = friendsRequestDoc.NbMutualFriends,
+                };
+            }).ToList();
+
+            return myfriendsRequestsList;
+
+
+        }
+
+        public async Task<MyFriendsRequests> CancelInvitation(string userId, string friendId)
+        {
+
+            var user = await _userRepository.GetUserByIdAsync(userId);
+
+            if (user == null)
+            {
+                throw new NotFoundException($"User with ID '{userId}' Not found");
+            }
+            var friend = await _userRepository.GetUserByIdAsync(friendId);
+            if (friend == null)
+            {
+                throw new NotFoundException($"User with ID '{friendId}' Not found");
+            }
+
+            if (user.FriendRequestsSent == null)
+            {
+                user.FriendRequestsSent = new List<string>();
+            }
+
+            if (friend.FriendRequestsReceived == null)
+            {
+                friend.FriendRequestsReceived = new List<string>();
+            }
+            if (user.FriendRequestsSent.Contains(friendId))
+            {
+                user.FriendRequestsSent.Remove(friendId);
+                user.NbFriendRequests--;
+                friend.FriendRequestsReceived.Remove(userId);
+                friend.NbInvitations --; 
+                // Update users in the User collection
+                await _userRepository.UpdateUserAsync(userId, user);
+                await _userRepository.UpdateUserAsync(friendId, friend);
+
+                // Get mutual friends 
+                var mutualFriends = await _friendRepository.GetMutualFriendsAsync(userId, friendId);
+                var mutualFriendsCount = mutualFriends.Count;
+
+                await _friendsRequestsRepository.RemoveFriendRequestAsync(friendId, userId);
+
+                // Create and return MyFriends object for the accepted friend
+                var myFriendRequest = new MyFriendsRequests
+                {
+                    User = friend,
+                    SentAt = DateTime.UtcNow,   // consider it like the date of cancellaion 
+                    NbMutualFriends = mutualFriendsCount,
+                    MutualFriends = mutualFriends
+                };
+                return myFriendRequest;
+            }
+            return null;
+
 
         }
 

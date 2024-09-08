@@ -9,6 +9,7 @@ import { useAuth } from '../../contexte/AuthContext'
 import { AnswerInvitationRequest, InvitationResponse } from '../../interfaces/MyFriends'
 import { useFetchFriends } from '../../hooks/useFetchFriends'
 import LoadingSpinner from '../common/LoadingPage'
+import LoadingMoreItemsSpinner from '../common/LoadingMoreItemsSpinner'
 interface InvitationsFriendsListProps {
     userId: string
 
@@ -20,7 +21,7 @@ const Invitations: React.FC<InvitationsFriendsListProps> = ({ userId }) => {
     const { theme } = useThemeContext()
     const { refreshUserData } = useAuth()
     const [state, dispatch] = useReducer(friendsReducer, initialState)
-    const { loading, invitations } = state
+    const { loading, invitations,loadingMoreInvitations } = state
 
 
     const { fetchInvitations, loadMoreInvitations } = useFetchInvitations(dispatch)
@@ -157,6 +158,12 @@ const Invitations: React.FC<InvitationsFriendsListProps> = ({ userId }) => {
                     </div>
                 ))
             )}
+            {loadingMoreInvitations &&
+                <div className="absolute bottom-0 left-0 right-0 flex justify-center items-center py-4 bg-white dark:bg-gray-800">
+        <LoadingMoreItemsSpinner />
+    </div>
+}
+
         </div>
     )
 

@@ -4,13 +4,13 @@ import { Action } from '../components/discussion/DiscussionReducer'
 
 export const useFetchDiscussions = (dispatch: React.Dispatch<Action>) => {
     const [page, setPage] = useState(1)
-    const [loading, setLoading] = useState(false)
+    const [isFetching, setIsFetching] = useState(false)
     const [HasMoreDiscussions, setHasMoreDiscussions] = useState(true)
 
 
     const fetchDiscussions = useCallback(
         async (userId: string) => {
-            setLoading(true)
+            setIsFetching(true)
             dispatch({ type: 'SET_LOADING', payload: true }) // loading for load data
 
             try {
@@ -25,7 +25,7 @@ export const useFetchDiscussions = (dispatch: React.Dispatch<Action>) => {
             } catch (error) {
                 console.error(error)
             } finally {
-                setLoading(false)
+                setIsFetching(false)
                 dispatch({ type: 'SET_LOADING', payload: false }) // loading for load data
             }
         },
@@ -34,8 +34,9 @@ export const useFetchDiscussions = (dispatch: React.Dispatch<Action>) => {
 
     const loadMoreDiscussions = useCallback(
         async (userId: string) => {
-            if (loading || !HasMoreDiscussions) return 
-                setLoading(true)
+            if (!HasMoreDiscussions || isFetching) return 
+                dispatch({ type: 'LOAD_MORE_DISCUSSIONS', payload: true }) // Start loading more discussions
+                setIsFetching(true)
                 try {
                     const result = await messageService.getDiscussions(userId,page, 10)
                     dispatch({ type: 'ADD_MORE_DISCUSSIONS', payload: result }) // Appends to current search results
@@ -48,11 +49,12 @@ export const useFetchDiscussions = (dispatch: React.Dispatch<Action>) => {
                 } catch (error) {
                     console.error(error)
                 } finally {
-                    setLoading(false)
+                    dispatch({ type: 'LOAD_MORE_DISCUSSIONS', payload: false }) // Start loading more discussions
+                    setIsFetching(false)
                 }
         },
-        [loading, HasMoreDiscussions, page, dispatch]
+        [HasMoreDiscussions, isFetching, dispatch, page]
     )
 
-    return { fetchDiscussions, loadMoreDiscussions, loading }
+    return { fetchDiscussions, loadMoreDiscussions }
 }

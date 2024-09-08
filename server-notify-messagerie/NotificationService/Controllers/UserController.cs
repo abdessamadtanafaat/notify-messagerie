@@ -75,6 +75,14 @@ namespace NotificationService.Controllers
             await _userService.UpdateProfileAsync(id, profileUpdateReq);
             return NoContent();
         }
+
+        [HttpDelete("{id}")]
+        [Authorize]
+        public async Task<IActionResult> DeleteUser(string id)
+        {
+            await _userService.DeleteUserAsync(id);
+            return NoContent();
+        }
         
         [HttpPost("unfriend")]
         //[Authorize]
@@ -102,10 +110,10 @@ namespace NotificationService.Controllers
         //[Authorize]
         public async Task<MyFriends> AnswerInvitation([FromBody]AnswerInvitationRequest answerInvitationRequest) {
 
-            var myInvitation = await _userService.AnswerInvitationAsync(answerInvitationRequest.UserId,
+            var MyInvitation = await _userService.AnswerInvitationAsync(answerInvitationRequest.UserId,
              answerInvitationRequest.FriendId,
              answerInvitationRequest.AnswerInvitationChoice ); 
-            return myInvitation; 
+            return MyInvitation; 
         }
 
         // Accepte or refuse the invitation received . 
@@ -130,5 +138,25 @@ namespace NotificationService.Controllers
             var invitationsFriends = await _userService.GetInvitationsFriends(userId,pageNumber,pageSize); 
             return  invitationsFriends ; 
         }
+
+        [HttpGet("friendsRequests/{userId}")] 
+        //[Authorize]
+        public async Task<IEnumerable<MyFriendsRequests>> GetFriendsRequests(string userId, [FromQuery] int pageNumber, [FromQuery] int pageSize) {
+            var friendsRequests = await _userService.GetFriendsRequests(userId,pageNumber,pageSize); 
+            return  friendsRequests ; 
+        }
+
+        [HttpPost("cancelFriendRequest")] 
+        //[Authorize]
+        public async Task<MyFriendsRequests> CancelInvitation([FromBody]CancelledFriendRequest cancelledFriendRequest) {
+
+            var MyFriendRequest = await _userService.CancelInvitation(cancelledFriendRequest.UserId,
+             cancelledFriendRequest.FriendId
+              ); 
+            return MyFriendRequest; 
+        }
+
+
+
     }
 } 

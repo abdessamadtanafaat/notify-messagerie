@@ -4,13 +4,13 @@ import friendService from '../services/friendService'
 
 export const useFetchFriendsRequest = (dispatch: React.Dispatch<Action>) => {
     const [page, setPage] = useState(1)
-    const [loading, setLoading] = useState(false) // loading for the pagination
+    const [isFetching, setIsFetching] = useState(false) 
     const [HasMoreFriendsRequests, setHasMoreFriendsRequests] = useState(true)
 
 
     const fetchFriendsRequests = useCallback(
         async (userId: string) => {
-            setLoading(true)
+            setIsFetching(true)
             dispatch({ type: 'SET_LOADING', payload: true }) // loading for load data
             try {
                 const result = await friendService.fetchFriendsRequests(userId,1, 10)
@@ -24,8 +24,9 @@ export const useFetchFriendsRequest = (dispatch: React.Dispatch<Action>) => {
             } catch (error) {
                 console.error(error)
             } finally {
-                //setLoading(false)
+                setIsFetching(false)
                 dispatch({ type: 'SET_LOADING', payload: false })
+
             }
         },
         [dispatch]
@@ -33,8 +34,9 @@ export const useFetchFriendsRequest = (dispatch: React.Dispatch<Action>) => {
 
     const loadMoreFriendsRequests = useCallback(
         async (userId: string) => {
-            if (loading || !HasMoreFriendsRequests) return 
-                setLoading(true)
+            if (isFetching || !HasMoreFriendsRequests) return 
+            setIsFetching(true)
+            dispatch({ type: 'SET_LOADING_MORE_FRIENDS_REQUESTS', payload: true })
                 try {
                     const result = await friendService.fetchFriendsRequests(userId,page, 10)
                     dispatch({ type: 'ADD_MORE_FRIENDS_REQUESTS', payload: result }) // Appends to current search results
@@ -47,11 +49,13 @@ export const useFetchFriendsRequest = (dispatch: React.Dispatch<Action>) => {
                 } catch (error) {
                     console.error(error)
                 } finally {
-                    setLoading(false)
+                    setIsFetching(false)
+                    dispatch({ type: 'SET_LOADING_MORE_FRIENDS_REQUESTS', payload: false })
+
                 }
         },
-        [loading, HasMoreFriendsRequests, page, dispatch]
+        [isFetching, HasMoreFriendsRequests, page, dispatch]
     )
 
-    return { fetchFriendsRequests, loadMoreFriendsRequests, loading }
+    return { fetchFriendsRequests, loadMoreFriendsRequests, isFetching }
 }

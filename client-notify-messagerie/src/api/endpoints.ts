@@ -18,7 +18,7 @@
     //PUT_AVATAR_URL: '/update-avatar',
     PUT_PROFILE_URL: '/update-profile',
     UNFRIEND: 'User/unfriend',
-    SEARCH_USERS_DISCUSSION: 'User/search',
+    SEARCH_FRIENDS: 'User/search',
     // ====================================== STRAPI ====================================== // 
     
     USERS: 'n-users',

@@ -8,6 +8,7 @@ import { useAuth } from '../../contexte/AuthContext'
 import { CancelledFriendRequest } from '../../interfaces/MyFriends'
 import { useFetchFriendsRequest } from '../../hooks/useFetchFriendsRequest'
 import LoadingSpinner from '../common/LoadingPage'
+import LoadingMoreItemsSpinner from '../common/LoadingMoreItemsSpinner'
 //import { useFetchFriends } from '../../hooks/useFetchFriends'
 interface FriendsRequestListProps {
     userId: string
@@ -126,6 +127,13 @@ const FriendsRequest: React.FC<FriendsRequestListProps> = ({ userId }) => {
                     </div>
                 ))
             )}
+
+{state.loadingMoreFriendsRequests &&
+                <div className="absolute bottom-0 left-0 right-0 flex justify-center items-center py-4 bg-white dark:bg-gray-800">
+        <LoadingMoreItemsSpinner />
+    </div>
+}
+    
         </div>
     )
 

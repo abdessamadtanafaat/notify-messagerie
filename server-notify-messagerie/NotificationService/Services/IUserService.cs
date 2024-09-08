@@ -21,6 +21,8 @@ namespace NotificationService.Services
         Task<IEnumerable<MyFriends>> GetFriendsAsync(string userId, int pageNumber=1, int pageSize=6); 
         Task<IEnumerable<MyInvitations>> GetInvitationsFriends(string userId, int pageNumber=1, int pageSize=6); 
         Task<IEnumerable<User>> GetMutualFriendsAsync(string userId, string friendId); 
+        Task<IEnumerable<MyFriendsRequests>> GetFriendsRequests(string userId, int pageNumber=1, int pageSize=6); 
+        Task<MyFriendsRequests> CancelInvitation(string userId, string friendId); 
 
     }
 }

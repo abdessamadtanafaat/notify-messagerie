@@ -20,6 +20,7 @@ export const useFetchFriends = (
                                 dispatch({type: 'SET_HAS_MORE', payload: false})
                             }
                             dispatch({type: 'SET_FRIENDS', payload: response})
+                            dispatch({ type: 'SET_LOADING_MORE_FRIENDS', payload: false }) // Stop loading after fetching more friends
                     }
                     }catch(err){
                         console.error(err)
@@ -37,6 +38,7 @@ export const useFetchFriends = (
 
     const loadMoreFriends = () => {
         if(hasMore) {
+            dispatch({ type: 'SET_LOADING_MORE_FRIENDS', payload: true }) // Set loading state to true when loading more friends
             dispatch({type: 'SET_PAGE', payload: page + 1})
         }
     }
