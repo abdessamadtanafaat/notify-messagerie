@@ -71,9 +71,7 @@ export default function Personnes() {
             />
             {selectedUser && (
                 <>
-                    {/* <FriendInfoSidebar
-                        user={selectedUser}
-                    /> */}
+
                     <div className="flex-grow rounded-2xl bg-white dark:bg-gray-800 h-screen shadow-xl ml-4 lg:ml-6">
                         <DiscussionSidebar
                             receiver={selectedUser}

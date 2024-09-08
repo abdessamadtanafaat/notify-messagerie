@@ -4,13 +4,13 @@ import { Action } from '../components/friends/FriendsReducer'
 
 export const useSearchUsers = (dispatch: React.Dispatch<Action>) => {
     const [page, setPage] = useState(1)
-    const [loading, setLoading] = useState(false)
+    const [isFetching, setIsFetching] = useState(false)
     const [hasMoreUsers, setHasMoreUsers] = useState(true)
 
 
     const searchUsers = useCallback(
         async (userId: string, searchReq: string) => {
-            setLoading(true)
+            setIsFetching(true)
             try {
                 const searchRequest = { userId, searchReq }
 
@@ -25,7 +25,7 @@ export const useSearchUsers = (dispatch: React.Dispatch<Action>) => {
             } catch (error) {
                 console.error(error)
             } finally {
-                setLoading(false)
+                setIsFetching(false)
             }
         },
         [dispatch]
@@ -33,13 +33,13 @@ export const useSearchUsers = (dispatch: React.Dispatch<Action>) => {
 
     const loadMoreUsers = useCallback(
         async (userId: string,searchReq: string) => {
-            if (loading || !hasMoreUsers) return 
+            if (isFetching || !hasMoreUsers) return 
             console.log('Searching with userId:', userId)
-            if (!loading) {
-                setLoading(true)
+            if (!isFetching) {
+                setIsFetching(true)
+                dispatch({ type: 'SET_LOADING_MORE_SEARCH_USERS', payload: true })
                 try {
                     const searchRequest = { userId, searchReq }
-
                     const result = await userService.searchUsersByFirstNameOrLastName(searchRequest, page, 10)
                     dispatch({ type: 'ADD_MORE_USERS', payload: result }) // Appends to current search results
                     setPage(prev => prev + 1)
@@ -51,12 +51,14 @@ export const useSearchUsers = (dispatch: React.Dispatch<Action>) => {
                 } catch (error) {
                     console.error(error)
                 } finally {
-                    setLoading(false)
+                    setIsFetching(false)
+                    dispatch({ type: 'SET_LOADING_MORE_SEARCH_USERS', payload: false })
+
                 }
             }
         },
-        [loading, hasMoreUsers, page, dispatch]
+        [isFetching, hasMoreUsers, page, dispatch]
     )
 
-    return { searchUsers, loadMoreUsers, loading }
+    return { searchUsers, loadMoreUsers }
 }

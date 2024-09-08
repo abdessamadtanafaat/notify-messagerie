@@ -1,6 +1,10 @@
 // src/components/FriendsReducer.ts
 import { User } from '../../interfaces'
-import { MyFriends, InvitationsFriends, FriendsRequests } from '../../interfaces/MyFriends'
+import {
+  MyFriends,
+  InvitationsFriends,
+  FriendsRequests,
+} from '../../interfaces/MyFriends'
 
 export type FriendsState = {
   loading: boolean;
@@ -14,8 +18,9 @@ export type FriendsState = {
   usersSearch: MyFriends[];
   invitations: InvitationsFriends[];
   friendsRequests: FriendsRequests[];
-  loadingMoreInvitations: boolean,
-  loadingMoreFriendsRequests: boolean,
+  loadingMoreInvitations: boolean;
+  loadingMoreFriendsRequests: boolean;
+  loadingMoreSearchUsers: boolean;
   removeFriend: string;
   page: number;
   hasMore: boolean;
@@ -38,18 +43,21 @@ export type Action =
   | { type: 'SET_HAS_MORE'; payload: boolean }
   | { type: 'ADD_MORE_USERS'; payload: MyFriends[] }
   | { type: 'ADD_MORE_INVITATIONS'; payload: InvitationsFriends[] }
-  | {type: 'ADD_MORE_FRIENDS_REQUESTS'; payload: FriendsRequests[]}
+  | { type: 'ADD_MORE_FRIENDS_REQUESTS'; payload: FriendsRequests[] }
   | { type: 'REMOVE_INVITATIONS'; payload: string }
-  | {type: 'REMOVE_FRIEND_REQUEST'; payload: string }
-  | {type: 'SET_FRIENDS_REQUESTS'; payload: FriendsRequests[]}
+  | { type: 'REMOVE_FRIEND_REQUEST'; payload: string }
+  | { type: 'SET_FRIENDS_REQUESTS'; payload: FriendsRequests[] }
   | { type: 'SET_LOADING_MORE_FRIENDS'; payload: boolean }
   | { type: 'SET_LOADING_MORE_FRIENDS_REQUESTS'; payload: boolean }
   | { type: 'SET_LOADING_MORE_INVITATIONS'; payload: boolean }
+  | { type: 'ADD_MORE_FRIENDS'; payload: MyFriends[] }
+  | { type: 'SET_LOADING_MORE_SEARCH_USERS'; payload: boolean };
 
 const initialState: FriendsState = {
   loading: true,
   friends: [],
   loadingMoreFriends: false,
+  loadingMoreSearchUsers: false,
   commonFriendsCount: new Map(),
   selectedFriend: null,
   openPopUp: false,
@@ -58,7 +66,7 @@ const initialState: FriendsState = {
   usersSearch: [],
   invitations: [],
   loadingMoreInvitations: false,
-  friendsRequests:[],
+  friendsRequests: [],
   loadingMoreFriendsRequests: false,
   removeFriend: '',
   page: 1,
@@ -102,8 +110,13 @@ const friendsReducer = (state: FriendsState, action: Action): FriendsState => {
 
     case 'SET_INVITATIONS':
       return { ...state, invitations: action.payload, loading: false, page: 1 }
-    case 'SET_FRIENDS_REQUESTS': 
-      return {...state, friendsRequests: action.payload, loading: false, page: 1}
+    case 'SET_FRIENDS_REQUESTS':
+      return {
+        ...state,
+        friendsRequests: action.payload,
+        loading: false,
+        page: 1,
+      }
     case 'ADD_MORE_USERS':
       return {
         ...state,
@@ -117,14 +130,20 @@ const friendsReducer = (state: FriendsState, action: Action): FriendsState => {
         loading: false,
       }
 
-    case 'ADD_MORE_FRIENDS_REQUESTS':
-        return {
-          ...state,
-          friendsRequests: [...state.friendsRequests, ...action.payload],
-          loading: false,
-        }
+    case 'ADD_MORE_FRIENDS':
+      return {
+        ...state,
+        friends: [...state.friends, ...action.payload],
+        loading: false,
+      }
 
-      
+    case 'ADD_MORE_FRIENDS_REQUESTS':
+      return {
+        ...state,
+        friendsRequests: [...state.friendsRequests, ...action.payload],
+        loading: false,
+      }
+
     case 'REMOVE_FRIEND': {
       const updatedFriends = state.friends.filter(
         (friend) => friend.user.id !== action.payload
@@ -149,20 +168,24 @@ const friendsReducer = (state: FriendsState, action: Action): FriendsState => {
           (invitation) => invitation.user.id !== action.payload
         ),
       }
-      case 'REMOVE_FRIEND_REQUEST':
-        return {
-          ...state,
-          friendsRequests: state.invitations.filter(
-            (friendsRequest) => friendsRequest.user.id !== action.payload
-          ),
-        }
-        
-        case 'SET_LOADING_MORE_INVITATIONS':
-          return { ...state, loadingMoreInvitations: action.payload }
-          case 'SET_LOADING_MORE_FRIENDS_REQUESTS':
-            return { ...state, loadingMoreFriendsRequests: action.payload }
-            case 'SET_LOADING_MORE_FRIENDS':
-              return { ...state, loadingMoreFriends: action.payload }
+    case 'REMOVE_FRIEND_REQUEST':
+      return {
+        ...state,
+        friendsRequests: state.invitations.filter(
+          (friendsRequest) => friendsRequest.user.id !== action.payload
+        ),
+      }
+
+    case 'SET_LOADING_MORE_INVITATIONS':
+      return { ...state, loadingMoreInvitations: action.payload }
+    case 'SET_LOADING_MORE_FRIENDS_REQUESTS':
+      return { ...state, loadingMoreFriendsRequests: action.payload }
+    case 'SET_LOADING_MORE_FRIENDS':
+      return { ...state, loadingMoreFriends: action.payload }
+
+    case 'SET_LOADING_MORE_SEARCH_USERS':
+      return { ...state, loadingMoreSearchUsers: action.payload }
+
     default:
       return state
   }

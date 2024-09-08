@@ -1,53 +1,97 @@
-import React from 'react'
+import React, { useCallback, useEffect, useReducer, useRef } from 'react'
 import { DeleteIcon, Menu, MessageCircle, StarIcon } from 'lucide-react'
+import { friendsReducer, initialState } from './FriendsReducer'
 import { getAvatarUrl } from '../../utils/userUtils'
 import { useThemeContext } from '../../contexte/ThemeContext'
 import LoadingMoreItemsSpinner from '../common/LoadingMoreItemsSpinner'
-import LoadingSpinner from '../common/LoadingPage'
+import { useOutsideClick } from '../../hooks/useOutsideClick'
+import { useSearchUsers } from '../../hooks/useSearchUsers'
 import DeleteFriendComponent from '../personnes/DeleteFriendComponent'
-import { useFriendsListHandler } from './FriendsListHandler'
+import useDeleteFriend from '../../hooks/useDeleteFriend'
+import { useAuth } from '../../contexte/AuthContext'
 
 
 interface UserListProps {
     userId: string
+    searchReq: string
 }
 
-const FriendsList: React.FC<UserListProps> = ({ userId }) => {
-
+const FriendsSearchList: React.FC<UserListProps> = ({ userId, searchReq }) => {
+    const observerRef = useRef<HTMLDivElement>(null)
     const { theme } = useThemeContext()
 
-    const {
-        state,
-        dispatch,
-        observerRef,
-        menuRef,
-        toggleMenu,
-        handleDelete,
-    } = useFriendsListHandler(userId)
-    const { loading, friends, loadingMoreFriends, menuOpen, selectedFriend, openPopUp } = state
+    const [state, dispatch] = useReducer(friendsReducer, initialState)
+    const { usersSearch, loadingMoreSearchUsers, menuOpen, selectedFriend, openPopUp } = state
 
+    const { searchUsers, loadMoreUsers } = useSearchUsers(dispatch)
+
+    const { user } = useAuth()
+    const { deleteFriend } = useDeleteFriend({ user, dispatch, selectedFriend })
+
+    const menuRef = useRef<HTMLUListElement>(null)
+
+    useOutsideClick(menuRef, () => dispatch({ type: 'TOGGLE_MENU', payload: null }))
+
+    const handleDelete = () => {
+        if (user && selectedFriend) {
+            deleteFriend(user.id, selectedFriend.id)
+        }
+    }
+
+
+    const handleScroll = useCallback(() => {
+        const element = observerRef.current
+        if (element) {
+            const { scrollTop, scrollHeight, clientHeight } = element
+            if (scrollHeight - scrollTop <= clientHeight + 50) {
+                if (loadMoreUsers) {
+                    loadMoreUsers(userId, searchReq)
+                }
+            }
+        }
+    }, [loadMoreUsers, searchReq, userId])
+
+
+    const toggleMenu = useCallback(
+        (id: string) => {
+            dispatch({ type: 'TOGGLE_MENU', payload: menuOpen === id ? null : id })
+
+        }, [menuOpen, dispatch]
+    )
+
+    useEffect(() => {
+        searchUsers(userId, searchReq)
+        console.log(userId, searchReq)
+
+    }, [searchReq, searchUsers, userId])
+
+    useEffect(() => {
+        const element = observerRef.current
+        if (element) {
+            element.addEventListener('scroll', handleScroll)
+        }
+        return () => {
+            if (element) {
+                element.removeEventListener('scroll', handleScroll)
+            }
+        }
+    }, [handleScroll])
 
     return (
         <div
-            className="relative grid grid-cols-1 gap-2 lg:grid-cols-2 pb-9 lg:gap-4 border-white rounded-md overflow-y-hidden"
+            className="grid grid-cols-1 gap-2 lg:grid-cols-2 pb-9 lg:gap-4 border-white rounded-md overflow-y-hidden"
             ref={observerRef}
             style={{ height: '75%', overflowY: 'auto' }}
         >
 
-            {loading ? (
-                <div className="absolute inset-0 flex justify-center items-center"
-                    style={{ top: '50%', left: '50%', transform: 'translate(-50%, -50%)', height: '100px', width: '100%' }}
-                >
-                    <LoadingSpinner />
-                </div>
-            ) :
-
-                friends.length === 0 ? (
-                    <div className="flex justify-center items-center text-gray-500 dark:text-gray-300 h-full">
-                        No Friends Found
+            {
+                usersSearch.length === 0 ? (
+                    <div className="flex justify-center items-center w-full h-full ml-56">
+                        <LoadingMoreItemsSpinner />
                     </div>
+
                 ) : (
-                    friends.map((friend, index) => (
+                    usersSearch.map((friend, index) => (
                         <div
                             key={index}
                             className="flex items-center p-2 bg-gray-100 rounded-md dark:bg-gray-600"
@@ -128,8 +172,7 @@ const FriendsList: React.FC<UserListProps> = ({ userId }) => {
                 />
             )}
 
-
-            {loadingMoreFriends &&
+            {loadingMoreSearchUsers &&
                 <div className="flex justify-center items-center w-full h-full ml-56">
                     <LoadingMoreItemsSpinner />
                 </div>}
@@ -140,4 +183,4 @@ const FriendsList: React.FC<UserListProps> = ({ userId }) => {
     )
 }
 
-export default FriendsList
+export default FriendsSearchList
