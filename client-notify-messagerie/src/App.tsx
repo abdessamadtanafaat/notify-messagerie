@@ -20,7 +20,7 @@ import Home from './pages/Home'
 import Demandes from './components/demandes/Demandes'
 import Friends from './components/friends/Friends'
 import UpdateProfile from './components/profile/Profile'
-import DiscussionList from './components/discussion/DiscussionList'
+import DiscussionPage from './components/discussion/DiscussionPage'
 
 
 const App: React.FC = () => {
@@ -41,7 +41,7 @@ const App: React.FC = () => {
           <Route path="/reset-password-by-email" element={<ResetPasswordByEmail />} />
           <Route path="/home" element={<ProtectedRoute element={<Home />} redirectPath="/login" />} />
           <Route path="/personnes" element={<ProtectedRoute element={<Personnes />} redirectPath="/login" />} />
-          <Route path="/discussions" element={<ProtectedRoute element={<DiscussionList />} redirectPath="/login" />} />
+          <Route path="/discussions" element={<ProtectedRoute element={<DiscussionPage />} redirectPath="/login" />} />
           <Route path="/archive" element={<ProtectedRoute element={<Archive />} redirectPath="/login" />} />
           <Route path="/settings" element={<ProtectedRoute element={<Settings />} redirectPath="/login" />} />
           <Route path="/demandes" element={<ProtectedRoute element={<Demandes />} redirectPath="/login" />} />
