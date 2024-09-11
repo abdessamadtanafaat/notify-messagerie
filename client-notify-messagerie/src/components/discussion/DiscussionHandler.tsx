@@ -44,7 +44,6 @@ export const DiscussionHandler: React.FC<DiscussionHandlerProps> = ({ render, on
     const fileInputRef = useRef(null)
 
 
-    // WebSocket hook
     const { webSocketService, sendMessage, typingUser, recordingAudio, seenUser, sendTypingNotification, sendSeenNotification, sendRecordingNotification, seenNotif } = useWebSocket(user, onNewMessage)
 
     const handleSend = async (receiver: User, IdDiscussion: string) => {

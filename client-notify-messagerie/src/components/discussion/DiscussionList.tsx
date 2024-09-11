@@ -36,7 +36,7 @@ const DiscussionList: React.FC<DiscussionListProps> = ({
         const { theme } = useThemeContext()
         const { user } = useAuth()
     
-        return discussions?.length > 0 ? (
+        return (
             <div
               className="list-none flex flex-col space-y-2"
               ref={observerRef}
@@ -126,8 +126,6 @@ const DiscussionList: React.FC<DiscussionListProps> = ({
               })}
               {loadingMoreDiscussions && <LoadingMoreItemsSpinner />}
             </div>
-          ) : (
-            <p className="text-gray-500 dark:text-gray-400 text-sm text-center">No users found.</p>
           )
         }
                         

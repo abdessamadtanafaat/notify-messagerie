@@ -1,9 +1,7 @@
-/* eslint-disable react-hooks/exhaustive-deps */
 import React, { useCallback, useEffect, useReducer, useRef, useState } from 'react'
 import { User } from '../../interfaces'
 import { useAuth } from '../../contexte/AuthContext'
-import { Discussion, Message } from '../../interfaces/Discussion'
-
+import { Message } from '../../interfaces/Discussion'
 import messageService from '../../services/messageService'
 import DiscussionSidebar from './DiscussionSidebar'
 import { useWebSocket } from '../../hooks/webSocketHook'
@@ -15,42 +13,38 @@ import { useFetchDiscussions } from '../../hooks/useFetchDiscussions'
 import { useOutsideClick } from '../../hooks/useOutsideClick'
 import SearchBar from './SearchBar'
 import DiscussionListSearch from './DiscussionListSearch'
-import DiscussionList1 from './DiscussionList'
+import DiscussionList from './DiscussionList'
+import LoadingMoreItemsSpinner from '../common/LoadingMoreItemsSpinner'
 
 const DiscussionPage: React.FC = () => {
-
-    const [selectedUser, setSelectedUser] = useState<User | null>(null)
-    const [idDiscussion, setIdDiscussion] = useState<string>('')
-    const [messages, setMessages] = useState<Message[]>([])
-    const [usersSearch, setUsersSearch] = useState<Discussion[]>([])
     const { setHasUnreadMessages } = useNotification()
-
     const [state, dispatch] = useReducer(DiscussionReducer, initialState)
-    const { menuOpen, discussions, loading, loadingMoreDiscussions } = state
+    const { menuOpen, discussions, loading, loadingMoreDiscussions,
+        loadingMoreSearchDiscussions, discussionsSearch,
+        selectedUser, idDiscussion, messages } = state
+
+    const [searchTerm, setSearchTerm] = useState('')
+    const [fetchingDiscussions, setFetchingDiscussions] = useState(false)
+    const [initialFetchComplete, setInitialFetchComplete] = useState(false)
+
 
     const { fetchDiscussions, loadMoreDiscussions } = useFetchDiscussions(dispatch)
-
     const { user, refreshUserData } = useAuth()
     const observerRef = useRef<HTMLDivElement>(null)
-
     const userId = user?.id
-
-
     const menuRef = useRef<HTMLUListElement>(null)
+
     useOutsideClick(menuRef, () => { dispatch({ type: 'TOGGLE_MENU', payload: null }) })
 
     const handleUserClick = async (receiver: User, idDiscussion: string) => {
-        setSelectedUser(receiver)
-        setIdDiscussion(idDiscussion)
+        dispatch({ type: 'SET_SELECTED_USER', payload: { user: receiver, idDiscussion } })
         try {
             if (user) {
                 const discussionData = await messageService.getDiscussion(receiver.id, user.id)
-                setMessages(discussionData.messages)
-                const lastMessage = messages[messages.length - 1]
-                setIdDiscussion(discussionData.id)
+                dispatch({ type: 'SET_MESSAGES', payload: discussionData.messages })
 
-                if (user?.id === lastMessage.receiverId) {
-                    sendSeenNotification(lastMessage.id, lastMessage.discussionId, receiver)
+                if (user?.id === discussionData.messages[discussionData.messages.length - 1].receiverId) {
+                    sendSeenNotification(discussionData.messages[discussionData.messages.length - 1].id, discussionData.id, receiver)
                 }
             }
             refreshUserData()
@@ -60,11 +54,8 @@ const DiscussionPage: React.FC = () => {
     }
 
     const handleNewMessage = (newMessage: Message) => {
-
         setHasUnreadMessages(true)
-
         const timestamp = newMessage.timestamp instanceof Date ? newMessage.timestamp : new Date(newMessage.timestamp)
-        console.log(timestamp.toString())
         dispatch({
             type: 'UPDATE_DISCUSSION',
             payload: {
@@ -72,26 +63,46 @@ const DiscussionPage: React.FC = () => {
                 timestamp: timestamp.toISOString()
             }
         })
-
-        setMessages(prevMessages => [...prevMessages, newMessage])
     }
 
     const { sendSeenNotification } = useWebSocket(user, handleNewMessage)
 
     useEffect(() => {
-        fetchDiscussions(userId ?? '')
+        const fetchInitialDiscussions = async () => {
+            setFetchingDiscussions(true)
+            try {
+                await fetchDiscussions(userId ?? '')
+                setInitialFetchComplete(true)
+            } finally {
+                setFetchingDiscussions(false)
+            }
+        }
+        fetchInitialDiscussions()
     }, [fetchDiscussions, userId])
 
     const handleScroll = useCallback(() => {
         const element = observerRef.current
         if (element) {
             const { scrollTop, scrollHeight, clientHeight } = element
-            if (scrollHeight - scrollTop <= clientHeight + 50) {
-                console.log(userId)
+            const scrollableHeight = scrollHeight - clientHeight
+            const buffer = 200 
+    
+            if (scrollableHeight - scrollTop <= buffer) {
                 loadMoreDiscussions(userId ?? '')
             }
         }
     }, [loadMoreDiscussions, userId])
+    
+        // Reset scroll position when switching views
+        // useEffect(() => {
+        //     if (!searchTerm) {
+        //         const element = observerRef.current
+        //         if (element) {
+        //             element.scrollTop = 0 // Reset scroll position
+        //         }
+        //     }
+        // }, [searchTerm])
+
 
     useEffect(() => {
         const element = observerRef.current
@@ -105,9 +116,29 @@ const DiscussionPage: React.FC = () => {
         }
     }, [handleScroll])
 
+    const handleClearSearch = async () => {
+        setSearchTerm('')
+        dispatch({ type: 'SET_USERS_SEARCH', payload: [] })
+        dispatch({ type: 'SET_DISCUSSIONS', payload: [] })
+
+        setFetchingDiscussions(true)
+        try {
+            await fetchDiscussions(user?.id ?? '')
+        } finally {
+            setFetchingDiscussions(false)
+        }
+    }
+
+    useEffect(() => {
+        if (searchTerm === '') {
+            handleClearSearch()
+        }
+    }, [searchTerm])
+
+
     return (
         <>
-            {loading ? (
+            {loading && !initialFetchComplete ? (
                 <LoadingSpinner />
             ) : (
                 <div className="flex h-screen pl-16">
@@ -116,30 +147,42 @@ const DiscussionPage: React.FC = () => {
                             <h1 className="hidden md:block font-bold text-sm md:text-xl text-start dark:text-white">
                                 Discussion
                             </h1>
-
-                            <SearchBar setSearchResults={setUsersSearch} />
-
-                        {usersSearch?.length > 0 ? (
-                            <DiscussionListSearch
-                                usersSearch={usersSearch}
-                                menuOpen={menuOpen}
-                                observerRef={observerRef}
-                                loadingMoreDiscussions={loadingMoreDiscussions} 
-                                handleUserClick={handleUserClick}
-                                dispatch={dispatch}
-                                menuRef={menuRef}
+                            <SearchBar 
+                                searchTerm={searchTerm}
+                                setSearchTerm={setSearchTerm}
+                                onClearSearch={handleClearSearch}
+                                setSearchResults={(results) => {
+                                    dispatch({ type: 'SET_USERS_SEARCH', payload: results })
+                                }}
                             />
-                        ) : (
-                            <DiscussionList1
-                                discussions={discussions}
-                                menuOpen={menuOpen}
-                                observerRef={observerRef}
-                                loadingMoreDiscussions={loadingMoreDiscussions}
-                                handleUserClick={handleUserClick}
-                                dispatch={dispatch}
-                                menuRef={menuRef}
-                            />
-                        )}
+
+                            {fetchingDiscussions && !searchTerm && (
+                                <div className="mt-2">
+                                    <LoadingMoreItemsSpinner />
+                                </div>
+                            )}
+
+                            {searchTerm ? (
+                                <DiscussionListSearch
+                                    usersSearch={discussionsSearch}
+                                    menuOpen={menuOpen}
+                                    observerRef={observerRef}
+                                    loadingMoreDiscussions={loadingMoreSearchDiscussions}
+                                    handleUserClick={handleUserClick}
+                                    dispatch={dispatch}
+                                    menuRef={menuRef}
+                                />
+                            ) : (
+                                <DiscussionList
+                                    discussions={discussions}
+                                    menuOpen={menuOpen}
+                                    observerRef={observerRef}
+                                    loadingMoreDiscussions={loadingMoreDiscussions}
+                                    handleUserClick={handleUserClick}
+                                    dispatch={dispatch}
+                                    menuRef={menuRef}
+                                />
+                            )}
 
                         </div>
                     </div>
@@ -156,10 +199,9 @@ const DiscussionPage: React.FC = () => {
                     )}
                     {!selectedUser && <WelcomeMessage />}
                 </div>
-
             )}
-
         </>
     )
 }
+
 export default DiscussionPage

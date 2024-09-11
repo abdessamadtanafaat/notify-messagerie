@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
-import React, { useCallback, useEffect, useRef, useState } from 'react'
+import React, { useCallback, useEffect, useReducer, useRef, useState } from 'react'
 import { User } from '../../interfaces'
 import { CircleEllipsis, FileIcon, ImageIcon, Loader, LockKeyholeIcon, Phone, SendIcon, Smile, Video } from 'lucide-react'
 import StatusMessage from '../common/StatusMessage'
@@ -14,6 +14,7 @@ import { useAuth } from '../../contexte/AuthContext'
 import DiscussionSidebarSkeleton from './DiscussionSidebarSkeleton'
 import AudioRecorder from './AudioRecorder'
 import FriendInfoSidebar from '../personnes/FriendInfoSidebar'
+import { DiscussionReducer, initialState } from './DiscussionReducer'
 
 
 interface DiscussionSidebarProps {
@@ -41,11 +42,12 @@ const DiscussionSidebar: React.FC<DiscussionSidebarProps> = ({ receiver, idDiscu
     const [scrollTop, setScrollTop] = useState<number>(0)
 
 
+    const [state, dispatch] = useReducer(DiscussionReducer, initialState)
+        
     const fetchMessages = useCallback(async (cursor?: Date | null) => {
         try {
             if (user && receiver && idDiscussion ) {
-                //setMessages([]) //reset messages 
-                //const currentScrollTop = messagesEndRef.current ? messagesEndRef.current.scrollTop : 0
+
                 const discussionData = await messageService.getDiscussion(receiver.id, user.id, cursor ?? undefined)
                 const newMessages = discussionData.messages
 
@@ -55,7 +57,6 @@ const DiscussionSidebar: React.FC<DiscussionSidebarProps> = ({ receiver, idDiscu
                     const filteredMessages = newMessages.filter(msg => !existingMessageIds.has(msg.id))
                     const updatedMessages = [...filteredMessages, ...prevMessages]
                     return updatedMessages.sort((a, b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime())
-                    //return [...filteredMessages, ...prevMessages]
                 })
 
                 setCursor(newMessages.length > 0 ? new Date(newMessages[0].timestamp) : null)
@@ -68,15 +69,47 @@ const DiscussionSidebar: React.FC<DiscussionSidebarProps> = ({ receiver, idDiscu
         }
     }, [user, receiver, idDiscussion])
 
+    // const handleNewMessage = (message: Message) => {
+    //     setMessages(prevMessages => {
+    //         const updatedMessages = [...prevMessages, convertKeysToCamelCase(message)]
+    //         return updatedMessages.sort((a, b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime())
+    //     })
+
+    //     // Dispatch an action to update the discussion in the reducer
+    //     dispatch({
+    //         type: 'UPDATE_DISCUSSION',
+    //         payload: {
+    //             newMessage,
+    //             timestamp: newMessage.timestamp
+    //         }
+    //     })
+
+    //     if (onMessageSent) {
+    //         onMessageSent(message)
+    //     }
+    // }
+
     const handleNewMessage = (message: Message) => {
+        const newMessage = convertKeysToCamelCase(message)
         setMessages(prevMessages => {
-            const updatedMessages = [...prevMessages, convertKeysToCamelCase(message)]
+            const updatedMessages = [...prevMessages, newMessage]
             return updatedMessages.sort((a, b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime())
         })
+
+        // Dispatch an action to update the discussion in the reducer
+        dispatch({
+            type: 'UPDATE_DISCUSSION',
+            payload: {
+                newMessage,
+                timestamp: newMessage.timestamp
+            }
+        })
+
         if (onMessageSent) {
             onMessageSent(message)
         }
     }
+
 
     const handleScroll = (e: React.UIEvent<HTMLDivElement, UIEvent>) => {
         const container = e.currentTarget
