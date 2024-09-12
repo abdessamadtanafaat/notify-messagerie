@@ -15,7 +15,6 @@ const FriendsSearch: React.FC<FriendsSearchProps> = ({ searchReq, setSearchReq, 
     const debouncedSearch = useCallback(
         debounce((value: string) => {
             handleSearchChange(value)
-
         }, 300), // Debounce delay of 300ms
         [handleSearchChange]
     )

@@ -1,67 +1,49 @@
 import { ChevronLeft, SearchIcon } from 'lucide-react'
 import { useCallback } from 'react'
-import { Discussion } from '../../interfaces/Discussion'
-import messageService from '../../services/messageService'
 import { debounce } from '../../utils/debounce'
-import { useAuth } from '../../contexte/AuthContext'
 
 
 interface SearchBarProps {
-    setSearchResults: (results: Discussion[]) => void;
-    searchTerm: string;
-    setSearchTerm: React.Dispatch<React.SetStateAction<string>>;
-    onClearSearch: () => void;
+    searchReq: string;
+    setSearchReq: (value: string) => void;
+    handleSearchChange: (value: string) => void;
+    handleClearSearch: () => void;
+
 }
 
-const SearchBar: React.FC<SearchBarProps> = ({ searchTerm, setSearchTerm,setSearchResults,onClearSearch }) => {
+const SearchBar: React.FC<SearchBarProps> = ({ searchReq, setSearchReq,handleSearchChange,handleClearSearch }) => {
 
-    const { user } = useAuth()       
-    const searchUsers = async (userId: string, searchReq: string) => {
-        try {
-            if (user) {
-                const searchRequest = { userId, searchReq }
-                const response = await messageService.searchUsersByFirstNameOrLastNameOrLastMessageAsync(searchRequest, 1, 10)
-                console.log(response)
-                setSearchResults(response)
-            }
-        } catch (error) {
-            console.log('Failed to fetch users.')
-        }
 
-    }
-    const debouncedSearchUsers = useCallback(
-        debounce(async (userId: string, searchReq: string) => {
-            if (searchReq.trim()) {
-                await searchUsers(userId, searchReq)
-            } else {
-                setSearchResults([]) 
-            }
-        }, 300), []
+    const debouncedSearch = useCallback(
+        debounce((value: string) => {
+            handleSearchChange(value)
+
+        }, 300), // Debounce delay of 300ms
+        [handleSearchChange]
     )
 
-    
-    const handleChange = (value: string) => {
-        setSearchTerm(value)
-            if (user) {
-                debouncedSearchUsers(user.id, value)
-            }
+        const onSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const value = e.target.value
+        setSearchReq(value)
+        debouncedSearch(value)
     }
 
+    
     return (
         <div className="flex items-center space-x-2">
-            {searchTerm && (
+            {searchReq && (
                 <ChevronLeft
                     className='w-4 h-4 text-blue-600 cursor-pointer dark:text-gray-400 dark:hover:text-white'
-                    onClick={onClearSearch}
+                    onClick={() => handleClearSearch()}
                 />
             )}
             <div className='relative flex-grow'>
                 <input
                     type='text'
-                    name='searchInDiscussion'
+                    name='searchReq'
                     placeholder='Search'
-                    value={searchTerm}
-                    onChange={(e) => handleChange(e.target.value)}
+                    value={searchReq}
+                    onChange={onSearchChange}
                     className='w-full h-7 px-2 text-sm border-b-2 bg-gray-200 border-gray-600 rounded-2xl placeholder:font-light placeholder:text-gray-500 dark:bg-gray-700 focus:border-blue-400 focus:outline-none'
                 />
                 <SearchIcon

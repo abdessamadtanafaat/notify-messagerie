@@ -9,6 +9,7 @@ import { useSearchUsers } from '../../hooks/useSearchUsers'
 import DeleteFriendComponent from '../personnes/DeleteFriendComponent'
 import useDeleteFriend from '../../hooks/useDeleteFriend'
 import { useAuth } from '../../contexte/AuthContext'
+import useHandleScroll from '../../hooks/useHandleScroll'
 
 
 interface UserListProps {
@@ -17,7 +18,6 @@ interface UserListProps {
 }
 
 const FriendsSearchList: React.FC<UserListProps> = ({ userId, searchReq }) => {
-    const observerRef = useRef<HTMLDivElement>(null)
     const { theme } = useThemeContext()
 
     const [state, dispatch] = useReducer(friendsReducer, initialState)
@@ -38,20 +38,6 @@ const FriendsSearchList: React.FC<UserListProps> = ({ userId, searchReq }) => {
         }
     }
 
-
-    const handleScroll = useCallback(() => {
-        const element = observerRef.current
-        if (element) {
-            const { scrollTop, scrollHeight, clientHeight } = element
-            if (scrollHeight - scrollTop <= clientHeight + 50) {
-                if (loadMoreUsers) {
-                    loadMoreUsers(userId, searchReq)
-                }
-            }
-        }
-    }, [loadMoreUsers, searchReq, userId])
-
-
     const toggleMenu = useCallback(
         (id: string) => {
             dispatch({ type: 'TOGGLE_MENU', payload: menuOpen === id ? null : id })
@@ -65,17 +51,11 @@ const FriendsSearchList: React.FC<UserListProps> = ({ userId, searchReq }) => {
 
     }, [searchReq, searchUsers, userId])
 
-    useEffect(() => {
-        const element = observerRef.current
-        if (element) {
-            element.addEventListener('scroll', handleScroll)
-        }
-        return () => {
-            if (element) {
-                element.removeEventListener('scroll', handleScroll)
-            }
-        }
-    }, [handleScroll])
+    const { observerRef } = useHandleScroll({
+        loadMoreFunction: loadMoreUsers,
+        userId,
+        searchReq
+})
 
     return (
         <div

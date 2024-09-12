@@ -2,7 +2,7 @@ import { useState, useCallback } from 'react'
 import messageService from '../services/messageService'
 import { Action } from '../components/discussion/DiscussionReducer'
 
-export const useSearchUsers = (dispatch: React.Dispatch<Action>) => {
+export const useSearchDiscussions = (dispatch: React.Dispatch<Action>) => {
     const [page, setPage] = useState(1)
     const [isFetching, setIsFetching] = useState(false)
     const [hasMoreDiscussions, setHasMoreDiscussions] = useState(true)
@@ -32,14 +32,14 @@ export const useSearchUsers = (dispatch: React.Dispatch<Action>) => {
     )
 
     const loadMoreDiscussions = useCallback(
-        async (userId: string,searchReq: string) => {
+        async (userId: string,searchReq?: string) => {
             if (isFetching || !hasMoreDiscussions) return 
             console.log('Searching with userId:', userId)
             if (!isFetching) {
                 setIsFetching(true)
                 dispatch({ type: 'SET_LOADING_MORE_SEARCH_DISCUSSIONS', payload: true })
                 try {
-                    const searchRequest = { userId, searchReq }
+                    const searchRequest = { userId, searchReq: searchReq || '' }
                     const result = await messageService.searchUsersByFirstNameOrLastNameOrLastMessageAsync(searchRequest, page, 10)
                     dispatch({ type: 'ADD_MORE_DISCUSSIONS', payload: result }) // Appends to current search results
                     setPage(prev => prev + 1)

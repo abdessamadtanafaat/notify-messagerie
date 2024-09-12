@@ -1,25 +1,15 @@
-import { useReducer, useCallback, useEffect, useRef } from 'react'
+import { useReducer, useEffect } from 'react'
 import { friendsReducer, initialState } from './FriendsReducer'
 import { useFetchFriendsRequest } from '../../hooks/useFetchFriendsRequest'
 import friendService from '../../services/friendService'
 import { useAuth } from '../../contexte/AuthContext'
 import { CancelledFriendRequest } from '../../interfaces/MyFriends'
+import useHandleScroll from '../../hooks/useHandleScroll'
 
 export const useFriendsRequestsHandler = (userId: string) => {
     const [state, dispatch] = useReducer(friendsReducer, initialState)
-    const observerRef = useRef<HTMLDivElement>(null)
     const { refreshUserData } = useAuth()
     const { fetchFriendsRequests, loadMoreFriendsRequests } = useFetchFriendsRequest(dispatch)
-
-    const handleScroll = useCallback(() => {
-        const element = observerRef.current
-        if (element) {
-            const { scrollTop, scrollHeight, clientHeight } = element
-            if (scrollHeight - scrollTop <= clientHeight + 50 && loadMoreFriendsRequests) {
-                loadMoreFriendsRequests(userId)
-            }
-        }
-    }, [loadMoreFriendsRequests, userId])
 
     const onCancel = async (friendId: string) => {
         try {
@@ -41,17 +31,10 @@ export const useFriendsRequestsHandler = (userId: string) => {
         fetchFriendsRequests(userId)
     }, [fetchFriendsRequests, userId])
 
-    useEffect(() => {
-        const element = observerRef.current
-        if (element) {
-            element.addEventListener('scroll', handleScroll)
-        }
-        return () => {
-            if (element) {
-                element.removeEventListener('scroll', handleScroll)
-            }
-        }
-    }, [handleScroll])
+    const { observerRef } = useHandleScroll({
+        loadMoreFunction: loadMoreFriendsRequests,
+        userId
+})
 
     return {
         state,

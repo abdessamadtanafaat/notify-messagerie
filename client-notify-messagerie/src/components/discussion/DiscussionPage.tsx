@@ -1,11 +1,5 @@
 import React, { useCallback, useEffect, useReducer, useRef, useState } from 'react'
-import { User } from '../../interfaces'
 import { useAuth } from '../../contexte/AuthContext'
-import { Message } from '../../interfaces/Discussion'
-import messageService from '../../services/messageService'
-import DiscussionSidebar from './DiscussionSidebar'
-import { useWebSocket } from '../../hooks/webSocketHook'
-import { useNotification } from '../../contexte/NotificationContext'
 import WelcomeMessage from '../common/WelcomeMessage'
 import LoadingSpinner from '../common/LoadingPage'
 import { DiscussionReducer, initialState } from './DiscussionReducer'
@@ -15,57 +9,30 @@ import SearchBar from './SearchBar'
 import DiscussionListSearch from './DiscussionListSearch'
 import DiscussionList from './DiscussionList'
 import LoadingMoreItemsSpinner from '../common/LoadingMoreItemsSpinner'
+import { useSearchDiscussions } from '../../hooks/useSearchDiscussions'
+import DiscussionSidebar from './DiscussionSidebar'
+import messageService from '../../services/messageService'
+import { Message } from '../../interfaces/Discussion'
+import { useWebSocket } from '../../hooks/webSocketHook'
+import { User } from '../../interfaces'
+import { useNotification } from '../../contexte/NotificationContext'
 
 const DiscussionPage: React.FC = () => {
-    const { setHasUnreadMessages } = useNotification()
     const [state, dispatch] = useReducer(DiscussionReducer, initialState)
-    const { menuOpen, discussions, loading, loadingMoreDiscussions,
-        loadingMoreSearchDiscussions, discussionsSearch,
-        selectedUser, idDiscussion, messages } = state
+    const {loading,searchReq,selectedUser,idDiscussion,messages, } = state
 
-    const [searchTerm, setSearchTerm] = useState('')
     const [fetchingDiscussions, setFetchingDiscussions] = useState(false)
     const [initialFetchComplete, setInitialFetchComplete] = useState(false)
 
 
-    const { fetchDiscussions, loadMoreDiscussions } = useFetchDiscussions(dispatch)
-    const { user, refreshUserData } = useAuth()
-    const observerRef = useRef<HTMLDivElement>(null)
-    const userId = user?.id
+    const { fetchDiscussions } = useFetchDiscussions(dispatch)
+    const { user,refreshUserData } = useAuth()
+    const userId = user?.id ??  ''
+    
+    const { searchDiscussions } = useSearchDiscussions(dispatch)
+    
     const menuRef = useRef<HTMLUListElement>(null)
-
     useOutsideClick(menuRef, () => { dispatch({ type: 'TOGGLE_MENU', payload: null }) })
-
-    const handleUserClick = async (receiver: User, idDiscussion: string) => {
-        dispatch({ type: 'SET_SELECTED_USER', payload: { user: receiver, idDiscussion } })
-        try {
-            if (user) {
-                const discussionData = await messageService.getDiscussion(receiver.id, user.id)
-                dispatch({ type: 'SET_MESSAGES', payload: discussionData.messages })
-
-                if (user?.id === discussionData.messages[discussionData.messages.length - 1].receiverId) {
-                    sendSeenNotification(discussionData.messages[discussionData.messages.length - 1].id, discussionData.id, receiver)
-                }
-            }
-            refreshUserData()
-        } catch (error) {
-            console.log('Failed to fetch messages')
-        }
-    }
-
-    const handleNewMessage = (newMessage: Message) => {
-        setHasUnreadMessages(true)
-        const timestamp = newMessage.timestamp instanceof Date ? newMessage.timestamp : new Date(newMessage.timestamp)
-        dispatch({
-            type: 'UPDATE_DISCUSSION',
-            payload: {
-                newMessage,
-                timestamp: timestamp.toISOString()
-            }
-        })
-    }
-
-    const { sendSeenNotification } = useWebSocket(user, handleNewMessage)
 
     useEffect(() => {
         const fetchInitialDiscussions = async () => {
@@ -79,63 +46,55 @@ const DiscussionPage: React.FC = () => {
         }
         fetchInitialDiscussions()
     }, [fetchDiscussions, userId])
-
-    const handleScroll = useCallback(() => {
-        const element = observerRef.current
-        if (element) {
-            const { scrollTop, scrollHeight, clientHeight } = element
-            const scrollableHeight = scrollHeight - clientHeight
-            const buffer = 200 
     
-            if (scrollableHeight - scrollTop <= buffer) {
-                loadMoreDiscussions(userId ?? '')
+
+    const handleSearchChange = useCallback(
+        (value: string) => {
+            if (user && value.trim()) {
+                searchDiscussions(user.id, value.trim())
+            } else {
+                dispatch({ type: 'SET_DISCUSSIONS_SEARCH', payload: [] })
             }
-        }
-    }, [loadMoreDiscussions, userId])
+        },
+        [searchDiscussions, user]
+    )
+
+    const handleClearSearch = useCallback(() => {
+        dispatch({ type: 'SET_SEARCH_INPUT', payload: '' })
+    }, [dispatch])
     
-        // Reset scroll position when switching views
-        // useEffect(() => {
-        //     if (!searchTerm) {
-        //         const element = observerRef.current
-        //         if (element) {
-        //             element.scrollTop = 0 // Reset scroll position
-        //         }
-        //     }
-        // }, [searchTerm])
+    const { setHasUnreadMessages } = useNotification()
 
-
-    useEffect(() => {
-        const element = observerRef.current
-        if (element) {
-            element.addEventListener('scroll', handleScroll)
-        }
-        return () => {
-            if (element) {
-                element.removeEventListener('scroll', handleScroll)
-            }
-        }
-    }, [handleScroll])
-
-    const handleClearSearch = async () => {
-        setSearchTerm('')
-        dispatch({ type: 'SET_USERS_SEARCH', payload: [] })
-        dispatch({ type: 'SET_DISCUSSIONS', payload: [] })
-
-        setFetchingDiscussions(true)
+    const handleNewMessage = (newMessage: Message) => {
+        setHasUnreadMessages(true)
+        const timestamp = newMessage.timestamp instanceof Date ? newMessage.timestamp : new Date(newMessage.timestamp)
+        dispatch({
+          type: 'UPDATE_DISCUSSION',
+          payload: {
+            newMessage,
+            timestamp: timestamp.toISOString()
+          }
+        })
+      }
+      const { sendSeenNotification } = useWebSocket(user, handleNewMessage)
+    
+      const handleUserClick = async (receiver: User, idDiscussion: string) => {
+        dispatch({ type: 'SET_SELECTED_USER', payload: { user: receiver, idDiscussion } })
         try {
-            await fetchDiscussions(user?.id ?? '')
-        } finally {
-            setFetchingDiscussions(false)
+          if (user) {
+            const discussionData = await messageService.getDiscussion(receiver.id, user.id)
+            dispatch({ type: 'SET_MESSAGES', payload: discussionData.messages })
+    
+            if (user?.id === discussionData.messages[discussionData.messages.length - 1].receiverId) {
+              sendSeenNotification(discussionData.messages[discussionData.messages.length - 1].id, discussionData.id, receiver)
+            }
+          }
+          refreshUserData()
+        } catch (error) {
+          console.log('Failed to fetch messages')
         }
-    }
-
-    useEffect(() => {
-        if (searchTerm === '') {
-            handleClearSearch()
-        }
-    }, [searchTerm])
-
-
+      }
+      
     return (
         <>
             {loading && !initialFetchComplete ? (
@@ -148,56 +107,46 @@ const DiscussionPage: React.FC = () => {
                                 Discussion
                             </h1>
                             <SearchBar 
-                                searchTerm={searchTerm}
-                                setSearchTerm={setSearchTerm}
-                                onClearSearch={handleClearSearch}
-                                setSearchResults={(results) => {
-                                    dispatch({ type: 'SET_USERS_SEARCH', payload: results })
-                                }}
+                                searchReq={searchReq}
+                                setSearchReq={(value) => dispatch({ type: 'SET_SEARCH_INPUT', payload: value })}
+                                handleSearchChange={handleSearchChange}
+                                handleClearSearch={handleClearSearch}
                             />
 
-                            {fetchingDiscussions && !searchTerm && (
+                            {fetchingDiscussions && !searchReq && (
                                 <div className="mt-2">
                                     <LoadingMoreItemsSpinner />
                                 </div>
                             )}
 
-                            {searchTerm ? (
+                            {searchReq ? (
                                 <DiscussionListSearch
-                                    usersSearch={discussionsSearch}
-                                    menuOpen={menuOpen}
-                                    observerRef={observerRef}
-                                    loadingMoreDiscussions={loadingMoreSearchDiscussions}
+                                    userId= {userId}
+                                    searchReq = {searchReq}
                                     handleUserClick={handleUserClick}
-                                    dispatch={dispatch}
-                                    menuRef={menuRef}
                                 />
                             ) : (
                                 <DiscussionList
-                                    discussions={discussions}
-                                    menuOpen={menuOpen}
-                                    observerRef={observerRef}
-                                    loadingMoreDiscussions={loadingMoreDiscussions}
+                                    userId= {userId}
                                     handleUserClick={handleUserClick}
-                                    dispatch={dispatch}
-                                    menuRef={menuRef}
                                 />
                             )}
-
                         </div>
                     </div>
 
-                    {selectedUser && (
-                        <div className="flex-grow rounded-2xl bg-white dark:bg-gray-800 h-full shadow-xl ml-4 lg:ml-6">
-                            <DiscussionSidebar
-                                receiver={selectedUser}
-                                idDiscussion={idDiscussion}
-                                messages={messages}
-                                onMessageSent={handleNewMessage}
-                            />
-                        </div>
-                    )}
-                    {!selectedUser && <WelcomeMessage />}
+                    {selectedUser ? (
+                <div className="flex-grow rounded-2xl bg-white dark:bg-gray-800 h-full shadow-xl ml-4 lg:ml-6">
+                    <DiscussionSidebar
+                        receiver={selectedUser}
+                        idDiscussion={idDiscussion}
+                        messages={messages}
+                        //onMessageSent={handleNewMessage}
+                     />
+                </div>
+            ) : (
+                <WelcomeMessage />
+            )}
+
                 </div>
             )}
         </>

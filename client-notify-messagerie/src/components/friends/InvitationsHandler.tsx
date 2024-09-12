@@ -1,31 +1,19 @@
-import { useReducer, useCallback, useEffect, useRef } from 'react'
+import { useReducer, useEffect } from 'react'
 import { friendsReducer, initialState } from './FriendsReducer'
 import { useFetchInvitations } from '../../hooks/useFetchInvitations'
 import friendService from '../../services/friendService'
 import { useAuth } from '../../contexte/AuthContext'
 import { AnswerInvitationRequest, InvitationResponse } from '../../interfaces/MyFriends'
 import { useFetchFriends } from '../../hooks/useFetchFriends'
+import useHandleScroll from '../../hooks/useHandleScroll'
 
 export const useInvitationsHandler = (userId: string) => {
 
-    const observerRef = useRef<HTMLDivElement>(null)
     const { refreshUserData } = useAuth()
     const [state, dispatch] = useReducer(friendsReducer, initialState)
     const { fetchInvitations, loadMoreInvitations } = useFetchInvitations(dispatch)
     const { fetchFriends } = useFetchFriends(dispatch)
 
-    const handleScroll = useCallback(() => {
-        const element = observerRef.current
-        if (element) {
-            const { scrollTop, scrollHeight, clientHeight } = element
-            if (scrollHeight - scrollTop <= clientHeight + 50) {
-
-                if (loadMoreInvitations) {
-                    loadMoreInvitations(userId)
-                }
-            }
-        }
-    }, [loadMoreInvitations, userId])
 
     const onConfirm = async (friendId: string) => {
         try {
@@ -72,17 +60,10 @@ export const useInvitationsHandler = (userId: string) => {
         fetchInvitations(userId)
     }, [fetchInvitations, userId])
 
-    useEffect(() => {
-        const element = observerRef.current
-        if (element) {
-            element.addEventListener('scroll', handleScroll)
-        }
-        return () => {
-            if (element) {
-                element.removeEventListener('scroll', handleScroll)
-            }
-        }
-    }, [handleScroll])
+    const { observerRef } = useHandleScroll({
+        loadMoreFunction: loadMoreInvitations,
+        userId
+})
 
     return {
         state,

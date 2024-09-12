@@ -1,4 +1,3 @@
-
 import { User } from '../../interfaces'
 import { Discussion, Message } from '../../interfaces/Discussion'
 
@@ -9,13 +8,12 @@ export type DiscussionState = {
   page: number;
   loadingMoreDiscussions: boolean;
   loadingMoreSearchDiscussions: boolean;
-  discussionsSearch: Discussion[]; 
+  discussionsSearch: Discussion[];
   selectedUser: User | null;
   idDiscussion: string;
   messages: Message[];
-  //searchAttempted: boolean; 
-  searchInDiscussion: string;
-
+  //searchAttempted: boolean;
+  searchReq: string;
 };
 
 const initialState: DiscussionState = {
@@ -30,7 +28,7 @@ const initialState: DiscussionState = {
   idDiscussion: '',
   messages: [],
   //searchAttempted: false,
-  searchInDiscussion: '',
+  searchReq: '',
 }
 
 export type Action =
@@ -43,7 +41,7 @@ export type Action =
       type: 'UPDATE_DISCUSSION';
       payload: { newMessage: Message; timestamp: string };
     }
-  | {type: 'LOAD_MORE_DISCUSSIONS'; payload: boolean} 
+  | { type: 'LOAD_MORE_DISCUSSIONS'; payload: boolean }
   | { type: 'SET_DISCUSSIONS_SEARCH'; payload: Discussion[] }
   | { type: 'SET_LOADING_MORE_SEARCH_DISCUSSIONS'; payload: boolean }
   | { type: 'ADD_MORE_DISCUSSIONS'; payload: Discussion[] }
@@ -52,7 +50,7 @@ export type Action =
   | { type: 'SET_USERS_SEARCH'; payload: Discussion[] }
   // | {type: 'SEARCH_ATTEMPTED'; payload: boolean}
   | { type: 'CLEAR_SEARCH' }
-  | { type: 'SET_SEARCH_INPUT'; payload: string }; 
+  | { type: 'SET_SEARCH_INPUT'; payload: string };
 
 export const DiscussionReducer = (
   state: DiscussionState = initialState,
@@ -118,41 +116,40 @@ export const DiscussionReducer = (
     }
 
     case 'LOAD_MORE_DISCUSSIONS':
-        return { ...state, loadingMoreDiscussions: action.payload }
+      return { ...state, loadingMoreDiscussions: action.payload }
 
     case 'SET_LOADING_MORE_SEARCH_DISCUSSIONS':
       return { ...state, loadingMoreSearchDiscussions: action.payload }
 
     case 'SET_DISCUSSIONS_SEARCH':
-        return { ...state, discussionsSearch: action.payload, loading: false, page: 1 }
+      return {
+        ...state,
+        discussionsSearch: action.payload,
+        loading: false,
+        page: 1,
+      }
 
     case 'SET_SELECTED_USER':
-          return {
-            ...state,
-            selectedUser: action.payload.user,
-            idDiscussion: action.payload.idDiscussion,
-          }
+      return {
+        ...state,
+        selectedUser: action.payload.user,
+        idDiscussion: action.payload.idDiscussion,
+      }
     case 'SET_MESSAGES':
-          return {
-            ...state,
-            messages: action.payload,
-          }
+      return {
+        ...state,
+        messages: action.payload,
+      }
     case 'SET_USERS_SEARCH':
-          return {
-            ...state,
-            discussionsSearch: action.payload,
-          }
-          // case 'SEARCH_ATTEMPTED':
-          //   return { ...state, searchAttempted: action.payload }
-          case 'SET_SEARCH_INPUT':
-              return { ...state, searchInDiscussion: action.payload }
-          case 'CLEAR_SEARCH':
-              return { ...state, searchInDiscussion: '',
-                                 discussionsSearch: [],
-                                 //searchAttempted: false,
-                                }
+      return {
+        ...state,
+        discussionsSearch: action.payload,
+      }
+    case 'SET_SEARCH_INPUT':
+      return { ...state, searchReq: action.payload }
+    case 'CLEAR_SEARCH':
+      return { ...state, searchReq: '', discussionsSearch: [] }
 
-              
     default:
       return state
   }

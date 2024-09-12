@@ -3,49 +3,48 @@ import { CheckCheck, CircleEllipsis } from 'lucide-react'
 import DiscussionMenu from './DiscussionMenu'
 import LoadingMoreItemsSpinner from '../common/LoadingMoreItemsSpinner'
 import { User } from '../../interfaces'
-import { Message } from '../../interfaces/Discussion'
 import { useThemeContext } from '../../contexte/ThemeContext'
 import { useAuth } from '../../contexte/AuthContext'
 import { getAvatarUrl, getTimeDifference } from '../../utils/userUtils'
-import { useEffect, useState } from 'react'
-
-interface Discussion {
-  id: string;
-  lastMessage: Message;
-  receiver: User;
-}
+import { useEffect, useReducer, useRef, useState } from 'react'
+import useHandleScroll from '../../hooks/useHandleScroll'
+import { useSearchDiscussions } from '../../hooks/useSearchDiscussions'
+import { DiscussionReducer, initialState } from './DiscussionReducer'
+import { useOutsideClick } from '../../hooks/useOutsideClick'
 
 interface DiscussionListSearchProps {
-  usersSearch: Discussion[];
-  handleUserClick: (receiver: User, idDiscussion: string) => void;
-  loadingMoreDiscussions: boolean;
-  menuOpen: string | null;
-  dispatch: React.Dispatch<any>;
-  observerRef: React.RefObject<HTMLDivElement>;
-  menuRef: React.RefObject<HTMLUListElement>;
+  userId: string ; 
+  searchReq: string;
+  handleUserClick: (receiver: User, idDiscussion: string) => void; 
+
 }
 
 const DiscussionListSearch: React.FC<DiscussionListSearchProps> = ({
-  usersSearch,
-  menuOpen,
-  observerRef,
-  loadingMoreDiscussions,
+  userId,
+  searchReq,
   handleUserClick,
-  dispatch,
-  menuRef,
 }) => {
   const { theme } = useThemeContext()
   const { user } = useAuth()
-
+  
+  const menuRef = useRef<HTMLUListElement>(null)
+  useOutsideClick(menuRef, () => { dispatch({ type: 'TOGGLE_MENU', payload: null }) })
+  
   const [isSearching, setIsSearching] = useState(false)
 
+  const [state, dispatch] = useReducer(DiscussionReducer, initialState)
+  const { menuOpen, loadingMoreDiscussions,discussionsSearch } = state
+
+    
+  const { searchDiscussions, loadMoreDiscussions } = useSearchDiscussions(dispatch)
+  
   useEffect(() => {
     setIsSearching(true)
 
     return () => {
       setIsSearching(false)
     }
-  }, [usersSearch])
+  }, [discussionsSearch])
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -53,7 +52,20 @@ const DiscussionListSearch: React.FC<DiscussionListSearchProps> = ({
     }, 500) 
 
     return () => clearTimeout(timer)
-  }, [usersSearch, loadingMoreDiscussions])
+  }, [discussionsSearch, loadingMoreDiscussions])
+
+  const { observerRef } = useHandleScroll({
+    loadMoreFunction: loadMoreDiscussions,
+    userId,
+    searchReq
+})
+
+useEffect(() => {
+  searchDiscussions(userId, searchReq)
+  console.log(userId, searchReq)
+
+}, [searchDiscussions, searchReq, userId])
+
 
   return (
     <div
@@ -62,9 +74,9 @@ const DiscussionListSearch: React.FC<DiscussionListSearchProps> = ({
       style={{ height: '70vh', overflowY: 'auto' }}
     >
       {isSearching && !loadingMoreDiscussions ? (
-        <LoadingMoreItemsSpinner /> // Show spinner when searching and no more discussions loading
-      ) : usersSearch.length > 0 ? (
-        usersSearch.map((discussion, index) => {
+        <LoadingMoreItemsSpinner /> 
+      ) : discussionsSearch.length > 0 ? (
+        discussionsSearch.map((discussion, index) => {
           const { id, lastMessage, receiver } = discussion
           const isMyMessage = lastMessage.senderId === user?.id
           const isAudioMessage = lastMessage.type === 'audio'
