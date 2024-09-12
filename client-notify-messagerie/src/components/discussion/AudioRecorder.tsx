@@ -33,8 +33,6 @@ const AudioRecorder: React.FC<AudioRecorderProps> = ({ onSend, sendRecordingNoti
                         setSending(false)
                         setAudioUrl(null)
                     }
-
-
                 }
             }
 

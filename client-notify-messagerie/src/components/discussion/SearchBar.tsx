@@ -18,7 +18,7 @@ const SearchBar: React.FC<SearchBarProps> = ({ searchReq, setSearchReq,handleSea
         debounce((value: string) => {
             handleSearchChange(value)
 
-        }, 300), // Debounce delay of 300ms
+        }, 300),
         [handleSearchChange]
     )
 

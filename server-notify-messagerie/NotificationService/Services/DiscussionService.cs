@@ -102,7 +102,10 @@ public async Task<IEnumerable<DiscussionDto>> GetDiscussionsWithMessages(string 
         {
             Id = discussion.Id,
             Receiver = receiver,
-            LastMessage = lastMessage
+            LastMessage = lastMessage,
+            IsPinned = discussion.IsPinned,
+            IsBlocked = discussion.IsBlocked,
+            IsArchived = discussion.IsArchived,
         });
 
     }

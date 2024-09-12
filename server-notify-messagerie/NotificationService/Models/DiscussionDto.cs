@@ -6,6 +6,11 @@ public class DiscussionDto
     public User? Receiver { get; set; }
     public Message? LastMessage { get; set; }
 
+    public Boolean IsBlocked { get; set;} = false; 
+    public Boolean IsArchived { get; set;} = false; 
+    public Boolean IsPinned { get; set;} = false; 
+
+
     
 }
 

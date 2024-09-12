@@ -12,8 +12,8 @@ export type DiscussionState = {
   selectedUser: User | null;
   idDiscussion: string;
   messages: Message[];
-  //searchAttempted: boolean;
   searchReq: string;
+  pinned: boolean;
 };
 
 const initialState: DiscussionState = {
@@ -27,8 +27,9 @@ const initialState: DiscussionState = {
   selectedUser: null,
   idDiscussion: '',
   messages: [],
-  //searchAttempted: false,
   searchReq: '',
+  pinned: false, 
+
 }
 
 export type Action =
@@ -48,9 +49,9 @@ export type Action =
   | { type: 'SET_SELECTED_USER'; payload: { user: User; idDiscussion: string } }
   | { type: 'SET_MESSAGES'; payload: Message[] }
   | { type: 'SET_USERS_SEARCH'; payload: Discussion[] }
-  // | {type: 'SEARCH_ATTEMPTED'; payload: boolean}
   | { type: 'CLEAR_SEARCH' }
-  | { type: 'SET_SEARCH_INPUT'; payload: string };
+  | { type: 'SET_SEARCH_INPUT'; payload: string }
+  | { type: 'TOGGLE_PIN'; payload: string }; 
 
 export const DiscussionReducer = (
   state: DiscussionState = initialState,
@@ -60,7 +61,7 @@ export const DiscussionReducer = (
     case 'TOGGLE_MENU':
       return {
         ...state,
-        menuOpen: action.payload === state.menuOpen ? null : action.payload, // Toggle menu visibility
+        menuOpen: state.menuOpen === action.payload ? null : action.payload, // Toggle menu visibility
       }
     case 'DELETE_DISCUSSION':
       return {
@@ -149,6 +150,30 @@ export const DiscussionReducer = (
       return { ...state, searchReq: action.payload }
     case 'CLEAR_SEARCH':
       return { ...state, searchReq: '', discussionsSearch: [] }
+
+
+      case 'TOGGLE_PIN': {
+        const discussionId = action.payload
+        
+        // Update the pin status of the discussion
+        const updatedDiscussions = state.discussions.map((discussion) =>
+          discussion.id === discussionId
+            ? { ...discussion, pinned: !discussion.isPinned } // Toggle pin status
+            : discussion
+        )
+  
+        // Sort discussions: pinned ones first, then by timestamp
+        const sortedDiscussions = updatedDiscussions.sort((a, b) => {
+          if (a.isPinned && !b.isPinned) return -1
+          if (!a.isPinned && b.isPinned) return 1
+          return new Date(b.lastMessageTimestamp).getTime() - new Date(a.lastMessageTimestamp).getTime() // Sort by lastMessageTimestamp if pinned status is the same
+      })
+  
+        return {
+          ...state,
+          discussions: sortedDiscussions,
+        }
+      }
 
     default:
       return state

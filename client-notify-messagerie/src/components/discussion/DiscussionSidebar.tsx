@@ -29,7 +29,6 @@ const DiscussionSidebar: React.FC<DiscussionSidebarProps> = ({ receiver, idDiscu
     const [messages, setMessages] = useState<Message[]>([])
     const messagesEndRef = useRef<HTMLDivElement>(null)
     const [loading, setLoading] = useState<boolean>(true)
-
     const [sidebarOpen, setSidebarOpen] = useState(false)
     const toggleSidebar = () => { setSidebarOpen(prevState => !prevState) }
     const { theme } = useThemeContext()

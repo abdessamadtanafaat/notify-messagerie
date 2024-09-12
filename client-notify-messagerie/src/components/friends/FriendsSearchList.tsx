@@ -155,7 +155,7 @@ const FriendsSearchList: React.FC<UserListProps> = ({ userId, searchReq }) => {
             {loadingMoreSearchUsers &&
                 <div className="flex justify-center items-center w-full h-full ml-56">
                     <LoadingMoreItemsSpinner />
-                </div>}
+            </div>}
 
 
         </div>

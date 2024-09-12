@@ -30,6 +30,8 @@ export interface Discussion {
     lastMessageTimestamp: string; // Use ISODate string format
     lastMessageContent: string;
     receiver: User;
+    isPinned: boolean;
+    isBlocked: boolean;
 }
 
 export interface TypingNotification {
