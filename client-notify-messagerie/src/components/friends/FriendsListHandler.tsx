@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useReducer, useRef } from 'react'
+import { useCallback, useEffect, useReducer, useRef, useState } from 'react'
 import { friendsReducer, initialState } from './FriendsReducer'
 import { useFetchFriends } from '../../hooks/useFetchFriends'
 import useDeleteFriend from '../../hooks/useDeleteFriend'
@@ -8,11 +8,12 @@ import useHandleScroll from '../../hooks/useHandleScroll'
 
 export const useFriendsListHandler = (userId: string) => {
     const [state, dispatch] = useReducer(friendsReducer, initialState)
-    const { menuOpen, selectedFriend } = state
+    const {selectedFriend } = state
     const { fetchFriends, loadMoreFriends } = useFetchFriends(dispatch)
     const { deleteFriend } = useDeleteFriend({ user: useAuth().user, dispatch, selectedFriend })
     const menuRef = useRef<HTMLUListElement>(null)
     const { user } = useAuth()
+    const [menuOpen, setMenuOpen] = useState<string | null>(null)
 
 
     useOutsideClick(menuRef, () => dispatch({ type: 'TOGGLE_MENU', payload: null }))
@@ -26,6 +27,9 @@ export const useFriendsListHandler = (userId: string) => {
     const toggleMenu = useCallback(
         (id: string) => {
             dispatch({ type: 'TOGGLE_MENU', payload: menuOpen === id ? null : id })
+            console.log(id)
+            setMenuOpen(prevMenuOpen => (prevMenuOpen === id ? null : id))
+  
         },
         [menuOpen, dispatch]
     )

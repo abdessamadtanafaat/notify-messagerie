@@ -22,13 +22,29 @@ const DiscussionMenu: React.FC<DiscussionMenuProps> = ({ idDiscussion, isMenuOpe
         dispatch({ type: 'TOGGLE_MENU', payload: null })
     }
 
-
-  const handlePinAction = async () => {
+    const handlePinAction = async () => {
     await handlePinDiscussion(idDiscussion)
     dispatch({ type: 'TOGGLE_PIN', payload: idDiscussion })
-}
+    }
+
+    const handleBlockAction = async () => {
+        await handleBlockDiscussion(idDiscussion)
+        dispatch({ type: isBlocked ? 'UNBLOCK_DISCUSSION' : 'BLOCK_DISCUSSION', payload: idDiscussion })
+        }
+
+    const handleDeleteAction = async () => {
+        await handleDeleteDiscussion(idDiscussion)
+        dispatch({ type: 'DELETE_DISCUSSION', payload: idDiscussion })
+    }
+
+    const handleArchiveAction = async () => {
+        await handleArchiveDiscussion(idDiscussion)
+        dispatch({ type: 'DELETE_DISCUSSION', payload: idDiscussion })
+    }
+
 
     if (!isMenuOpen) return null
+
     return (
         <ul
             className=" bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded-lg shadow-lg mt-1"
@@ -36,7 +52,7 @@ const DiscussionMenu: React.FC<DiscussionMenuProps> = ({ idDiscussion, isMenuOpe
         >
             <li
                 className="relative transition-transform transform hover:scale-95"
-                onClick={() => handleMenuAction(() => handleArchiveDiscussion(idDiscussion))}
+                onClick={() => handleMenuAction(() => handleArchiveAction())}
             >
                 <a
                     className="flex items-center gap-1 px-2 py-1 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-600 w-full text-xs"
@@ -47,7 +63,7 @@ const DiscussionMenu: React.FC<DiscussionMenuProps> = ({ idDiscussion, isMenuOpe
             </li>
             <li
                 className="relative transition-transform transform hover:scale-95"
-                onClick={() => handleMenuAction(() => handleDeleteDiscussion(idDiscussion))}
+                onClick={() => handleMenuAction(() => handleDeleteAction())}
             >
                 <a
                     className="flex items-center gap-1 px-2 py-1 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-600 w-full text-xs"
@@ -58,7 +74,7 @@ const DiscussionMenu: React.FC<DiscussionMenuProps> = ({ idDiscussion, isMenuOpe
             </li>
             <li
                 className="relative transition-transform transform hover:scale-95"
-                onClick={() => handleMenuAction(() => handleBlockDiscussion(idDiscussion))}
+                onClick={() => handleMenuAction(() => handleBlockAction())}
             >
                 <a
                     className="flex items-center gap-1 px-2 py-1 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-600 w-full text-xs"
@@ -81,8 +97,7 @@ const DiscussionMenu: React.FC<DiscussionMenuProps> = ({ idDiscussion, isMenuOpe
             </li>
             <li
                 className="relative transition-transform transform hover:scale-95"
-                //onClick={() => handleMenuAction(() => handlePinDiscussion(idDiscussion))}
-                onClick={handlePinAction}
+                onClick={() => handleMenuAction(() => handlePinAction())}
             >
                 <a
                     className="flex items-center gap-1 px-2 py-1 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-600 w-full text-xs"
@@ -101,7 +116,6 @@ const DiscussionMenu: React.FC<DiscussionMenuProps> = ({ idDiscussion, isMenuOpe
 
                 </a>
             </li>
-
         </ul>
     )
 }

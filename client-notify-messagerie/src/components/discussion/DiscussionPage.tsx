@@ -15,14 +15,16 @@ const DiscussionPage: React.FC = () => {
         dispatch,
         fetchingDiscussions,
         initialFetchComplete,
-        //menuRef,
         handleSearchChange,
         handleClearSearch,
         handleUserClick,
         handleNewMessage
     } = useDiscussionPageHandler()
 
-    const { loading, searchReq, selectedUser, idDiscussion, messages } = state
+    const { loading, searchReq, selectedUser, idDiscussion, messages, discussions } = state
+
+    const selectedDiscussion = discussions.find(discussion => discussion.id === idDiscussion)
+    const isBlocked = selectedDiscussion?.isBlocked || false
 
     return (
         <>
@@ -63,7 +65,7 @@ const DiscussionPage: React.FC = () => {
                         </div>
                     </div>
 
-                    {selectedUser ? (
+                    {!isBlocked && selectedUser ? (
                         <div className="flex-grow rounded-2xl bg-white dark:bg-gray-800 h-full shadow-xl ml-4 lg:ml-6">
                             <DiscussionSidebar
                                 receiver={selectedUser}

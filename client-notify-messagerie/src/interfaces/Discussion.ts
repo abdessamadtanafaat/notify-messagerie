@@ -26,12 +26,14 @@ export interface FileMessage extends Message {
 export interface Discussion {
     id: string;
     lastMessage: Message;
-    participants: string[]; // Array of user IDs
-    lastMessageTimestamp: string; // Use ISODate string format
+    participants: string[];
+    lastMessageTimestamp: string; 
     lastMessageContent: string;
     receiver: User;
     isPinned: boolean;
     isBlocked: boolean;
+    originalIndex?: number; 
+
 }
 
 export interface TypingNotification {

@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useState } from 'react'
 import { CheckCheck, CircleEllipsis } from 'lucide-react'
 import DiscussionMenu from './DiscussionMenu'
 import LoadingMoreItemsSpinner from '../common/LoadingMoreItemsSpinner'
@@ -21,12 +21,13 @@ const DiscussionListSearch: React.FC<DiscussionListSearchProps> = ({
     const { theme } = useThemeContext()
     const { user } = useAuth()
 
+    const [menuOpen, setMenuOpen] = useState<string | null>(null)
+
     const {
         observerRef,
         isSearching,
         discussionsSearch,
         loadingMoreDiscussions,
-        menuOpen,
         dispatch,
         menuRef,
         getAvatarUrl,
@@ -36,6 +37,13 @@ const DiscussionListSearch: React.FC<DiscussionListSearchProps> = ({
         searchReq,
         handleUserClick
     })
+
+    const toggleMenu = (id: string, e: React.MouseEvent) => {
+      e.stopPropagation() // Prevent event from bubbling up
+      const newMenuState = menuOpen === id ? null : id
+      dispatch({ type: 'TOGGLE_MENU', payload: newMenuState })
+      setMenuOpen(prevMenuOpen => (prevMenuOpen === id ? null : id))
+  }
 
     return (
         <div
@@ -112,10 +120,8 @@ const DiscussionListSearch: React.FC<DiscussionListSearchProps> = ({
                                 <div className="ml-auto items-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
                                     <CircleEllipsis
                                         className="w-4 h-4 text-gray-500 dark:text-gray-300 cursor-pointer transition-colors duration-200"
-                                        onClick={(e) => {
-                                            e.stopPropagation()
-                                            dispatch({ type: 'TOGGLE_MENU', payload: id })
-                                        }}
+                                        onClick={(e) => toggleMenu(id, e)} 
+
                                     />
                                 </div>
                             </div>

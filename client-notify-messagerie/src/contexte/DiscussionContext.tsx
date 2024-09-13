@@ -15,6 +15,8 @@ interface DiscussionContextType {
         isSeen: boolean;
         seenDate?: Date;
     };
+    
+
 }
 
 const DiscussionContext = createContext<DiscussionContextType | undefined>(undefined)

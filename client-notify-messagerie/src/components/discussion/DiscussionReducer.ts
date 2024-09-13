@@ -14,6 +14,7 @@ export type DiscussionState = {
   messages: Message[];
   searchReq: string;
   pinned: boolean;
+  isBlocked: boolean;
 };
 
 const initialState: DiscussionState = {
@@ -28,7 +29,9 @@ const initialState: DiscussionState = {
   idDiscussion: '',
   messages: [],
   searchReq: '',
-  pinned: false, 
+  pinned: false,
+  isBlocked: false, 
+
 
 }
 
@@ -51,7 +54,9 @@ export type Action =
   | { type: 'SET_USERS_SEARCH'; payload: Discussion[] }
   | { type: 'CLEAR_SEARCH' }
   | { type: 'SET_SEARCH_INPUT'; payload: string }
-  | { type: 'TOGGLE_PIN'; payload: string }; 
+  | { type: 'TOGGLE_PIN'; payload: string }
+  | { type: 'BLOCK_DISCUSSION'; payload: string }
+  | { type: 'UNBLOCK_DISCUSSION'; payload: string }; 
 
 export const DiscussionReducer = (
   state: DiscussionState = initialState,
@@ -61,18 +66,25 @@ export const DiscussionReducer = (
     case 'TOGGLE_MENU':
       return {
         ...state,
-        menuOpen: state.menuOpen === action.payload ? null : action.payload, // Toggle menu visibility
-      }
+        menuOpen: action.payload
+    }
     case 'DELETE_DISCUSSION':
       return {
         ...state,
-        discussions: state.discussions.filter(
-          (discussion) => discussion.id !== action.payload
-        ),
-      }
+        discussions: state.discussions.filter(discussion => discussion.id !== action.payload)
+    }
     case 'SET_DISCUSSIONS':
       console.log('set discussions')
-      return { ...state, discussions: action.payload, loading: false, page: 1 }
+      return { 
+        ...state, 
+        discussions: action.payload.map((discussion, index) => ({
+          ...discussion,
+          originalIndex: index,
+        })), 
+        loading: false, 
+        page: 1 
+      }
+
 
     case 'ADD_MORE_DISCUSSIONS':
       return {
@@ -153,27 +165,59 @@ export const DiscussionReducer = (
 
 
       case 'TOGGLE_PIN': {
-        const discussionId = action.payload
         
-        // Update the pin status of the discussion
-        const updatedDiscussions = state.discussions.map((discussion) =>
-          discussion.id === discussionId
-            ? { ...discussion, pinned: !discussion.isPinned } // Toggle pin status
-            : discussion
-        )
-  
-        // Sort discussions: pinned ones first, then by timestamp
-        const sortedDiscussions = updatedDiscussions.sort((a, b) => {
-          if (a.isPinned && !b.isPinned) return -1
-          if (!a.isPinned && b.isPinned) return 1
-          return new Date(b.lastMessageTimestamp).getTime() - new Date(a.lastMessageTimestamp).getTime() // Sort by lastMessageTimestamp if pinned status is the same
-      })
-  
-        return {
-          ...state,
-          discussions: sortedDiscussions,
+    const discussionId = action.payload
+    
+    // Find the discussion and its original index
+    const discussionsWithIndex = state.discussions.map((discussion, index) => ({
+      ...discussion,
+      originalIndex: discussion.originalIndex !== undefined ? discussion.originalIndex : index,
+    }))
+
+    const discussions = discussionsWithIndex.map(discussion => {
+        if (discussion.id === discussionId) {
+            return { 
+              ...discussion, 
+              isPinned: !discussion.isPinned 
+            }
         }
+        return discussion
+    })
+
+    // Sort discussions with pinned ones at the top
+    const sortedDiscussions = discussions.sort((a, b) => {
+        if (a.isPinned !== b.isPinned) {
+            return a.isPinned ? -1 : 1
+        }
+        return a.originalIndex - b.originalIndex 
+    })
+
+    console.log('Updated Discussions with Pin:', sortedDiscussions) 
+
+    return { ...state, discussions: sortedDiscussions }
+      
       }
+
+      case 'BLOCK_DISCUSSION': {
+        return {
+            ...state,
+            discussions: state.discussions.map(discussion =>
+                discussion.id === action.payload
+                    ? { ...discussion, isBlocked: true }
+                    : discussion
+            ),
+        }
+    }
+    case 'UNBLOCK_DISCUSSION': {
+        return {
+            ...state,
+            discussions: state.discussions.map(discussion =>
+                discussion.id === action.payload
+                    ? { ...discussion, isBlocked: false }
+                    : discussion
+            ),
+        }
+    }
 
     default:
       return state
