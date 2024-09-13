@@ -18,6 +18,7 @@ const DiscussionList: React.FC<DiscussionListProps> = ({ userId, handleUserClick
     const {
         observerRef,
         loading,
+        menuOpen,
         discussions,
         loadingMoreDiscussions,
         dispatch,
@@ -30,12 +31,12 @@ const DiscussionList: React.FC<DiscussionListProps> = ({ userId, handleUserClick
     const { theme } = useThemeContext()
     const { user } = useAuth()
 
-    const [menuOpen, setMenuOpen] = useState<string | null>(null)
+    const [IsmenuOpen, setMenuOpen] = useState<string | null>(null)
 
 
     const toggleMenu = (id: string, e: React.MouseEvent) => {
         e.stopPropagation() 
-        const newMenuState = menuOpen === id ? null : id
+        const newMenuState = IsmenuOpen === id ? null : id
         dispatch({ type: 'TOGGLE_MENU', payload: newMenuState })
         setMenuOpen(prevMenuOpen => (prevMenuOpen === id ? null : id))
     }

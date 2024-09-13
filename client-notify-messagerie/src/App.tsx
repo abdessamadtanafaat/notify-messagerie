@@ -9,7 +9,6 @@ import CompleteProfilePage from './pages/CompleteProfilePage'
 import ResetPasswordByEmail from './pages/ResetPasswordByEmailPage'
 import ResetPasswordFormPage from './pages/ResetPasswordFormPage'
 import ResetPasswordByPhoneNumberPage from './pages/ResetPasswordByPhoneNumberPage'
-import TestPage from './pages/TestPage'
 import ProtectedRoute from './components/common/ProtectedRoute'
 import NotFoundPage from './pages/NotFoundPage'
 import Personnes from './components/personnes/Personnes'
@@ -34,7 +33,6 @@ const App: React.FC = () => {
           <Route path="/login" element={<LoginPage />} />
           <Route path="/reset-password-byPhoneNumber" element={<ResetPasswordByPhoneNumberPage />} />
           <Route path="/register" element={<RegisterPage />} />
-          <Route path="/test" element={<ProtectedRoute element={<TestPage />} redirectPath="/login" />}  />
           <Route path="/verify-identity/:tokenEmail" element={<VerifyEmailPage />} />
           <Route path="/reset-password/:tokenEmail" element={<ResetPasswordFormPage />} />
           <Route path="/complete-profile" element={<ProtectedRoute element={<CompleteProfilePage />} redirectPath="/login" />} />

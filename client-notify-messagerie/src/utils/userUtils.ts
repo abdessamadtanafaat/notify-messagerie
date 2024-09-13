@@ -53,7 +53,7 @@ export const formatPhoneNumber = (phoneNumber: string)=>{
     return phoneNumber
 }
 
-export const formatDateTime = (dateString: string): string => {
+export const formatDateTime = (dateString: Date | string): string => {
     // Parse the ISO 8601 date string to a Date object
     const date = new Date(dateString)
 

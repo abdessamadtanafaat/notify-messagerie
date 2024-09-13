@@ -23,14 +23,14 @@ const DiscussionMenu: React.FC<DiscussionMenuProps> = ({ idDiscussion, isMenuOpe
     }
 
     const handlePinAction = async () => {
-    await handlePinDiscussion(idDiscussion)
-    dispatch({ type: 'TOGGLE_PIN', payload: idDiscussion })
+        await handlePinDiscussion(idDiscussion)
+        dispatch({ type: 'TOGGLE_PIN', payload: idDiscussion })
     }
 
     const handleBlockAction = async () => {
         await handleBlockDiscussion(idDiscussion)
         dispatch({ type: isBlocked ? 'UNBLOCK_DISCUSSION' : 'BLOCK_DISCUSSION', payload: idDiscussion })
-        }
+    }
 
     const handleDeleteAction = async () => {
         await handleDeleteDiscussion(idDiscussion)

@@ -86,7 +86,7 @@ const LoginPage: React.FC<RenderProps> = ({ render }) => {
                 if (resultAction.payload.isFirstTimeLogin) {
                     navigate('/complete-profile')
                 } else {
-                    navigate('/test')
+                    navigate('/home')
                 }
 
             } else {

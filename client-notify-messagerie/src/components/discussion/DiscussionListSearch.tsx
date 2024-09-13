@@ -21,7 +21,7 @@ const DiscussionListSearch: React.FC<DiscussionListSearchProps> = ({
     const { theme } = useThemeContext()
     const { user } = useAuth()
 
-    const [menuOpen, setMenuOpen] = useState<string | null>(null)
+    const [IsmenuOpen, setMenuOpen] = useState<string | null>(null)
 
     const {
         observerRef,
@@ -30,6 +30,7 @@ const DiscussionListSearch: React.FC<DiscussionListSearchProps> = ({
         loadingMoreDiscussions,
         dispatch,
         menuRef,
+        menuOpen,
         getAvatarUrl,
         getTimeDifference
     } = useDiscussionListSearchHandler({
@@ -39,8 +40,8 @@ const DiscussionListSearch: React.FC<DiscussionListSearchProps> = ({
     })
 
     const toggleMenu = (id: string, e: React.MouseEvent) => {
-      e.stopPropagation() // Prevent event from bubbling up
-      const newMenuState = menuOpen === id ? null : id
+      e.stopPropagation() // Prevent event from bubbling up mytl3ch l parent 
+      const newMenuState = IsmenuOpen === id ? null : id
       dispatch({ type: 'TOGGLE_MENU', payload: newMenuState })
       setMenuOpen(prevMenuOpen => (prevMenuOpen === id ? null : id))
   }

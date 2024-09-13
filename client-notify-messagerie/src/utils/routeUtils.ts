@@ -4,7 +4,6 @@ export const shouldShowSidebar = (pathname: string): boolean => {
 
 
     const showSidebarRoutes = [
-        '/test',            
         '/home',
         '/discussions',
         '/personnes',

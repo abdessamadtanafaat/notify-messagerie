@@ -63,7 +63,7 @@ export interface RecordingNotification {
 
 export interface SeenNotif {
     isSeen: boolean;
-    seenDate?: Date;
+    seenDate?: Date | string
 }
 
 export enum DoingWithDiscussionOperation {

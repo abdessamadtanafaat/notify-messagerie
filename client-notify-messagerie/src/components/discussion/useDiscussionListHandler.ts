@@ -28,7 +28,6 @@ const useDiscussionListHandler = ({ userId, handleUserClick }: UseDiscussionList
     
     useEffect(() => {
         fetchDiscussions(userId)
-        console.log(discussions)
     }, [fetchDiscussions, userId])
 
     return {
