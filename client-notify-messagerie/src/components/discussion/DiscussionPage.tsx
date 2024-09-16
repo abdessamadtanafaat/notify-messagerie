@@ -18,10 +18,9 @@ const DiscussionPage: React.FC = () => {
         handleSearchChange,
         handleClearSearch,
         handleUserClick,
-        handleNewMessage
     } = useDiscussionPageHandler()
 
-    const { loading, searchReq, selectedUser, idDiscussion, messages, discussions } = state
+    const { loading, searchReq, selectedUser, idDiscussion, discussions } = state
 
     const selectedDiscussion = discussions.find(discussion => discussion.id === idDiscussion)
     const isBlocked = selectedDiscussion?.isBlocked || false
@@ -70,8 +69,6 @@ const DiscussionPage: React.FC = () => {
                             <DiscussionSidebar
                                 receiver={selectedUser}
                                 idDiscussion={idDiscussion}
-                                messages={messages}
-                                onMessageSent={handleNewMessage}
                             />
                         </div>
                     ) : (

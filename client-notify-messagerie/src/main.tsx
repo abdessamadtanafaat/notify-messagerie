@@ -10,6 +10,7 @@ import { ThemeProvider } from './contexte/ThemeContext'
 import { NotificationProvider } from './contexte/NotificationContext'
 import { SkeletonTheme } from 'react-loading-skeleton'
 import 'react-loading-skeleton/dist/skeleton.css'
+import { DiscussionProvider } from './contexte/DiscussionContext'
 
 // import { WebSocketProvider } from './contexte/WebSocketContext'
 
@@ -39,9 +40,9 @@ root.render(
           />
           <ThemeProvider>
             <AuthProvider>
-              {/* <DiscussionProvider> */}
+              <DiscussionProvider>
               <App />
-              {/* </DiscussionProvider> */}
+              </DiscussionProvider>
             </AuthProvider>
           </ThemeProvider>
           {/* </React.StrictMode> */}

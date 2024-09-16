@@ -62,14 +62,11 @@ export const DiscussionHandler: React.FC<DiscussionHandlerProps> = ({ render, on
                 readTime: new Date(),
                 type: 'message',
             }
-
-
             try {
                 await sendMessage(messageDTO)
                 setMessages(prevMessages => [...prevMessages, messageDTO])
                 setMessage('')
                 refreshUserData()
-
             } catch (error) {
                 console.error('Failed to send message:', error)
             }
@@ -108,9 +105,10 @@ export const DiscussionHandler: React.FC<DiscussionHandlerProps> = ({ render, on
         if (file) {
             const previewUrl = URL.createObjectURL(file)
             setImagePreview(previewUrl)
+            console.log(previewUrl)
+            console.log(loading)
             setLoading(true)
             try {
-                // sendRecordingNotification(lastMessage.discussionId, receiver)
                 const filePath = await cloudinaryService.uploadFile(file)
                 if (user && webSocketService) {
 
@@ -131,7 +129,6 @@ export const DiscussionHandler: React.FC<DiscussionHandlerProps> = ({ render, on
                     const ImageMessage = await sendMessage(fileMessage)
                     console.log(ImageMessage)
                     setMessages(prevMessages => [...prevMessages, fileMessage])
-                    //console.log('sift messaghat',messages)
                     setMessage('')
                     refreshUserData()
                     console.log(fileMessage)
@@ -140,6 +137,9 @@ export const DiscussionHandler: React.FC<DiscussionHandlerProps> = ({ render, on
                 console.error('Error handling image file:', err)
             } finally {
                 setLoading(false)
+                console.log(loading)
+                console.log(imagePreview)
+
                 if (fileInputRef.current) {
                     fileInputRef.current.value = '' // Reset the file input value
                 }
@@ -179,13 +179,10 @@ export const DiscussionHandler: React.FC<DiscussionHandlerProps> = ({ render, on
                     read: false,
                     timestamp: new Date()
                 }
-                console.log(audioMessage)
                 const MessageAudio = await sendMessage(audioMessage)
-                console.log(MessageAudio)
                 setMessages(prevMessages => [...prevMessages, audioMessage])
                 setMessage('')
                 refreshUserData()
-                console.log(audioMessage)
             }
         } catch (error) {
             console.error('Failed to upload or send audio message:', error)

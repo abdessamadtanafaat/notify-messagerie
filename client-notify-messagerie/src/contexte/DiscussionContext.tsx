@@ -1,8 +1,9 @@
-import React, { createContext, useState, useContext, ReactNode } from 'react'
+import React, { createContext, useState, useContext, ReactNode, useReducer } from 'react'
 import { User } from '../interfaces'
 import { useAuth } from './AuthContext' // Import the AuthContext
-import { Message } from '../interfaces/Discussion'
+import { Discussion, Message } from '../interfaces/Discussion'
 import { useWebSocket } from '../hooks/webSocketHook'
+import { DiscussionReducer, initialState } from '../components/discussion/DiscussionReducer'
 
 interface DiscussionContextType {
     messages: Message[];
@@ -15,7 +16,7 @@ interface DiscussionContextType {
         isSeen: boolean;
         seenDate?: Date;
     };
-    
+    discussions: Discussion[]; 
 
 }
 
@@ -25,8 +26,21 @@ export const DiscussionProvider: React.FC<{ children: ReactNode }> = ({ children
     const { user } = useAuth() // Use the AuthContext to get the user
     const [messages, setMessages] = useState<Message[]>([])
 
+    const [state, dispatch] = useReducer(DiscussionReducer, initialState)
+
+
     const onNewMessage = (message: Message) => {
         setMessages(prevMessages => [...prevMessages, message])
+
+                // Dispatch UPDATE_DISCUSSION to move the discussion to the top
+                dispatch({
+                    type: 'UPDATE_DISCUSSION',
+                    payload: {
+                        newMessage: message,
+                        timestamp: new Date().toISOString() // Use current timestamp or message timestamp
+                    }
+                })
+
     }
 
     const { typingUser, seenUser, sendMessage, sendTypingNotification, sendSeenNotification, seenNotif } = useWebSocket(user, onNewMessage)
@@ -38,7 +52,8 @@ export const DiscussionProvider: React.FC<{ children: ReactNode }> = ({ children
         sendMessage,
         sendTypingNotification,
         sendSeenNotification,
-        seenNotif
+        seenNotif,
+        discussions: state.discussions
     }
 
     return (
@@ -55,3 +70,4 @@ export const useDiscussion = (): DiscussionContextType => {
     }
     return context
 }
+

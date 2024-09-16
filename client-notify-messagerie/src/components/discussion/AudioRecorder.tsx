@@ -6,11 +6,13 @@ import { User } from '../../interfaces'
 interface AudioRecorderProps {
     onSend: (blob: Blob) => Promise<void>;
     sendRecordingNotification: (discussionId: string, receiver: User) => void;
-    lastMessage: { discussionId: string };
+    discussionId: string ;
     receiver: User;
+    //messages: Message[];
+
 }
 
-const AudioRecorder: React.FC<AudioRecorderProps> = ({ onSend, sendRecordingNotification, lastMessage, receiver }) => {
+const AudioRecorder: React.FC<AudioRecorderProps> = ({ onSend, sendRecordingNotification, discussionId, receiver }) => {
     const [recording, setRecording] = useState(false)
     const [sending, setSending] = useState(false)
     const mediaRecorderRef = useRef<MediaRecorder | null>(null)
@@ -39,7 +41,7 @@ const AudioRecorder: React.FC<AudioRecorderProps> = ({ onSend, sendRecordingNoti
             mediaRecorder.start()
             mediaRecorderRef.current = mediaRecorder
             setRecording(true)
-            sendRecordingNotification(lastMessage.discussionId, receiver) // Notify while recording
+            sendRecordingNotification(discussionId, receiver) // Notify while recording
         }
     }
 

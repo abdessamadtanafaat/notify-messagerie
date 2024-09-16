@@ -15,6 +15,7 @@ export type DiscussionState = {
   searchReq: string;
   pinned: boolean;
   isBlocked: boolean;
+  imagePreview: string | null
 };
 
 const initialState: DiscussionState = {
@@ -31,6 +32,7 @@ const initialState: DiscussionState = {
   searchReq: '',
   pinned: false,
   isBlocked: false, 
+  imagePreview: null
 
 
 }
@@ -56,7 +58,9 @@ export type Action =
   | { type: 'SET_SEARCH_INPUT'; payload: string }
   | { type: 'TOGGLE_PIN'; payload: string }
   | { type: 'BLOCK_DISCUSSION'; payload: string }
-  | { type: 'UNBLOCK_DISCUSSION'; payload: string }; 
+  | { type: 'UNBLOCK_DISCUSSION'; payload: string }
+  | { type: 'SET_IMAGE_PREVIEW'; payload: { imagePreview: string | null } };
+
 
 export const DiscussionReducer = (
   state: DiscussionState = initialState,
@@ -96,38 +100,36 @@ export const DiscussionReducer = (
     case 'SET_LOADING':
       return { ...state, loading: action.payload }
 
-    case 'UPDATE_DISCUSSION': {
-      const { newMessage, timestamp } = action.payload
-
-      // Update discussions with the new message
-      const updatedDiscussions = state.discussions.map((discussion) => {
-        if (discussion.id === newMessage.discussionId) {
+      case 'UPDATE_DISCUSSION': {
+        const { newMessage, timestamp } = action.payload
+        
+        // Find the index of the discussion to update
+        const updatedDiscussions = state.discussions.filter(
+          discussion => discussion.id !== newMessage.discussionId
+        )
+  
+        // Find the discussion to be moved to the top
+        const updatedDiscussion = state.discussions.find(
+          discussion => discussion.id === newMessage.discussionId
+        )
+  
+        if (updatedDiscussion) {
+          // Update the discussion with the new message
+          updatedDiscussion.lastMessage = newMessage
+          updatedDiscussion.lastMessageTimestamp = timestamp
+  
+          // Move the updated discussion to the top
           return {
-            ...discussion,
-            lastMessage: newMessage,
-            lastMessageTimestamp: timestamp,
-            lastMessageContent: newMessage.content,
+            ...state,
+            discussions: [updatedDiscussion, ...updatedDiscussions]
           }
         }
-        return discussion
-      })
-
-      // Sort discussions with the one containing the new message at the top
-      const sortedDiscussions = updatedDiscussions.sort((a, b) => {
-        if (a.id === newMessage.discussionId) return -1 // Move discussion with new message to the top
-        if (b.id === newMessage.discussionId) return 1
-        return (
-          new Date(b.lastMessageTimestamp).getTime() -
-          new Date(a.lastMessageTimestamp).getTime()
-        ) // Sort by lastMessageTimestamp
-      })
-
-      return {
-        ...state,
-        discussions: sortedDiscussions,
+  
+        return state
       }
-    }
 
+
+    
     case 'LOAD_MORE_DISCUSSIONS':
       return { ...state, loadingMoreDiscussions: action.payload }
 
@@ -218,6 +220,9 @@ export const DiscussionReducer = (
             ),
         }
     }
+    case 'SET_IMAGE_PREVIEW':
+      return { ...state, imagePreview: action.payload.imagePreview }
+
 
     default:
       return state

@@ -7,6 +7,7 @@ import { useAuth } from '../../contexte/AuthContext'
 import useDiscussionListHandler from './useDiscussionListHandler' // Import the new hook
 import { User } from '../../interfaces'
 import defaultAvatar from '../../assets/default-avatar.png' // Import the default avatar image
+//import { Discussion } from '../../interfaces/Discussion'
 
 
 interface DiscussionListProps {
@@ -26,7 +27,6 @@ const DiscussionList: React.FC<DiscussionListProps> = ({ userId, handleUserClick
         getAvatarUrl,
         getTimeDifference,
     } = useDiscussionListHandler({ userId, handleUserClick })
-
 
     const { theme } = useThemeContext()
     const { user } = useAuth()

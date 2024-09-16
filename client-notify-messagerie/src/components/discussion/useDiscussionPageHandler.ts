@@ -52,18 +52,39 @@ const useDiscussionPageHandler = () => {
         dispatch({ type: 'SET_SEARCH_INPUT', payload: '' })
     }, [dispatch])
 
-    const handleNewMessage = (newMessage: Message) => {
-        setHasUnreadMessages(true)
-        const timestamp = newMessage.timestamp instanceof Date ? newMessage.timestamp : new Date(newMessage.timestamp)
-        dispatch({
-            type: 'UPDATE_DISCUSSION',
-            payload: {
-                newMessage,
-                timestamp: timestamp.toISOString()
-            }
-        })
-    }
+    // const handleNewMessage = (newMessage: Message) => {
+    //     setHasUnreadMessages(true)
+    //     const timestamp = newMessage.timestamp instanceof Date ? newMessage.timestamp : new Date(newMessage.timestamp)
+    //     dispatch({
+    //         type: 'UPDATE_DISCUSSION',
+    //         payload: {
+    //             newMessage,
+    //             timestamp: timestamp.toISOString()
+    //         }
+    //     })
+    // }
 
+    const handleNewMessage = useCallback(
+        (newMessage: Message) => {
+            setHasUnreadMessages(true)
+    
+            // Ensure timestamp is always a string
+            const timestamp = newMessage.timestamp instanceof Date
+                ? newMessage.timestamp.toISOString()
+                : newMessage.timestamp
+    
+            dispatch({
+                type: 'UPDATE_DISCUSSION',
+                payload: {
+                    newMessage,
+                    timestamp,
+                },
+            })
+        },
+        [setHasUnreadMessages]
+    )
+    
+    
     const handleUserClick = async (receiver: User, idDiscussion: string) => {
         dispatch({ type: 'SET_SELECTED_USER', payload: { user: receiver, idDiscussion } })
         try {

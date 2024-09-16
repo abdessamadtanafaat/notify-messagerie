@@ -8,6 +8,7 @@ import { toast } from 'react-toastify'
 import notificationSound from '../assets/notification.mp3'
 
 
+
 export const useWebSocket = (user: User | null, onNewMessage?: (message: Message) => void) => {
     const [webSocketService, setWebSocketService] = useState<WebSocketService | null>(null)
     const [typingUser, setTypingUser] = useState<string | null>(null)
@@ -75,15 +76,6 @@ export const useWebSocket = (user: User | null, onNewMessage?: (message: Message
             return () => clearTimeout(timeout)
         }
     }, [typingUser,seenUser])
-
-    // useEffect(() => {
-    //     if (recordingAudio) {
-    //         const timeout = setTimeout(() => setRecordingAudio(null), 3000)
-    //         return () => clearTimeout(timeout)
-    //     }
-    // }, [recordingAudio,seenUser])
-
-
 
 const handleNewMessage = (newMessage: Message) => {
     const audio = new Audio(notificationSound)
@@ -188,5 +180,43 @@ const handleNewMessage = (newMessage: Message) => {
         }
     }, [user, webSocketService])
 
-    return { webSocketService, typingUser,recordingAudio,seenUser, sendMessage, sendTypingNotification,sendSeenNotification,sendRecordingNotification,seenNotif }
+
+    const reconnectWebSocket = useCallback((newUserId: string) => {
+        if (webSocketService) {
+            webSocketService.disconnect() // Close the existing WebSocket connection
+        }
+        const newWsService = WebSocketService.getInstance(API_ENDPOINTS.WEBSOCKET_URL, newUserId)
+        newWsService.connect() // Connect the new WebSocket service
+    
+        newWsService.onMessage((message: Message | TypingNotification | SeenNotification | RecordingNotification) => {
+            if ('content' in message) {
+                if (onNewMessage) onNewMessage(message as Message)
+                setTypingUser(null)
+                setRecordingAudio(null)
+                setSeenUser(false)
+                handleNewMessage(message as Message)
+            } else if (message.type === 'typing') {
+                setTypingUser(message.senderId)
+                setSeenUser(false)
+            } else if (message.type === 'recording') {
+                setRecordingAudio(message.senderId)
+                setSeenUser(false)
+            } else if (message.type === 'seen') {
+                handleSeenNotification(message as SeenNotification)
+                setSeenUser(true)
+            }
+        })
+    
+        newWsService.onError((error: ErrorResponse) => {
+            console.error('WebSocket error:', error.error)
+        })
+    
+        newWsService.onClose(() => {
+            setWebSocketService(null) // Reset on close
+        })
+    
+        setWebSocketService(newWsService) // Set the new WebSocket service
+    }, [webSocketService, onNewMessage])
+
+    return { webSocketService, typingUser,recordingAudio,seenUser, sendMessage, sendTypingNotification,sendSeenNotification,sendRecordingNotification,seenNotif,reconnectWebSocket }
 }

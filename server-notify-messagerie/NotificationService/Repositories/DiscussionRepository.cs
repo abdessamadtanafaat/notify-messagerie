@@ -46,11 +46,14 @@ public class DiscussionRepository : IDiscussionRepository
         }
 
         // Create the filter to find discussions where the userId is the first item in the Participants array
-        var filter = Builders<Discussion>.Filter.And(
-            Builders<Discussion>.Filter.Eq("Participants.0", userId), // Check if userId is the first item in Participants
-            Builders<Discussion>.Filter.Eq(d => d.IsArchived, false)  // Ensure the discussion is not archived
+var filter = Builders<Discussion>.Filter.And(
+    Builders<Discussion>.Filter.Or(
+        Builders<Discussion>.Filter.Eq("Participants.0", userId), // Check if userId is the first item in Participants
+        Builders<Discussion>.Filter.Eq("Participants.1", userId)  // Check if userId is the second item in Participants
+    ),
+    Builders<Discussion>.Filter.Eq(d => d.IsArchived, false)  // Ensure the discussion is not archived
+);
 
-        );
 
         // Create pagination options
         var skip = (pageNumber - 1) * pageSize;
