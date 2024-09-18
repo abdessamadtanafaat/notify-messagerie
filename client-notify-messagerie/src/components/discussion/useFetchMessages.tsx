@@ -1,4 +1,4 @@
-import { useCallback, useState } from 'react'
+import { useCallback, useState, useEffect, useRef } from 'react'
 import messageService from '../../services/messageService'
 import { User } from '../../interfaces'
 import { Message } from '../../interfaces/Discussion'
@@ -15,6 +15,10 @@ const useFetchMessages = ({ user, receiver, idDiscussion }: UseFetchMessagesProp
   const [loadingMore, setLoadingMore] = useState<boolean>(false)
   const [cursor, setCursor] = useState<Date | null>(null)
   const [hasMore, setHasMore] = useState<boolean>(true)
+  const [initialFetchComplete,setInitialFetchComplete] = useState<boolean>(false)
+
+
+  const chatContainerRef = useRef<HTMLDivElement | null>(null)
 
   const fetchMessages = useCallback(async (cursor?: Date | null) => {
     if (!user || !receiver || !idDiscussion) return
@@ -23,17 +27,21 @@ const useFetchMessages = ({ user, receiver, idDiscussion }: UseFetchMessagesProp
 
     try {
       const discussionData = await messageService.getDiscussion(receiver.id, user.id, cursor ?? undefined)
-      const newMessages = discussionData.messages
+      const fetchedMessages = discussionData.messages
 
-      setMessages(prevMessages => {
-        const existingMessageIds = new Set(prevMessages.map(msg => msg.id))
-        const filteredMessages = newMessages.filter((msg: Message) => !existingMessageIds.has(msg.id))
-        const updatedMessages = [...filteredMessages, ...prevMessages]
-        return updatedMessages.sort((a, b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime())
-      })
+      if (fetchedMessages.length > 0) {
+        // Deduplicate messages based on a unique identifier (e.g., id or timestamp)
+        setMessages(prevMessages => {
+          const newMessages = fetchedMessages.filter(
+            (msg: Message) => !prevMessages.some(existingMsg => existingMsg.id === msg.id) // Or compare by timestamp if needed
+          )
+          return [...newMessages, ...prevMessages] // Add new messages to the top
+        })
+        setCursor(new Date(fetchedMessages[0].timestamp))  // Update cursor to the oldest message's timestamp
 
-      setCursor(newMessages.length > 0 ? new Date(newMessages[0].timestamp) : null)
-      setHasMore(newMessages.length > 0)
+      } else {
+        setHasMore(false)  // No more messages to load
+      }
     } catch (error) {
       console.error('Failed to fetch messages:', error)
     } finally {
@@ -42,13 +50,33 @@ const useFetchMessages = ({ user, receiver, idDiscussion }: UseFetchMessagesProp
     }
   }, [user, receiver, idDiscussion])
 
+  // Reset messages when the discussion ID changes
+  useEffect(() => {
+    setMessages([])
+    setCursor(null)
+    setHasMore(true)
+    setInitialFetchComplete(false)
+  }, [idDiscussion])
+
+  useEffect(()=> {
+    if (messages.length > 0 && chatContainerRef.current) {
+      if (!initialFetchComplete) {
+        chatContainerRef.current.scrollTop = chatContainerRef.current.scrollHeight
+        setInitialFetchComplete(true)
+      }else {
+        console.log('sebsequeent fetch ! ')
+      }
+    }
+
+  },[messages, initialFetchComplete])
   return {
     messages,
     loading,
     loadingMore,
     fetchMessages,
     cursor,
-    hasMore
+    hasMore,
+    chatContainerRef,
   }
 }
 

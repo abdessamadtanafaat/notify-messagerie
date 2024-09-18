@@ -1,12 +1,13 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 // src/components/DiscussionHandler.tsx
-import React, { useRef, useState } from 'react'
+import React, { useReducer, useRef, useState } from 'react'
 import { Emoji } from '@emoji-mart/data'
 import { useAuth } from '../../contexte/AuthContext'
 import { AudioMessage, Message, SeenNotif, FileMessage } from '../../interfaces/Discussion'
 import { User } from '../../interfaces'
 import { useWebSocket } from '../../hooks/webSocketHook'
 import cloudinaryService from '../../services/cloudinaryService'
+import {DiscussionReducer, initialState } from './DiscussionReducer'
 
 interface DiscussionHandlerProps {
     render: (props: {
@@ -30,7 +31,8 @@ interface DiscussionHandlerProps {
         sendRecordingNotification: (discussionId: string, receiver: User) => void;
         loading: boolean;
         fileInputRef: React.RefObject<HTMLInputElement>
-        imagePreview: string | null
+        imagePreview: string | null,
+        messages: Message []
     }) => React.ReactNode;
     onNewMessage?: (message: Message) => void;
 }
@@ -46,6 +48,9 @@ export const DiscussionHandler: React.FC<DiscussionHandlerProps> = ({ render, on
 
     const { webSocketService, sendMessage, typingUser, recordingAudio, seenUser, sendTypingNotification, sendSeenNotification, sendRecordingNotification, seenNotif } = useWebSocket(user, onNewMessage)
 
+    const [state, dispatch] = useReducer(DiscussionReducer, initialState)
+
+    
     const handleSend = async (receiver: User, IdDiscussion: string) => {
 
         if (message.trim() && user && webSocketService) {
@@ -67,6 +72,16 @@ export const DiscussionHandler: React.FC<DiscussionHandlerProps> = ({ render, on
                 setMessages(prevMessages => [...prevMessages, messageDTO])
                 setMessage('')
                 refreshUserData()
+
+                dispatch({
+                    type: 'UPDATE_DISCUSSION_WITH_NEW_MESSAGE',
+                    payload: {
+                      discussionId: IdDiscussion,
+                      message: messageDTO,
+                    } 
+                  })
+                  
+
             } catch (error) {
                 console.error('Failed to send message:', error)
             }
@@ -223,5 +238,6 @@ export const DiscussionHandler: React.FC<DiscussionHandlerProps> = ({ render, on
         loading,
         fileInputRef,
         imagePreview,
+        messages,
     })
 }

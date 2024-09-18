@@ -43,10 +43,6 @@ export type Action =
   | { type: 'SET_DISCUSSIONS'; payload: Discussion[] }
   | { type: 'ADD_MORE_DISCUSSIONS'; payload: Discussion[] }
   | { type: 'SET_LOADING'; payload: boolean }
-  | {
-      type: 'UPDATE_DISCUSSION';
-      payload: { newMessage: Message; timestamp: string };
-    }
   | { type: 'LOAD_MORE_DISCUSSIONS'; payload: boolean }
   | { type: 'SET_DISCUSSIONS_SEARCH'; payload: Discussion[] }
   | { type: 'SET_LOADING_MORE_SEARCH_DISCUSSIONS'; payload: boolean }
@@ -59,7 +55,8 @@ export type Action =
   | { type: 'TOGGLE_PIN'; payload: string }
   | { type: 'BLOCK_DISCUSSION'; payload: string }
   | { type: 'UNBLOCK_DISCUSSION'; payload: string }
-  | { type: 'SET_IMAGE_PREVIEW'; payload: { imagePreview: string | null } };
+  | { type: 'SET_IMAGE_PREVIEW'; payload: { imagePreview: string | null } }
+  | { type: 'UPDATE_DISCUSSION_WITH_NEW_MESSAGE'; payload: { discussionId: string; message: Message } };
 
 
 export const DiscussionReducer = (
@@ -76,10 +73,11 @@ export const DiscussionReducer = (
       return {
         ...state,
         discussions: state.discussions.filter(discussion => discussion.id !== action.payload)
-    }
-    case 'SET_DISCUSSIONS':
-      console.log('set discussions')
-      return { 
+      }
+      case 'SET_DISCUSSIONS':
+        console.log('SET_DISCUSSIONS payload:', action.payload)
+        
+        return { 
         ...state, 
         discussions: action.payload.map((discussion, index) => ({
           ...discussion,
@@ -100,38 +98,9 @@ export const DiscussionReducer = (
     case 'SET_LOADING':
       return { ...state, loading: action.payload }
 
-      case 'UPDATE_DISCUSSION': {
-        const { newMessage, timestamp } = action.payload
-        
-        // Find the index of the discussion to update
-        const updatedDiscussions = state.discussions.filter(
-          discussion => discussion.id !== newMessage.discussionId
-        )
-  
-        // Find the discussion to be moved to the top
-        const updatedDiscussion = state.discussions.find(
-          discussion => discussion.id === newMessage.discussionId
-        )
-  
-        if (updatedDiscussion) {
-          // Update the discussion with the new message
-          updatedDiscussion.lastMessage = newMessage
-          updatedDiscussion.lastMessageTimestamp = timestamp
-  
-          // Move the updated discussion to the top
-          return {
-            ...state,
-            discussions: [updatedDiscussion, ...updatedDiscussions]
-          }
-        }
-  
-        return state
-      }
-
-
-    
     case 'LOAD_MORE_DISCUSSIONS':
       return { ...state, loadingMoreDiscussions: action.payload }
+      
 
     case 'SET_LOADING_MORE_SEARCH_DISCUSSIONS':
       return { ...state, loadingMoreSearchDiscussions: action.payload }
@@ -223,6 +192,49 @@ export const DiscussionReducer = (
     case 'SET_IMAGE_PREVIEW':
       return { ...state, imagePreview: action.payload.imagePreview }
 
+
+      case 'UPDATE_DISCUSSION_WITH_NEW_MESSAGE': {
+        const { discussionId, message } = action.payload
+      
+        // Log incoming action payload
+        console.log('Action Payload:', action.payload)
+      
+        // Log current state discussions
+        console.log('Current Discussions State:', state.discussions)
+      
+        // Update discussions array
+        const updatedDiscussions = state.discussions.map(discussion => {
+          if (discussion.id === discussionId) {
+            // Log the discussion being updated
+            console.log('Updating discussion:', discussion)
+      
+            return {
+              ...discussion,
+              lastMessage: message,
+              lastMessageTimestamp: message.timestamp.toISOString(),
+              lastMessageContent: message.content,
+            }
+          }
+          return discussion
+        })
+      
+        // Move the updated discussion to the top of the list
+        const sortedDiscussions = updatedDiscussions.sort((a, b) => 
+          new Date(b.lastMessageTimestamp).getTime() - new Date(a.lastMessageTimestamp).getTime()
+        )
+      
+        // Log the sorted discussions
+        console.log('Sorted Discussions:', sortedDiscussions)
+      
+        return {
+          ...state,
+          discussions: sortedDiscussions, // Ensure new reference is created to trigger re-render
+        }
+      }
+      
+      
+      
+      
 
     default:
       return state

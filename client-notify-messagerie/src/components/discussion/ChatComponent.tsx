@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import { User } from '../../interfaces'
 import { SeenNotif } from '../../interfaces/Discussion'
 import { FileIcon, ImageIcon, Loader, LockKeyholeIcon, SendIcon, Smile } from 'lucide-react'
@@ -27,20 +27,10 @@ const ChatComponent: React.FC<ChatComponentProps> = ({
 
     const { theme } = useThemeContext()
     const { user } = useAuth()
-    const [scrollTop, setScrollTop] = useState<number>(0)
-    const { messages, loadingMore, fetchMessages, cursor, hasMore } = useFetchMessages({ user, receiver, idDiscussion })
+    const [, setScrollTop] = useState<number>(0)
+    const { messages, loadingMore, fetchMessages, cursor, hasMore, chatContainerRef } = useFetchMessages({ user, receiver, idDiscussion })
     const handleScrollEvent = handleScroll({ fetchMessages, cursor, hasMore, loadingMore, setScrollTop })
 
-
-    // const messagesEndRef = useRef<HTMLDivElement | null>(null)
-    
-    // useEffect(() => {
-    //     if (messagesEndRef.current) {
-    //         messagesEndRef.current.scrollIntoView({ behavior: 'smooth' })
-    //     }
-    // }, [messages])
-    
-    
     useEffect(() => {
         fetchMessages()
     }, [fetchMessages])
@@ -56,6 +46,7 @@ const ChatComponent: React.FC<ChatComponentProps> = ({
                     <>
                     <div className="flex flex-col h-[calc(100vh-6rem)]">
                         <div
+                            ref={chatContainerRef}
                             className="flex flex-col flex-grow p-5"
                             onScroll={handleScrollEvent}
                             style={{
@@ -64,7 +55,7 @@ const ChatComponent: React.FC<ChatComponentProps> = ({
                                 overflowX: 'hidden',
                                 paddingTop: '50px',
                                 paddingBottom: '6rem',
-                                position: 'relative'
+                                position: 'relative',
                             }}
                         >
                             {/* Avatar */}
@@ -91,15 +82,16 @@ const ChatComponent: React.FC<ChatComponentProps> = ({
                             </div>
 
                             {loadingMore && (
-                                <div>
-                                    <LoadingMoreItemsSpinner />
-                                </div>
-                            )}
+                            <div className="flex justify-center mb-4">
+                                <LoadingMoreItemsSpinner />
+                            </div>
+                        )}
+
 
                             {/* Messages */}
-                            {[...messages].map((msg, index) => (
+                            {messages.map((msg, index) => (
                                 <div
-                                    key={msg.id === 'draft' ? 'draft' : index}
+                                    key={index}
                                     className={`relative flex flex-col ${msg.receiverId === user?.id ? 'items-start' : 'items-end'} ${index === messages.length ? 'mb-20' : 'mb-5'}`}
                                 >
                                     <div

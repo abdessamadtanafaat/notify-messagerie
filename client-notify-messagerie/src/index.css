@@ -27,9 +27,9 @@ html, body {
   
   width: 10px;
 
-     /* make invisible active this : 
+      /* make invisible active this :  */
   width: 0px;
-  background: transparent */
+  background: transparent 
 }
 
 /* Track */

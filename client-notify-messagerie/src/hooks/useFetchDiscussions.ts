@@ -16,7 +16,7 @@ export const useFetchDiscussions = (dispatch: React.Dispatch<Action>) => {
             try {
                 const result = await messageService.getDiscussions(userId,1, 10)
                 dispatch({ type: 'SET_DISCUSSIONS', payload: result })
-                setPage(2) // Next page to load will be 2
+                setPage(2)
 
                 if (result.length < 10) {
                     setHasMoreDiscussions(false)

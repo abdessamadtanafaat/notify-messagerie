@@ -7,12 +7,14 @@ import { useAuth } from '../../contexte/AuthContext'
 import useDiscussionListHandler from './useDiscussionListHandler' // Import the new hook
 import { User } from '../../interfaces'
 import defaultAvatar from '../../assets/default-avatar.png' // Import the default avatar image
+
 //import { Discussion } from '../../interfaces/Discussion'
 
 
 interface DiscussionListProps {
     userId: string;
     handleUserClick: (receiver: User, idDiscussion: string) => void;
+    //messages: Message[];
 }
 
 const DiscussionList: React.FC<DiscussionListProps> = ({ userId, handleUserClick }) => {
@@ -42,6 +44,7 @@ const DiscussionList: React.FC<DiscussionListProps> = ({ userId, handleUserClick
     }
     
     return (
+            
         <div
             className="list-none flex flex-col space-y-2"
             ref={observerRef}

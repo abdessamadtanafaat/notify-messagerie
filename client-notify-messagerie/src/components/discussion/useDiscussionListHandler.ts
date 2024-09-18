@@ -13,6 +13,7 @@ interface UseDiscussionListHandlerProps {
 
 const useDiscussionListHandler = ({ userId, handleUserClick }: UseDiscussionListHandlerProps) => {
     const [state, dispatch] = useReducer(DiscussionReducer, initialState)
+    
     const { fetchDiscussions, loadMoreDiscussions } = useFetchDiscussions(dispatch)
 
     const menuRef = useRef<HTMLUListElement>(null)

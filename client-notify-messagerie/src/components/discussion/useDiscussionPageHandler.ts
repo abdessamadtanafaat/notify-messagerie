@@ -87,6 +87,8 @@ const useDiscussionPageHandler = () => {
     
     const handleUserClick = async (receiver: User, idDiscussion: string) => {
         dispatch({ type: 'SET_SELECTED_USER', payload: { user: receiver, idDiscussion } })
+        //dispatch({ type: 'SET_MESSAGES', payload: [] })
+        console.log(state.messages)
         try {
             if (user) {
                 const discussionData = await messageService.getDiscussion(receiver.id, user.id)
