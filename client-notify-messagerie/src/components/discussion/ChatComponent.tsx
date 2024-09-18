@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useRef, useState } from 'react'
 import { User } from '../../interfaces'
 import { SeenNotif } from '../../interfaces/Discussion'
 import { FileIcon, ImageIcon, Loader, LockKeyholeIcon, SendIcon, Smile } from 'lucide-react'
@@ -30,10 +30,17 @@ const ChatComponent: React.FC<ChatComponentProps> = ({
     const [, setScrollTop] = useState<number>(0)
     const { messages, loadingMore, fetchMessages, cursor, hasMore, chatContainerRef } = useFetchMessages({ user, receiver, idDiscussion })
     const handleScrollEvent = handleScroll({ fetchMessages, cursor, hasMore, loadingMore, setScrollTop })
-
+    const messagesEndRef = useRef<HTMLDivElement>(null)
+    
+    const scrollToBottomInput = () => {
+        if (chatContainerRef.current) {
+            chatContainerRef.current.scrollTop = chatContainerRef.current.scrollHeight
+        }
+    }
     useEffect(() => {
         fetchMessages()
     }, [fetchMessages])
+
 
 
     return (
@@ -172,7 +179,7 @@ const ChatComponent: React.FC<ChatComponentProps> = ({
                                     </div>
                                 </div>
                             )}
-                            {/* <div ref={messagesEndRef} /> */}
+                            <div ref={messagesEndRef} />
 
                         </div>
                     </div>
@@ -210,13 +217,16 @@ const ChatComponent: React.FC<ChatComponentProps> = ({
                                     onChange={(e) => {
                                         handleChange('message', e.target.value)
                                         sendTypingNotification(idDiscussion, receiver)
+                                        scrollToBottomInput()
                                     }}
                                     onKeyDown={(e) => {
                                         handleKeyDown(e, receiver, idDiscussion)
+                                        scrollToBottomInput()
                                     }}
                                     onFocus={() => {
                                         if (receiver.id === receiver.id) {
                                             sendSeenNotification(messages[messages.length - 1].id, idDiscussion, receiver)
+                                            scrollToBottomInput()
                                         }
                                     }}
                                     autoFocus={true}

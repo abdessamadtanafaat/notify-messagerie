@@ -15,7 +15,7 @@ const useFetchMessages = ({ user, receiver, idDiscussion }: UseFetchMessagesProp
   const [loadingMore, setLoadingMore] = useState<boolean>(false)
   const [cursor, setCursor] = useState<Date | null>(null)
   const [hasMore, setHasMore] = useState<boolean>(true)
-  const [initialFetchComplete,setInitialFetchComplete] = useState<boolean>(false)
+  const [initialFetchComplete, setInitialFetchComplete] = useState<boolean>(false)
 
 
   const chatContainerRef = useRef<HTMLDivElement | null>(null)
@@ -35,13 +35,25 @@ const useFetchMessages = ({ user, receiver, idDiscussion }: UseFetchMessagesProp
           const newMessages = fetchedMessages.filter(
             (msg: Message) => !prevMessages.some(existingMsg => existingMsg.id === msg.id) // Or compare by timestamp if needed
           )
-          return [...newMessages, ...prevMessages] // Add new messages to the top
-        })
-        setCursor(new Date(fetchedMessages[0].timestamp))  // Update cursor to the oldest message's timestamp
 
+          // Prepend older messages
+          if (cursor) {
+            return [...newMessages, ...prevMessages]
+          } else {
+            // Append new messages
+            return [...prevMessages, ...newMessages]
+          }
+        })
+
+        if (cursor) {
+          setCursor(new Date(fetchedMessages[0].timestamp))
+        } else {
+          setCursor(new Date(fetchedMessages[fetchedMessages.length - 1].timestamp))
+        }
       } else {
-        setHasMore(false)  // No more messages to load
+        setHasMore(false)
       }
+
     } catch (error) {
       console.error('Failed to fetch messages:', error)
     } finally {
@@ -58,17 +70,17 @@ const useFetchMessages = ({ user, receiver, idDiscussion }: UseFetchMessagesProp
     setInitialFetchComplete(false)
   }, [idDiscussion])
 
-  useEffect(()=> {
+  useEffect(() => {
     if (messages.length > 0 && chatContainerRef.current) {
       if (!initialFetchComplete) {
         chatContainerRef.current.scrollTop = chatContainerRef.current.scrollHeight
         setInitialFetchComplete(true)
-      }else {
+      } else {
         console.log('sebsequeent fetch ! ')
       }
     }
 
-  },[messages, initialFetchComplete])
+  }, [messages, initialFetchComplete])
   return {
     messages,
     loading,

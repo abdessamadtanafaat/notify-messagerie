@@ -24,7 +24,7 @@ const handleScroll = ({ fetchMessages, cursor, hasMore, loadingMore, setScrollTo
 
       // Only adjust scroll position if initial fetch is not complete
         setTimeout(() => {
-          container.scrollTop = 30 // Adjust this value as needed
+          container.scrollTop = 2 // Adjust this value as needed
         }, 500) // Delay to ensure the fetch has updated the scrollHeight
     }
 
