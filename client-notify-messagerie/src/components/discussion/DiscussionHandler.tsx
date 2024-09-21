@@ -1,12 +1,14 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 // src/components/DiscussionHandler.tsx
-import React, { useRef, useState } from 'react'
+import React, { useReducer, useRef, useState } from 'react'
 import { Emoji } from '@emoji-mart/data'
 import { useAuth } from '../../contexte/AuthContext'
 import { AudioMessage, Message, SeenNotif, FileMessage } from '../../interfaces/Discussion'
 import { User } from '../../interfaces'
 import { useWebSocket } from '../../hooks/webSocketHook'
 import cloudinaryService from '../../services/cloudinaryService'
+import { useOutsideClick } from '../../hooks/useOutsideClick'
+import { DiscussionReducer, initialState } from './DiscussionReducer'
 
 interface DiscussionHandlerProps {
     render: (props: {
@@ -31,6 +33,7 @@ interface DiscussionHandlerProps {
         loading: boolean;
         fileInputRef: React.RefObject<HTMLInputElement>
         imagePreview: string | null
+        menuRef: React.RefObject<HTMLDivElement>
     }) => React.ReactNode;
     onNewMessage?: (message: Message) => void;
 }
@@ -42,10 +45,12 @@ export const DiscussionHandler: React.FC<DiscussionHandlerProps> = ({ render, on
     const [loading, setLoading] = useState(false)
     const [imagePreview, setImagePreview] = useState<string | null>(null)
     const fileInputRef = useRef(null)
+    const menuRef = useRef<HTMLDivElement>(null)
 
+    const [state, dispatch] = useReducer(DiscussionReducer, initialState)
 
+    
     const { webSocketService, sendMessage, typingUser, recordingAudio, seenUser, sendTypingNotification, sendSeenNotification, sendRecordingNotification, seenNotif } = useWebSocket(user, onNewMessage)
-
     
     const handleSend = async (receiver: User, IdDiscussion: string) => {
 
@@ -95,6 +100,7 @@ export const DiscussionHandler: React.FC<DiscussionHandlerProps> = ({ render, on
             [picker]: !prev[picker],
         }))
     }
+
 
     const addEmoji = (emoji: Emoji) => {
         const emojiStr: string = emoji.native
@@ -202,6 +208,14 @@ export const DiscussionHandler: React.FC<DiscussionHandlerProps> = ({ render, on
         }
     }
 
+    useOutsideClick(menuRef, () => 
+        {
+            if (showEmojiPicker.message) {
+                togglePicker('message') // Close the emoji picker
+            }
+        }
+    )
+    
     return render({
         handleChange,
         message,
@@ -224,5 +238,6 @@ export const DiscussionHandler: React.FC<DiscussionHandlerProps> = ({ render, on
         loading,
         fileInputRef,
         imagePreview,
+        menuRef,
     })
 }

@@ -94,10 +94,10 @@ const FriendInfoSidebar: React.FC<FriendInfoSidebarProps> = ({ user }) => {
                     </div>
     
                     {/* Friends */}
-                    <div className="flex items-center space-x-2">
+                    {/* <div className="flex items-center space-x-2">
                         <UserCircle className="h-4 w-4 text-gray-600 dark:text-gray-400" />
                         <p className="text-gray-600 dark:text-gray-400 text-xs">Friends since: mnb3d</p>
-                    </div>
+                    </div> */}
                 </div>
     
                 <div className="w-full space-y-4 flex  mt-52">

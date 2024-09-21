@@ -41,13 +41,11 @@ const ChatComponent: React.FC<ChatComponentProps> = ({
         fetchMessages()
     }, [fetchMessages])
 
-
-
     return (
         <DiscussionHandler
-            render={({ imagePreview, loading, handleChange, showEmojiPicker, togglePicker, addEmoji, setPickerRef,
+            render={({ imagePreview, loading, handleChange, showEmojiPicker, togglePicker, addEmoji,
                 sendImage, sendFile,handleSend, handleKeyDown, sendTypingNotification, sendSeenNotification,
-                handleSendAudio, sendRecordingNotification, fileInputRef, message
+                handleSendAudio, sendRecordingNotification, fileInputRef, message,menuRef
             }) => (
             <>
                     <>
@@ -235,11 +233,11 @@ const ChatComponent: React.FC<ChatComponentProps> = ({
 
                                 <Smile
                                     className='w-4 h-4 text-blue-600 cursor-pointer absolute right-2 top-1/2 transform -translate-y-1/2 dark:text-gray-400 dark:hover:text-white'
-                                    onClick={() => togglePicker('message')}
+                                    onClick={() => {togglePicker('message')}}
                                 />
-                                {showEmojiPicker.message && (
+                                {showEmojiPicker.message &&(
                                     <div
-                                        ref={setPickerRef('message')}
+                                        ref={menuRef}
                                         className="absolute transform -translate-y-96 right-1 bg-white border border-gray-300 rounded shadow-lg"
                                     >
                                         <Picker

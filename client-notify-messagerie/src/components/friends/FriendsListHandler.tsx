@@ -15,7 +15,6 @@ export const useFriendsListHandler = (userId: string) => {
     const { user } = useAuth()
     const [menuOpen, setMenuOpen] = useState<string | null>(null)
 
-
     useOutsideClick(menuRef, () => dispatch({ type: 'TOGGLE_MENU', payload: null }))
 
     const handleDelete = () => {
